@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -94,6 +93,51 @@ const Index = () => {
     }
   ];
 
+  const kitchenModelsModernaOscura = [
+    {
+      name: "COCINA MODERNA ISLAND PREMIUM",
+      image: "/lovable-uploads/02a64ca8-6876-4d58-8c8f-1ea5031f4a9c.png",
+      price: "desde €32,500",
+      description: "Diseño de isla moderna con iluminación LED arquitectónica, acabados en madera con textura acanalada y encimeras de mármol. Perfecta integración de tecnología y elegancia."
+    },
+    {
+      name: "COCINA MODERNA GALLEY LUXURY",
+      image: "/lovable-uploads/4bafff0d-9993-460d-ae96-fdbf04a98784.png",
+      price: "desde €28,900",
+      description: "Galería moderna con acabado acanalado en madera, iluminación integrada bajo estantes y salpicadero de mármol natural que aporta sofisticación."
+    },
+    {
+      name: "COCINA MODERNA DISPLAY PREMIUM",
+      image: "/lovable-uploads/2004e972-5649-4436-9f59-2ad565bc3ea1.png",
+      price: "desde €45,800",
+      description: "Sistema de vitrinas iluminadas con estanterías de madera y cristal, perfecta para exhibir vajillas y cristalería. Incluye bodega integrada."
+    },
+    {
+      name: "COCINA MODERNA MINIMAL ELEGANCE",
+      image: "/lovable-uploads/164799a3-84d8-464d-af8e-14c2c4ca44c0.png",
+      price: "desde €26,400",
+      description: "Diseño minimalista con acabados mate, electrodomésticos integrados y salpicadero de mármol veteado. Funcionalidad sin comprometer la estética."
+    },
+    {
+      name: "COCINA MODERNA URBAN CHIC",
+      image: "/lovable-uploads/533f1ed3-906f-407f-bb25-d911e3123588.png",
+      price: "desde €38,200",
+      description: "Concepto urbano moderno con isla central de mármol, iluminación colgante escultural y acabados en tonos neutros sofisticados."
+    },
+    {
+      name: "COCINA MODERNA PENTHOUSE",
+      image: "/lovable-uploads/471bc22d-6315-46e0-87b5-210c2eb4466a.png",
+      price: "desde €52,600",
+      description: "Diseño de lujo para espacios amplios con isla de mármol masiva, iluminación arquitectónica y vistas panorámicas integradas al diseño."
+    },
+    {
+      name: "COCINA MODERNA COMPACT LUXURY",
+      image: "/lovable-uploads/7db2c192-149e-4f78-80bd-ade35a77b765.png",
+      price: "desde €24,800",
+      description: "Solución compacta de lujo con mesa integrada, acabados premium y aprovechamiento máximo del espacio sin renunciar al diseño."
+    }
+  ];
+
   const wardrobeModels = [
     {
       name: "VITRINA CONTEMPO",
@@ -130,6 +174,18 @@ const Index = () => {
       image: "photo-1586023492125-27b2c045efd7",
       price: "€11,400",
       description: "Inspirada en la proporción áurea, esta estantería combina funcionalidad y arte, creando un punto focal que organiza y embellece el espacio."
+    },
+    {
+      name: "VESTIDOR MODERNA LUMINA",
+      image: "/lovable-uploads/914ee2d0-75d6-425d-b8f3-a9f4f22e7698.png",
+      price: "desde €12,800",
+      description: "Vestidor moderno con acabado en madera natural, espejo con iluminación LED perimetral y asientos tapizados. Diseño funcional que maximiza el almacenamiento."
+    },
+    {
+      name: "ARMARIO MODERNA ELEGANCE",
+      image: "/lovable-uploads/b32560c8-0021-4e69-a470-11a9cd52c337.png",
+      price: "desde €15,200",
+      description: "Armario de diseño contemporáneo con paneles de madera, zona de tocador integrada con espejo iluminado y almacenamiento optimizado para espacios modernos."
     }
   ];
 
@@ -151,7 +207,6 @@ const Index = () => {
   };
 
   const handleOrderClick = (itemName: string, price: string) => {
-    // В реальном приложении здесь был бы переход к форме заказа или корзине
     alert(`Solicitud de consulta para ${itemName} - ${price}. Nos pondremos en contacto con usted pronto.`);
   };
 
@@ -369,6 +424,20 @@ const Index = () => {
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {kitchenModelsMediterranea.map((model, index) => (
+                <ProductCard key={index} product={model} type="kitchen" />
+              ))}
+            </div>
+          </div>
+
+          {/* Cocinas Moderna Oscura */}
+          <div className="mb-24">
+            <h3 className="text-3xl font-bold mb-8 text-[rgb(180,165,142)]">COCINAS MODERNA OSCURA</h3>
+            <p className="text-gray-300 text-lg mb-12 max-w-4xl">
+              Diseños contemporáneos que juegan con contrastes dramáticos, iluminación arquitectónica 
+              y materiales nobles. Perfecta fusión entre tecnología avanzada y elegancia atemporal.
+            </p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {kitchenModelsModernaOscura.map((model, index) => (
                 <ProductCard key={index} product={model} type="kitchen" />
               ))}
             </div>
