@@ -78,6 +78,15 @@ const Index = () => {
     }
   ];
 
+  const portfolioImages = [
+    "/lovable-uploads/2cdf3057-4b67-4fd6-9a35-22d93960d69c.png",
+    "/lovable-uploads/12d2af38-c23d-4b9c-8feb-7bd0f637ecb5.png",
+    "/lovable-uploads/2dc1aa7a-1f43-480e-9254-b4a814d06baf.png",
+    "/lovable-uploads/a3c240e5-0ac4-4c59-9bb8-44e3c09400d1.png",
+    "/lovable-uploads/f2a9ca0c-e245-41fa-81a7-77852fe8f37a.png",
+    "/lovable-uploads/7605104b-dc16-4409-937f-d4dbd0035488.png"
+  ];
+
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
   };
@@ -189,12 +198,12 @@ const Index = () => {
             Inspiración para su <span className="text-[rgb(180,165,142)]">Espacio</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
+            {portfolioImages.map((image, index) => (
               <div 
-                key={item}
+                key={index}
                 className="aspect-square bg-cover bg-center rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
                 style={{
-                  backgroundImage: `url('https://images.unsplash.com/photo-${item % 2 === 0 ? '1586023492125-27b2c045efd7' : '1556909114-f6e7ad7d3136'}?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')`
+                  backgroundImage: `url('${image}')`
                 }}
               />
             ))}
