@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ChevronLeft, ChevronRight, Star, Award, Users, Phone, Mail, MapPin } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ChevronLeft, ChevronRight, Star, Award, Users, Phone, Mail, MapPin, Eye } from 'lucide-react';
 
 const Index = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -27,21 +28,69 @@ const Index = () => {
     }
   ];
 
-  const kitchenModels = [
+  const kitchenModelsMinimalista = [
     {
-      name: "COCINA MODERNA OSCURA",
-      image: "photo-1556909114-f6e7ad7d3136",
-      description: "Una cocina de líneas limpias con acabados en negro mate y detalles en madera natural que aportan calidez al espacio contemporáneo."
+      name: "COCINA MINIMALISTA UTILITY",
+      image: "/lovable-uploads/b286a941-43ea-4e43-a5fa-532d8bc45c16.png",
+      price: "€15,500",
+      description: "Una cocina utilitaria minimalista con acabados en madera natural y encimeras de mármol. Perfecta combinación de funcionalidad y estética sofisticada."
     },
     {
-      name: "COCINA MEDITERRÁNEA",
-      image: "photo-1556909114-f6e7ad7d3136",
-      description: "Inspirada en la tradición mediterránea, combina piedra natural, madera envejecida y herrajes artesanales para crear un ambiente acogedor."
+      name: "COCINA MINIMALISTA DINING",
+      image: "/lovable-uploads/c92ac2f2-9a51-4468-a91f-0d274e5bff8d.png",
+      price: "€18,200",
+      description: "Espacio integrado de cocina y comedor con líneas limpias, iluminación colgante moderna y acabados en madera que aportan calidez al ambiente."
     },
     {
-      name: "COCINA MINIMALISTA",
-      image: "photo-1556909114-f6e7ad7d3136",
-      description: "El epitome de la elegancia moderna, con superficies continuas, almacenamiento integrado y una paleta de colores neutros sofisticados."
+      name: "COCINA MINIMALISTA GALLEY",
+      image: "/lovable-uploads/f4fed17d-01a8-4295-b2d1-256971d9b7b7.png",
+      price: "€12,800",
+      description: "Diseño de galería estrecha optimizada para espacios reducidos, manteniendo la elegancia minimalista con almacenamiento inteligente."
+    },
+    {
+      name: "COCINA MINIMALISTA COMPACT",
+      image: "/lovable-uploads/a13b3fbd-254d-4647-876b-e2ce58849448.png",
+      price: "€14,300",
+      description: "Solución compacta para comedores modernos, integrando almacenamiento y funcionalidad en un diseño elegante y minimalista."
+    },
+    {
+      name: "COCINA MINIMALISTA ISLAND",
+      image: "/lovable-uploads/38b171b9-871d-4140-8816-8b9e700c233b.png",
+      price: "€22,500",
+      description: "Cocina con isla central y partición de vidrio, creando un espacio abierto y luminoso con máxima funcionalidad."
+    }
+  ];
+
+  const kitchenModelsMediterranea = [
+    {
+      name: "COCINA MEDITERRÁNEA ISLAND",
+      image: "/lovable-uploads/6e14d5d0-d09a-4e5d-a225-e54a28555895.png",
+      price: "€28,900",
+      description: "Isla de cocina con base acanalada y acabados en madera natural, combinando tradición mediterránea con diseño contemporáneo."
+    },
+    {
+      name: "COCINA MEDITERRÁNEA LIVING",
+      image: "/lovable-uploads/7d38a2be-0cc8-4fe8-90be-14b44b24647d.png",
+      price: "€35,400",
+      description: "Concepto abierto que integra cocina y sala de estar, con vistas panorámicas y materiales naturales que evocan el Mediterráneo."
+    },
+    {
+      name: "COCINA MEDITERRÁNEA LUXURY",
+      image: "/lovable-uploads/6ba7f911-4eaf-4fe8-9eea-3244342324ba.png",
+      price: "€41,200",
+      description: "Cocina de lujo con estanterías de mármol iluminadas y acabados en madera, perfecta para exhibir vajillas y objetos decorativos."
+    },
+    {
+      name: "COCINA MEDITERRÁNEA ARTISTIC",
+      image: "/lovable-uploads/52ae2dc4-ff95-4995-95ee-3920d5a663ac.png",
+      price: "€25,600",
+      description: "Diseño artístico con iluminación escultural y acabados en mármol veteado, creando un ambiente único y sofisticado."
+    },
+    {
+      name: "COCINA MEDITERRÁNEA MODERN",
+      image: "/lovable-uploads/83f9b699-0e6f-4376-ae1b-c42698cbfa9d.png",
+      price: "€31,800",
+      description: "Interpretación moderna del estilo mediterráneo con iluminación artística y superficies de mármol que reflejan la luz natural."
     }
   ];
 
@@ -49,31 +98,37 @@ const Index = () => {
     {
       name: "VITRINA CONTEMPO",
       image: "photo-1586023492125-27b2c045efd7",
+      price: "€8,500",
       description: "Una solución de almacenaje elegante y funcional que destaca por su diseño equilibrado entre lo moderno y lo clásico. Los frentes lisos en tono pastel suave aportan serenidad, mientras que los tiradores integrados con acentos dorados añaden sofisticación."
     },
     {
       name: "VESTÍBULO LUMINIA",
       image: "photo-1586023492125-27b2c045efd7",
+      price: "€6,800",
       description: "El armario Luminia es una pieza ideal para entradas modernas que combina funcionalidad, estilo y calidez. El acabado en madera natural aporta una sensación acogedora, mientras que los detalles en mármol con vetas oscuras añaden un toque sofisticado."
     },
     {
       name: "ARMARIO TERRA",
       image: "photo-1586023492125-27b2c045efd7",
+      price: "€5,200",
       description: "El armario Terra destaca por su diseño minimalista y cálido, ideal para interiores modernos y naturales. Fabricado con acabado en madera clara, se integra perfectamente en cualquier entorno, aportando serenidad y armonía."
     },
     {
       name: "MADERA & VIDRIO",
       image: "photo-1586023492125-27b2c045efd7",
+      price: "€9,200",
       description: "Una combinación perfecta de calidez natural y transparencia moderna, con paneles de vidrio templado que permiten exhibir las piezas más especiales."
     },
     {
       name: "ENTRADA NATURAL",
       image: "photo-1586023492125-27b2c045efd7",
+      price: "€7,600",
       description: "Diseñado para recibir con estilo, combina espacios de almacenamiento oculto con elementos decorativos que crean una primera impresión memorable."
     },
     {
       name: "ESTANTERÍA ÁUREA",
       image: "photo-1586023492125-27b2c045efd7",
+      price: "€11,400",
       description: "Inspirada en la proporción áurea, esta estantería combina funcionalidad y arte, creando un punto focal que organiza y embellece el espacio."
     }
   ];
@@ -94,6 +149,79 @@ const Index = () => {
   const prevTestimonial = () => {
     setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
+
+  const handleOrderClick = (itemName: string, price: string) => {
+    // В реальном приложении здесь был бы переход к форме заказа или корзине
+    alert(`Solicitud de consulta para ${itemName} - ${price}. Nos pondremos en contacto con usted pronto.`);
+  };
+
+  const ProductCard = ({ product, type }: { product: any, type: string }) => (
+    <div className="bg-[rgb(22,22,22)] rounded-lg overflow-hidden">
+      <div 
+        className="h-64 bg-cover bg-center"
+        style={{
+          backgroundImage: `url('${product.image.includes('/lovable-uploads/') ? product.image : `https://images.unsplash.com/${product.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80`}')`
+        }}
+      />
+      <div className="p-6">
+        <div className="flex justify-between items-start mb-3">
+          <h4 className="text-xl font-bold text-[rgb(180,165,142)]">{product.name}</h4>
+          <span className="text-2xl font-bold text-[rgb(180,165,142)]">{product.price}</span>
+        </div>
+        <p className="text-gray-300 mb-4 line-clamp-3">{product.description}</p>
+        <div className="flex gap-3">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex-1 border-[rgb(180,165,142)] text-[rgb(180,165,142)] hover:bg-[rgb(180,165,142)] hover:text-[rgb(14,14,14)]">
+                <Eye className="w-4 h-4 mr-2" />
+                Ver Detalles
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-[rgb(22,22,22)] border-[rgb(180,165,142)] text-white max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-[rgb(180,165,142)] text-2xl">{product.name}</DialogTitle>
+              </DialogHeader>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div 
+                  className="aspect-square bg-cover bg-center rounded-lg"
+                  style={{
+                    backgroundImage: `url('${product.image.includes('/lovable-uploads/') ? product.image : `https://images.unsplash.com/${product.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}')`
+                  }}
+                />
+                <div>
+                  <div className="text-3xl font-bold text-[rgb(180,165,142)] mb-4">{product.price}</div>
+                  <p className="text-gray-300 mb-6 leading-relaxed">{product.description}</p>
+                  <div className="space-y-3">
+                    <div className="text-sm text-gray-400">
+                      <strong>Incluye:</strong> Diseño personalizado, fabricación artesanal, instalación profesional
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      <strong>Tiempo de entrega:</strong> 6-8 semanas
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      <strong>Garantía:</strong> 5 años en estructura, 2 años en acabados
+                    </div>
+                  </div>
+                  <Button 
+                    className="w-full mt-6 bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
+                    onClick={() => handleOrderClick(product.name, product.price)}
+                  >
+                    Solicitar Consulta
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button 
+            className="flex-1 bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
+            onClick={() => handleOrderClick(product.name, product.price)}
+          >
+            Solicitar Consulta
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[rgb(14,14,14)] text-white">
@@ -218,31 +346,30 @@ const Index = () => {
             Nuestras <span className="text-[rgb(180,165,142)]">Colecciones</span>
           </h2>
 
-          {/* Cocinas */}
+          {/* Cocinas Minimalistas */}
           <div className="mb-24">
-            <h3 className="text-3xl font-bold mb-8 text-[rgb(180,165,142)]">COCINAS QUE INSPIRAN</h3>
+            <h3 className="text-3xl font-bold mb-8 text-[rgb(180,165,142)]">COCINAS MINIMALISTAS</h3>
             <p className="text-gray-300 text-lg mb-12 max-w-4xl">
-              En MADI, creemos que la cocina trasciende su función utilitaria para convertirse 
-              en el corazón emocional del hogar. Cada diseño combina funcionalidad inteligente 
-              con estética sofisticada, creando espacios donde la gastronomía se encuentra con el arte.
+              El epitome de la elegancia moderna, con superficies continuas, almacenamiento integrado 
+              y una paleta de colores neutros sofisticados. Cada diseño busca la perfección en la simplicidad.
             </p>
-            <div className="grid md:grid-cols-3 gap-8">
-              {kitchenModels.map((model, index) => (
-                <div key={index} className="bg-[rgb(22,22,22)] rounded-lg overflow-hidden">
-                  <div 
-                    className="h-64 bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url('https://images.unsplash.com/${model.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')`
-                    }}
-                  />
-                  <div className="p-6">
-                    <h4 className="text-xl font-bold mb-3 text-[rgb(180,165,142)]">{model.name}</h4>
-                    <p className="text-gray-300 mb-4">{model.description}</p>
-                    <Button className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
-                      Solicitar Consulta
-                    </Button>
-                  </div>
-                </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {kitchenModelsMinimalista.map((model, index) => (
+                <ProductCard key={index} product={model} type="kitchen" />
+              ))}
+            </div>
+          </div>
+
+          {/* Cocinas Mediterráneas */}
+          <div className="mb-24">
+            <h3 className="text-3xl font-bold mb-8 text-[rgb(180,165,142)]">COCINAS MEDITERRÁNEAS</h3>
+            <p className="text-gray-300 text-lg mb-12 max-w-4xl">
+              Inspiradas en la tradición mediterránea, combinan piedra natural, madera envejecida 
+              y herrajes artesanales para crear ambientes acogedores llenos de carácter y sofisticación.
+            </p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {kitchenModelsMediterranea.map((model, index) => (
+                <ProductCard key={index} product={model} type="kitchen" />
               ))}
             </div>
           </div>
@@ -258,21 +385,7 @@ const Index = () => {
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {wardrobeModels.map((model, index) => (
-                <div key={index} className="bg-[rgb(22,22,22)] rounded-lg overflow-hidden">
-                  <div 
-                    className="h-64 bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url('https://images.unsplash.com/${model.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')`
-                    }}
-                  />
-                  <div className="p-6">
-                    <h4 className="text-xl font-bold mb-3 text-[rgb(180,165,142)]">{model.name}</h4>
-                    <p className="text-gray-300 mb-4">{model.description}</p>
-                    <Button className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
-                      Solicitar Consulta para {model.name}
-                    </Button>
-                  </div>
-                </div>
+                <ProductCard key={index} product={model} type="wardrobe" />
               ))}
             </div>
           </div>
