@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +6,8 @@ import { useState } from 'react';
 
 interface Product {
   name: string;
-  image: string;
+  images: string[];
+  mainImage: string;
   price: string;
   description: string;
   category: string;
@@ -20,137 +20,258 @@ const ProductDetail = () => {
 
   // All products data
   const allProducts: Record<string, Product> = {
-    'cocina-minimalista-utility': {
-      name: "COCINA MINIMALISTA UTILITY",
-      image: "/lovable-uploads/b286a941-43ea-4e43-a5fa-532d8bc45c16.png",
-      price: "€15,500",
-      description: "Una cocina utilitaria minimalista con acabados en madera natural y encimeras de mármol. Perfecta combinación de funcionalidad y estética sofisticada. Diseñada para maximizar el espacio y crear un ambiente sereno y ordenado.",
-      category: "Cocinas Minimalistas"
-    },
-    'cocina-minimalista-dining': {
-      name: "COCINA MINIMALISTA DINING",
-      image: "/lovable-uploads/c92ac2f2-9a51-4468-a91f-0d274e5bff8d.png",
-      price: "€18,200",
-      description: "Espacio integrado de cocina y comedor con líneas limpias, iluminación colgante moderna y acabados en madera que aportan calidez al ambiente. Perfecta para crear momentos familiares inolvidables.",
-      category: "Cocinas Minimalistas"
-    },
-    'cocina-minimalista-galley': {
-      name: "COCINA MINIMALISTA GALLEY",
-      image: "/lovable-uploads/f4fed17d-01a8-4295-b2d1-256971d9b7b7.png",
-      price: "€12,800",
-      description: "Diseño de galería estrecha optimizada para espacios reducidos, manteniendo la elegancia minimalista con almacenamiento inteligente. Cada centímetro está pensado para maximizar la funcionalidad.",
-      category: "Cocinas Minimalistas"
-    },
-    'cocina-minimalista-compact': {
-      name: "COCINA MINIMALISTA COMPACT",
-      image: "/lovable-uploads/a13b3fbd-254d-4647-876b-e2ce58849448.png",
-      price: "€14,300",
-      description: "Solución compacta para comedores modernos, integrando almacenamiento y funcionalidad en un diseño elegante y minimalista. Ideal para apartamentos urbanos modernos.",
-      category: "Cocinas Minimalistas"
-    },
-    'cocina-minimalista-island': {
-      name: "COCINA MINIMALISTA ISLAND",
-      image: "/lovable-uploads/38b171b9-871d-4140-8816-8b9e700c233b.png",
-      price: "€22,500",
-      description: "Cocina con isla central y partición de vidrio, creando un espacio abierto y luminoso con máxima funcionalidad. La isla se convierte en el corazón social del hogar.",
-      category: "Cocinas Minimalistas"
-    },
-    'cocina-mediterranea-island': {
-      name: "COCINA MEDITERRÁNEA ISLAND",
-      image: "/lovable-uploads/6e14d5d0-d09a-4e5d-a225-e54a28555895.png",
-      price: "€28,900",
-      description: "Isla de cocina con base acanalada y acabados en madera natural, combinando tradición mediterránea con diseño contemporáneo. Evoca la calidez y hospitalidad del Mediterráneo.",
-      category: "Cocinas Mediterráneas"
-    },
-    'cocina-mediterranea-living': {
-      name: "COCINA MEDITERRÁNEA LIVING",
-      image: "/lovable-uploads/7d38a2be-0cc8-4fe8-90be-14b44b24647d.png",
-      price: "€35,400",
-      description: "Concepto abierto que integra cocina y sala de estar, con vistas panorámicas y materiales naturales que evocan el Mediterráneo. Perfecta para el estilo de vida mediterráneo.",
-      category: "Cocinas Mediterráneas"
-    },
-    'cocina-mediterranea-luxury': {
-      name: "COCINA MEDITERRÁNEA LUXURY",
-      image: "/lovable-uploads/6ba7f911-4eaf-4fe8-9eea-3244342324ba.png",
-      price: "€41,200",
-      description: "Cocina de lujo con estanterías de mármol iluminadas y acabados en madera, perfecta para exhibir vajillas y objetos decorativos. Un verdadero santuario culinario.",
-      category: "Cocinas Mediterráneas"
-    },
-    'cocina-mediterranea-artistic': {
-      name: "COCINA MEDITERRÁNEA ARTISTIC",
-      image: "/lovable-uploads/52ae2dc4-ff95-4995-95ee-3920d5a663ac.png",
-      price: "€25,600",
-      description: "Diseño artístico con iluminación escultural y acabados en mármol veteado, creando un ambiente único y sofisticado. Arte y funcionalidad en perfecta armonía.",
-      category: "Cocinas Mediterráneas"
-    },
-    'cocina-mediterranea-modern': {
-      name: "COCINA MEDITERRÁNEA MODERN",
-      image: "/lovable-uploads/83f9b699-0e6f-4376-ae1b-c42698cbfa9d.png",
-      price: "€31,800",
-      description: "Interpretación moderna del estilo mediterráneo con iluminación artística y superficies de mármol que reflejan la luz natural. Tradición reinventada para el siglo XXI.",
-      category: "Cocinas Mediterráneas"
-    },
-    'cocina-moderna-island-premium': {
-      name: "COCINA MODERNA ISLAND PREMIUM",
-      image: "/lovable-uploads/02a64ca8-6876-4d58-8c8f-1ea5031f4a9c.png",
+    // Cocinas
+    'geometria-gourmet': {
+      name: "GEOMETRÍA GOURMET",
+      images: [
+        "/lovable-uploads/cde9e21e-3376-46aa-b353-c54f19e162d2.png",
+        "/lovable-uploads/65ef1dab-4ca5-4dd6-8188-1774fef552af.png",
+        "/lovable-uploads/5a5e6255-c31b-4ad1-9fb7-7ab200ef3add.png",
+        "/lovable-uploads/704e9a1d-8893-4965-a3ee-7197dac0910e.png"
+      ],
+      mainImage: "/lovable-uploads/cde9e21e-3376-46aa-b353-c54f19e162d2.png",
       price: "€32,500",
-      description: "Diseño de isla moderna con iluminación LED arquitectónica, acabados en madera con textura acanalada y encimeras de mármol. Perfecta integración de tecnología y elegancia. Un espacio que redefine la experiencia culinaria moderna.",
-      category: "Cocinas Moderna Oscura"
+      description: "Diseño arquitectónico con geometrías perfectas, acabados en madera natural y superficies de mármol. Un espacio donde la funcionalidad se encuentra con la alta estética. Cada línea ha sido pensada para crear armonía visual y funcional.",
+      category: "Cocinas"
     },
-    'cocina-moderna-galley-luxury': {
-      name: "COCINA MODERNA GALLEY LUXURY",
-      image: "/lovable-uploads/4bafff0d-9993-460d-ae96-fdbf04a98784.png",
+    'cocina-serena': {
+      name: "COCINA SERENA",
+      images: [
+        "/lovable-uploads/eae42cfb-24a6-4bed-a436-2a39af167c3b.png",
+        "/lovable-uploads/079503db-bf20-40bb-ae5c-5105bbc7cbb7.png",
+        "/lovable-uploads/c5d63d67-7df7-4063-8bd2-06c80335b476.png",
+        "/lovable-uploads/506eb196-24c7-48ab-aba0-571500fc0ffe.png",
+        "/lovable-uploads/69943934-a89f-4d8b-bff8-aad38a2dba86.png"
+      ],
+      mainImage: "/lovable-uploads/079503db-bf20-40bb-ae5c-5105bbc7cbb7.png",
       price: "€28,900",
-      description: "Galería moderna con acabado acanalado en madera, iluminación integrada bajo estantes y salpicadero de mármol natural que aporta sofisticación. Elegancia lineal en cada detalle.",
-      category: "Cocinas Moderna Oscura"
+      description: "Espacio sereno con acabados en tonos neutros, líneas limpias y materiales naturales que crean un ambiente de tranquilidad y sofisticación. Perfecta para quienes buscan paz en su hogar.",
+      category: "Cocinas"
     },
-    'cocina-moderna-display-premium': {
-      name: "COCINA MODERNA DISPLAY PREMIUM",
-      image: "/lovable-uploads/2004e972-5649-4436-9f59-2ad565bc3ea1.png",
-      price: "€45,800",
-      description: "Sistema de vitrinas iluminadas con estanterías de madera y cristal, perfecta para exhibir vajillas y cristalería. Incluye bodega integrada. Un museo culinario personal.",
-      category: "Cocinas Moderna Oscura"
+    'luz-natural': {
+      name: "LUZ NATURAL",
+      images: ["/lovable-uploads/b286a941-43ea-4e43-a5fa-532d8bc45c16.png"],
+      mainImage: "/lovable-uploads/b286a941-43ea-4e43-a5fa-532d8bc45c16.png",
+      price: "€15,500",
+      description: "Cocina minimalista que maximiza la entrada de luz natural, con acabados claros y superficies reflectantes que amplían visualmente el espacio. Diseñada para crear sensación de amplitud.",
+      category: "Cocinas"
     },
-    'cocina-moderna-minimal-elegance': {
-      name: "COCINA MODERNA MINIMAL ELEGANCE",
-      image: "/lovable-uploads/164799a3-84d8-464d-af8e-14c2c4ca44c0.png",
-      price: "€26,400",
-      description: "Diseño minimalista con acabados mate, electrodomésticos integrados y salpicadero de mármol veteado. Funcionalidad sin comprometer la estética. La esencia del diseño contemporáneo.",
-      category: "Cocinas Moderna Oscura"
+    'sombra-suave': {
+      name: "SOMBRA SUAVE",
+      images: ["/lovable-uploads/c92ac2f2-9a51-4468-a91f-0d274e5bff8d.png"],
+      mainImage: "/lovable-uploads/c92ac2f2-9a51-4468-a91f-0d274e5bff8d.png",
+      price: "€18,200",
+      description: "Diseño integrado con iluminación suave y cálida, creando espacios de transición perfectos entre cocina y comedor.",
+      category: "Cocinas"
     },
-    'cocina-moderna-urban-chic': {
-      name: "COCINA MODERNA URBAN CHIC",
-      image: "/lovable-uploads/533f1ed3-906f-407f-bb25-d911e3123588.png",
-      price: "€38,200",
-      description: "Concepto urbano moderno con isla central de mármol, iluminación colgante escultural y acabados en tonos neutros sofisticados. Diseñado para la vida urbana contemporánea.",
-      category: "Cocinas Moderna Oscura"
-    },
-    'cocina-moderna-penthouse': {
-      name: "COCINA MODERNA PENTHOUSE",
-      image: "/lovable-uploads/471bc22d-6315-46e0-87b5-210c2eb4466a.png",
-      price: "€52,600",
-      description: "Diseño de lujo para espacios amplios con isla de mármol masiva, iluminación arquitectónica y vistas panorámicas integradas al diseño. El epítome del lujo residencial moderno.",
-      category: "Cocinas Moderna Oscura"
-    },
-    'cocina-moderna-compact-luxury': {
-      name: "COCINA MODERNA COMPACT LUXURY",
-      image: "/lovable-uploads/7db2c192-149e-4f78-80bd-ade35a77b765.png",
-      price: "€24,800",
-      description: "Solución compacta de lujo con mesa integrada, acabados premium y aprovechamiento máximo del espacio sin renunciar al diseño. Lujo sin límites de espacio.",
-      category: "Cocinas Moderna Oscura"
-    },
-    'vestidor-moderna-lumina': {
-      name: "VESTIDOR MODERNA LUMINA",
-      image: "/lovable-uploads/914ee2d0-75d6-425d-b8f3-a9f4f22e7698.png",
+    'blanco-esencial': {
+      name: "BLANCO ESENCIAL",
+      images: ["/lovable-uploads/f4fed17d-01a8-4295-b2d1-256971d9b7b7.png"],
+      mainImage: "/lovable-uploads/f4fed17d-01a8-4295-b2d1-256971d9b7b7.png",
       price: "€12,800",
-      description: "Vestidor moderno con acabado en madera natural, espejo con iluminación LED perimetral y asientos tapizados. Diseño funcional que maximiza el almacenamiento. Un espacio personal de lujo y organización.",
+      description: "Pureza en el diseño con acabados blancos esenciales, optimizando cada centímetro para crear un espacio funcional y elegante.",
+      category: "Cocinas"
+    },
+    'esmeralda-urbana': {
+      name: "ESMERALDA URBANA",
+      images: ["/lovable-uploads/a13b3fbd-254d-4647-876b-e2ce58849448.png"],
+      mainImage: "/lovable-uploads/a13b3fbd-254d-4647-876b-e2ce58849448.png",
+      price: "€14,300",
+      description: "Toque urbano sofisticado con acentos en tonos esmeralda, combinando modernidad y calidez en espacios compactos.",
+      category: "Cocinas"
+    },
+    'aura-violeta': {
+      name: "AURA VIOLETA",
+      images: ["/lovable-uploads/38b171b9-871d-4140-8816-8b9e700c233b.png"],
+      mainImage: "/lovable-uploads/38b171b9-871d-4140-8816-8b9e700c233b.png",
+      price: "€22,500",
+      description: "Diseño vanguardista con detalles en tonos violeta, isla central y elementos de vidrio que crean un ambiente único y sofisticado.",
+      category: "Cocinas"
+    },
+    'rojo-burdeos': {
+      name: "ROJO BURDEOS",
+      images: ["/lovable-uploads/6e14d5d0-d09a-4e5d-a225-e54a28555895.png"],
+      mainImage: "/lovable-uploads/6e14d5d0-d09a-4e5d-a225-e54a28555895.png",
+      price: "€28,900",
+      description: "Elegancia mediterránea con acentos en rojo burdeos, isla de madera acanalada que aporta calidez y distinción al espacio.",
+      category: "Cocinas"
+    },
+    'neoclasico-azul-celeste': {
+      name: "NEOCLÁSICO EN AZUL CELESTE",
+      images: ["/lovable-uploads/7d38a2be-0cc8-4fe8-90be-14b44b24647d.png"],
+      mainImage: "/lovable-uploads/7d38a2be-0cc8-4fe8-90be-14b44b24647d.png",
+      price: "€35,400",
+      description: "Concepto neoclásico con toques en azul celeste, integrando cocina y estar con vistas panorámicas y materiales nobles.",
+      category: "Cocinas"
+    },
+    'verde-oliva-noble': {
+      name: "VERDE OLIVA NOBLE",
+      images: ["/lovable-uploads/6ba7f911-4eaf-4fe8-9eea-3244342324ba.png"],
+      mainImage: "/lovable-uploads/6ba7f911-4eaf-4fe8-9eea-3244342324ba.png",
+      price: "€41,200",
+      description: "Lujo mediterráneo con acentos en verde oliva, estanterías iluminadas y acabados premium para exhibir piezas especiales.",
+      category: "Cocinas"
+    },
+    'elegancia-calida': {
+      name: "ELEGANCIA CÁLIDA",
+      images: ["/lovable-uploads/52ae2dc4-ff95-4995-95ee-3920d5a663ac.png"],
+      mainImage: "/lovable-uploads/52ae2dc4-ff95-4995-95ee-3920d5a663ac.png",
+      price: "€25,600",
+      description: "Diseño artístico con tonos cálidos, iluminación escultural y acabados en mármol veteado que crean un ambiente acogedor.",
+      category: "Cocinas"
+    },
+    'sakura-zen': {
+      name: "SAKURA ZEN",
+      images: ["/lovable-uploads/83f9b699-0e6f-4376-ae1b-c42698cbfa9d.png"],
+      mainImage: "/lovable-uploads/83f9b699-0e6f-4376-ae1b-c42698cbfa9d.png",
+      price: "€31,800",
+      description: "Filosofía zen con inspiración japonesa, superficies que reflejan la luz natural como los pétalos de sakura al amanecer.",
+      category: "Cocinas"
+    },
+    // Vestidores
+    'orden-natural': {
+      name: "ORDEN NATURAL",
+      images: ["/lovable-uploads/914ee2d0-75d6-425d-b8f3-a9f4f22e7698.png"],
+      mainImage: "/lovable-uploads/914ee2d0-75d6-425d-b8f3-a9f4f22e7698.png",
+      price: "€12,800",
+      description: "Vestidor con acabados en madera natural, espejo iluminado y organización intuitiva que respeta el orden natural de las cosas. Un espacio personal de lujo y organización.",
+      category: "Vestidores"
+    },
+    'estructura-abierta': {
+      name: "ESTRUCTURA ABIERTA",
+      images: ["/lovable-uploads/b32560c8-0021-4e69-a470-11a9cd52c337.png"],
+      mainImage: "/lovable-uploads/b32560c8-0021-4e69-a470-11a9cd52c337.png",
+      price: "€15,200",
+      description: "Diseño de estructura abierta con paneles modulares, zona de tocador integrada y máxima flexibilidad de organización. Elegancia funcional redefinida.",
+      category: "Vestidores"
+    },
+    'aura-sofisticada': {
+      name: "AURA SOFISTICADA",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€18,500",
+      description: "Vestidor sofisticado con iluminación ambiente, acabados premium y detalles que crean un aura de elegancia absoluta.",
+      category: "Vestidores"
+    },
+    'elegancia-oculta': {
+      name: "ELEGANCIA OCULTA",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€16,800",
+      description: "Diseño que oculta la complejidad tras líneas simples, revelando su elegancia en cada detalle funcional.",
+      category: "Vestidores"
+    },
+    'seda-madera': {
+      name: "SEDA & MADERA",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€21,300",
+      description: "Combinación luxuriosa de texturas sedosas y madera noble, creando un vestidor que es puro placer sensorial.",
+      category: "Vestidores"
+    },
+    'vanguardia-industrial': {
+      name: "VANGUARDIA INDUSTRIAL",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€19,600",
+      description: "Estilo industrial vanguardista con elementos metálicos y madera cruda, perfecto para personalidades urbanas.",
+      category: "Vestidores"
+    },
+    'geometria-calida': {
+      name: "GEOMETRÍA CÁLIDA",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€17,900",
+      description: "Formas geométricas precisas suavizadas por acabados cálidos, equilibrio perfecto entre rigor y confort.",
+      category: "Vestidores"
+    },
+    'esencia-urbana': {
+      name: "ESENCIA URBANA",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€14,700",
+      description: "Captura la esencia de la vida urbana moderna con líneas limpias, materiales contemporáneos y funcionalidad absoluta.",
+      category: "Vestidores"
+    },
+    // Armarios y Zonas de Entrada
+    'esencia-natural': {
+      name: "ESENCIA NATURAL",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€8,500",
+      description: "Armario que captura la esencia natural con maderas seleccionadas y acabados que respetan la belleza original del material.",
       category: "Armarios y Vestidores"
     },
-    'armario-moderna-elegance': {
-      name: "ARMARIO MODERNA ELEGANCE",
-      image: "/lovable-uploads/b32560c8-0021-4e69-a470-11a9cd52c337.png",
-      price: "€15,200",
-      description: "Armario de diseño contemporáneo con paneles de madera, zona de tocador integrada con espejo iluminado y almacenamiento optimizado para espacios modernos. Elegancia funcional redefinida.",
+    'luz-interior': {
+      name: "LUZ INTERIOR",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€6,800",
+      description: "Sistema de iluminación interior integrado que revela y realza cada elemento almacenado, creando un efecto luminoso único.",
+      category: "Armarios y Vestidores"
+    },
+    'geometria-perfecta': {
+      name: "GEOMETRÍA PERFECTA",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€5,200",
+      description: "Precisión geométrica absoluta en cada línea, creando un armario que es una obra de arte funcional y minimalista.",
+      category: "Armarios y Vestidores"
+    },
+    'linea-clara': {
+      name: "LÍNEA CLARA",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€9,200",
+      description: "Líneas claras y definidas que combinan vidrio templado y madera, permitiendo exhibir piezas especiales con elegancia.",
+      category: "Armarios y Vestidores"
+    },
+    'aura-clasica': {
+      name: "AURA CLÁSICA",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€7,600",
+      description: "Diseño clásico reinterpretado para entradas modernas, con elementos que crean una primera impresión memorable.",
+      category: "Armarios y Vestidores"
+    },
+    'shibui': {
+      name: "SHIBUI",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€11,400",
+      description: "Filosofía japonesa Shibui aplicada al diseño: belleza sutil, discreta y profundamente elegante en cada detalle.",
+      category: "Armarios y Vestidores"
+    },
+    'minimal-puro': {
+      name: "MINIMAL PURO",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€4,800",
+      description: "Minimalismo en su expresión más pura, donde cada elemento tiene su razón de ser y nada sobra.",
+      category: "Armarios y Vestidores"
+    },
+    'tacto-natural': {
+      name: "TACTO NATURAL",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€6,200",
+      description: "Superficies con texturas naturales que invitan al tacto, creando una conexión sensorial única con el mobiliario.",
+      category: "Armarios y Vestidores"
+    },
+    'claro-compacto': {
+      name: "CLARO & COMPACTO",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€5,800",
+      description: "Solución compacta con acabados claros que maximiza el almacenamiento sin comprometer la estética del espacio.",
+      category: "Armarios y Vestidores"
+    },
+    'linea-basica': {
+      name: "LÍNEA BÁSICA",
+      images: ["photo-1586023492125-27b2c045efd7"],
+      mainImage: "photo-1586023492125-27b2c045efd7",
+      price: "€3,900",
+      description: "Diseño básico pero refinado, perfecto para quienes valoran la funcionalidad sin renunciar al buen diseño.",
       category: "Armarios y Vestidores"
     }
   };
@@ -227,7 +348,7 @@ const ProductDetail = () => {
                 <div 
                   className="aspect-square bg-cover bg-center rounded-lg"
                   style={{
-                    backgroundImage: `url('${product.image}')`
+                    backgroundImage: `url('${product.mainImage}')`
                   }}
                 />
                 <div className="flex justify-center space-x-2">
