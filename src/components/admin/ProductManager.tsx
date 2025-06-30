@@ -116,12 +116,23 @@ const ProductManager = () => {
         return acc;
       }, {} as Record<string, any>);
 
+      // Правильно обрабатываем цены
+      let price_from = null;
+      let price_fixed = null;
+
+      if (formData.price_type === 'from' && formData.price_from) {
+        price_from = parseFloat(formData.price_from);
+      }
+      if (formData.price_type === 'fixed' && formData.price_fixed) {
+        price_fixed = parseFloat(formData.price_fixed);
+      }
+
       const productData = {
         name: formData.name,
         slug: formData.slug,
         description: formData.description,
-        price_from: formData.price_type === 'from' && formData.price_from ? parseFloat(formData.price_from) : null,
-        price_fixed: formData.price_type === 'fixed' && formData.price_fixed ? parseFloat(formData.price_fixed) : null,
+        price_from,
+        price_fixed,
         price_type: formData.price_type,
         category_id: formData.category_id,
         images: formData.images,
