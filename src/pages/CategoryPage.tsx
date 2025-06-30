@@ -1,85 +1,92 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Star } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { supabase, Product, Category } from '@/lib/supabase';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft } from 'lucide-react';
+import { supabase, Product } from '@/lib/supabase';
+
+interface CategoryConfig {
+  name: string;
+  image: string;
+  description: string;
+}
 
 const CategoryPage = () => {
-  const { category: categorySlug } = useParams();
+  const { category } = useParams();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
-  const [category, setCategory] = useState<Category | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'price'>('name');
   const [isLoading, setIsLoading] = useState(true);
 
+  const categoryConfigurations: { [key: string]: CategoryConfig } = {
+    cocinas: {
+      name: "Cocinas",
+      image: "/lovable-uploads/3473e16d-3e78-4595-83ba-3de762170ac5.png",
+      description: "Diseños funcionales y elegantes que transforman el corazón del hogar."
+    },
+    vestidores: {
+      name: "Vestidores",
+      image: "/lovable-uploads/6077d6cb-0b90-4c79-bc56-1688ceb20f0a.png",
+      description: "Organización con estilo: espacios hechos a medida para tu día a día."
+    },
+    armarios: {
+      name: "Armarios y Zonas de Entrada",
+      image: "/lovable-uploads/c0bfff03-02b0-4ff8-8777-ae7ad8a62484.png",
+      description: "Soluciones que combinan funcionalidad y diseño."
+    }
+  };
+
   useEffect(() => {
-    fetchCategoryAndProducts();
-  }, [categorySlug]);
+    fetchProducts();
+  }, [category]);
 
-  const fetchCategoryAndProducts = async () => {
-    if (!categorySlug) return;
-
+  const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      
-      // Fetch category
-      const { data: categoryData, error: categoryError } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('slug', categorySlug)
-        .single();
-
-      if (categoryError) throw categoryError;
-      setCategory(categoryData);
-
-      // Fetch products in this category
-      const { data: productsData, error: productsError } = await supabase
+      const { data, error } = await supabase
         .from('products')
         .select(`
           *,
           categories (
-            name
+            slug
           )
         `)
-        .eq('category_id', categoryData.id)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      if (productsError) throw productsError;
-      setProducts(productsData || []);
+        .eq('categories.slug', category)
+        .eq('is_active', true);
+      
+      if (error) throw error;
+      
+      setProducts(data || []);
     } catch (error) {
-      console.error('Error fetching category and products:', error);
+      console.error('Error fetching products:', error);
+      // Fallback to static data if needed
+      setProducts([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const formatPrice = (product: Product) => {
-    if (product.price_type === 'fixed' && product.price_fixed) {
-      return `${product.price_fixed}€`;
-    } else if (product.price_type === 'from' && product.price_from) {
-      return `desde ${product.price_from}€`;
-    }
-    return 'Precio a consultar';
+  const currentCategory = categoryConfigurations[category as keyof typeof categoryConfigurations] || {
+    name: "Categoría no encontrada",
+    image: "",
+    description: "Descripción no disponible."
   };
+
+  const sortedProducts = [...products].sort((a, b) => {
+    if (sortBy === 'name') {
+      return a.name.localeCompare(b.name);
+    } else if (sortBy === 'price') {
+      const priceA = a.price_fixed || a.price_from || 0;
+      const priceB = b.price_fixed || b.price_from || 0;
+      return priceA - priceB;
+    }
+    return 0;
+  });
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
-        <div>Cargando productos...</div>
-      </div>
-    );
-  }
-
-  if (!category) {
-    return (
-      <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Categoría no encontrada</h1>
-          <Button onClick={() => navigate('/')} className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
-            Volver al inicio
-          </Button>
-        </div>
+        <div>Загрузка товаров...</div>
       </div>
     );
   }
@@ -100,86 +107,81 @@ const CategoryPage = () => {
             </Button>
             <div className="text-2xl font-bold text-[rgb(180,165,142)]">MADI</div>
           </div>
+          <Button className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
+            Iniciar Consulta
+          </Button>
         </div>
       </nav>
 
-      <div className="pt-20">
-        {/* Category Header */}
-        <section className="py-16 bg-[rgb(18,18,18)]">
-          <div className="container mx-auto px-6 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">{category.name}</h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">{category.description}</p>
-          </div>
-        </section>
+      {/* Category Header */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('${currentCategory.image}')`,
+            filter: 'brightness(0.4)'
+          }}
+        />
+        <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+            {currentCategory.name}
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+            {currentCategory.description}
+          </p>
+        </div>
+      </section>
 
-        {/* Products Grid */}
-        <section className="py-16">
-          <div className="container mx-auto px-6">
-            {products.length === 0 ? (
-              <div className="text-center py-16">
-                <h2 className="text-2xl font-bold mb-4">No hay productos disponibles</h2>
-                <p className="text-gray-400 mb-8">Pronto añadiremos productos en esta categoría</p>
-                <Button 
-                  onClick={() => navigate('/')}
-                  className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
-                >
-                  Ver todos los productos
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl font-bold mb-4">
-                    Productos en <span className="text-[rgb(180,165,142)]">{category.name}</span>
-                  </h2>
-                  <p className="text-gray-300">
-                    {products.length} producto{products.length !== 1 ? 's' : ''} disponible{products.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {products.map((product) => (
-                    <div 
-                      key={product.id}
-                      className="group bg-[rgb(22,22,22)] rounded-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-300 cursor-pointer"
-                      onClick={() => navigate(`/product/${product.slug}`)}
-                    >
-                      <div 
-                        className="h-64 bg-cover bg-center"
-                        style={{
-                          backgroundImage: `url('${product.images && product.images[0] ? product.images[0] : 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop'}')`
-                        }}
-                      />
-                      <div className="p-6">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-xl font-bold text-[rgb(180,165,142)]">{product.name}</h3>
-                          <div className="flex">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star key={star} className="w-4 h-4 fill-[rgb(180,165,142)] text-[rgb(180,165,142)]" />
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-gray-300 mb-4 line-clamp-2">{product.description}</p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-2xl font-bold text-[rgb(180,165,142)]">
-                            {formatPrice(product)}
-                          </span>
-                          <Button 
-                            size="sm"
-                            className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
-                          >
-                            Ver Detalles
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
+      {/* Product Listing */}
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold">Nuestros Productos</h2>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'name' | 'price')}
+              className="bg-[rgb(22,22,22)] text-white rounded-md py-2 px-4"
+            >
+              <option value="name">Ordenar por Nombre</option>
+              <option value="price">Ordenar por Precio</option>
+            </select>
           </div>
-        </section>
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {sortedProducts.map((product) => (
+              <Card key={product.id} className="bg-[rgb(22,22,22)]">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold">{product.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="aspect-w-16 aspect-h-9">
+                    <img 
+                      src={product.images[0] || "photo-1586023492125-27b2c045efd7"}
+                      alt={product.name}
+                      className="object-cover rounded-md"
+                    />
+                  </div>
+                  <p className="text-gray-400">{product.description.substring(0, 100)}...</p>
+                  <Button 
+                    onClick={() => navigate(`/product/${product.slug}`)}
+                    className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
+                  >
+                    Ver Detalles
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-16 border-t border-gray-800">
+        <div className="container mx-auto px-6">
+          <p className="text-center text-gray-400">
+            &copy; 2024 MADI Muebles. Todos los derechos reservados.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };

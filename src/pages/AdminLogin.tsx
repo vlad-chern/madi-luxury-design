@@ -9,8 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { signInWithEmail, getCurrentUser } from '@/lib/supabase';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('info@madiluxe.com');
-  const [password, setPassword] = useState('4gh378f');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -60,7 +60,7 @@ const AdminLogin = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-center">Вход в админ-панель MADI</CardTitle>
+          <CardTitle className="text-center">Вход в админ-панель</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
