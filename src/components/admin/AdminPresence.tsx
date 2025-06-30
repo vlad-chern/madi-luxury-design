@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -65,13 +66,35 @@ const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
     try {
       const { data, error } = await supabase
         .from('admin_sessions')
-        .select('*')
-        .order('last_seen', { ascending: false });
+        .select(`
+          id,
+          created_at,
+          expires_at,
+          admins!inner (
+            name,
+            email
+          )
+        `)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching admin sessions:', error);
       } else {
-        setAdminSessions(data || []);
+        const mappedSessions: AdminSession[] = (data || []).map(session => {
+          const now = new Date();
+          const expiresAt = new Date(session.expires_at);
+          const isOnline = expiresAt > now;
+          
+          return {
+            id: session.id,
+            admin_name: session.admins?.name || session.admins?.email || 'Unknown Admin',
+            last_seen: session.created_at,
+            is_online: isOnline
+          };
+        });
+        
+        setAdminSessions(mappedSessions);
       }
     } catch (error) {
       console.error('Error fetching admin sessions:', error);
