@@ -40,6 +40,7 @@ serve(async (req) => {
         admins!inner(
           id,
           email,
+          role,
           is_active
         )
       `)
@@ -124,6 +125,25 @@ serve(async (req) => {
           
           if (error) throw error
           result = { success: true, data: integrations }
+        } else if (query === 'admins') {
+          // Только администраторы могут просматривать других администраторов
+          if (sessionData.admins.role !== 'admin') {
+            return new Response(
+              JSON.stringify({ success: false, error: 'Access denied' }),
+              { 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 403 
+              }
+            )
+          }
+          
+          const { data: admins, error } = await supabaseAdmin
+            .from('admins')
+            .select('id, email, name, role, is_active, created_at')
+            .order('created_at', { ascending: false })
+          
+          if (error) throw error
+          result = { success: true, data: admins }
         }
         break
 
@@ -173,6 +193,26 @@ serve(async (req) => {
           
           if (error) throw error
           result = { success: true, data: integration }
+        } else if (query === 'admins') {
+          // Только администраторы могут создавать других администраторов
+          if (sessionData.admins.role !== 'admin') {
+            return new Response(
+              JSON.stringify({ success: false, error: 'Access denied' }),
+              { 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 403 
+              }
+            )
+          }
+          
+          const { data: admin, error } = await supabaseAdmin
+            .from('admins')
+            .insert([data])
+            .select('id, email, name, role, is_active, created_at')
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: admin }
         }
         break
 
@@ -227,6 +267,27 @@ serve(async (req) => {
           
           if (error) throw error
           result = { success: true, data: integration }
+        } else if (query === 'admins') {
+          // Только администраторы могут обновлять других администраторов
+          if (sessionData.admins.role !== 'admin') {
+            return new Response(
+              JSON.stringify({ success: false, error: 'Access denied' }),
+              { 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 403 
+              }
+            )
+          }
+          
+          const { data: admin, error } = await supabaseAdmin
+            .from('admins')
+            .update(data)
+            .eq('id', id)
+            .select('id, email, name, role, is_active, created_at')
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: admin }
         }
         break
 
@@ -266,6 +327,36 @@ serve(async (req) => {
         } else if (query === 'integrations') {
           const { error } = await supabaseAdmin
             .from('integrations')
+            .delete()
+            .eq('id', id)
+          
+          if (error) throw error
+          result = { success: true }
+        } else if (query === 'admins') {
+          // Только администраторы могут удалять других администраторов
+          if (sessionData.admins.role !== 'admin') {
+            return new Response(
+              JSON.stringify({ success: false, error: 'Access denied' }),
+              { 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 403 
+              }
+            )
+          }
+          
+          // Нельзя удалить самого себя
+          if (id === sessionData.admin_id) {
+            return new Response(
+              JSON.stringify({ success: false, error: 'Cannot delete your own account' }),
+              { 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 400 
+              }
+            )
+          }
+          
+          const { error } = await supabaseAdmin
+            .from('admins')
             .delete()
             .eq('id', id)
           

@@ -9,7 +9,8 @@ import ProductManager from '@/components/admin/ProductManager';
 import CategoryManager from '@/components/admin/CategoryManager';
 import OrdersManager from '@/components/admin/OrdersManager';
 import CustomerManager from '@/components/admin/CustomerManager';
-import IntegrationsManager from '@/components/admin/IntegrationsManager';
+import ImprovedIntegrationsManager from '@/components/admin/ImprovedIntegrationsManager';
+import AdminManager from '@/components/admin/AdminManager';
 import StorageMonitor from '@/components/admin/StorageMonitor';
 import AdminPresence from '@/components/admin/AdminPresence';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +20,7 @@ const AdminPanel = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [language, setLanguage] = useState<'es' | 'en' | 'ru'>('es');
+  const [currentAdmin, setCurrentAdmin] = useState<any>(null);
 
   const translations = {
     es: {
@@ -29,6 +31,7 @@ const AdminPanel = () => {
       orders: 'Pedidos',
       customers: 'Clientes',
       integrations: 'Integraciones',
+      admins: 'Administradores',
       storage: 'Storage',
       presence: 'Presencia',
       checking: 'Verificando autorización...'
@@ -41,6 +44,7 @@ const AdminPanel = () => {
       orders: 'Orders',
       customers: 'Customers',
       integrations: 'Integrations',
+      admins: 'Administrators',
       storage: 'Storage',
       presence: 'Presence',
       checking: 'Checking authorization...'
@@ -53,6 +57,7 @@ const AdminPanel = () => {
       orders: 'Заказы',
       customers: 'Клиенты',
       integrations: 'Интеграции',
+      admins: 'Администраторы',
       storage: 'Хранилище',
       presence: 'Присутствие',
       checking: 'Проверка авторизации...'
@@ -72,6 +77,7 @@ const AdminPanel = () => {
           
           if (data?.success) {
             setIsAuthenticated(true);
+            setCurrentAdmin(data.admin);
           } else {
             localStorage.removeItem('admin_session_token');
             navigate('/admin/login');
@@ -104,6 +110,10 @@ const AdminPanel = () => {
     
     localStorage.removeItem('admin_session_token');
     navigate('/admin/login');
+  };
+
+  const canAccessAdminManagement = () => {
+    return currentAdmin?.role === 'admin';
   };
 
   if (isLoading) {
@@ -145,12 +155,15 @@ const AdminPanel = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           <div className="lg:col-span-3">
             <Tabs defaultValue="categories" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className={`grid w-full ${canAccessAdminManagement() ? 'grid-cols-6' : 'grid-cols-5'}`}>
                 <TabsTrigger value="categories">{t.categories}</TabsTrigger>
                 <TabsTrigger value="products">{t.products}</TabsTrigger>
                 <TabsTrigger value="orders">{t.orders}</TabsTrigger>
                 <TabsTrigger value="customers">{t.customers}</TabsTrigger>
                 <TabsTrigger value="integrations">{t.integrations}</TabsTrigger>
+                {canAccessAdminManagement() && (
+                  <TabsTrigger value="admins">{t.admins}</TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="categories">
@@ -170,8 +183,14 @@ const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="integrations">
-                <IntegrationsManager language={language} />
+                <ImprovedIntegrationsManager language={language} />
               </TabsContent>
+
+              {canAccessAdminManagement() && (
+                <TabsContent value="admins">
+                  <AdminManager language={language} />
+                </TabsContent>
+              )}
             </Tabs>
           </div>
           
