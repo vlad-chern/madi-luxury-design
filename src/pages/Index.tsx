@@ -12,7 +12,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [language, setLanguage] = useState('ES');
+  const [language, setLanguage] = useState<'ES' | 'EN'>('ES');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -73,7 +73,7 @@ const Index = () => {
     }
   };
 
-  const t = translations[language as keyof typeof translations];
+  const t = translations[language];
 
   const testimonials = [
     {
@@ -437,7 +437,7 @@ const Index = () => {
               </div>
             </div>
             <div>
-              <ContactForm language={language.toLowerCase()} />
+              <ContactForm language={language === 'ES' ? 'es' : 'en'} />
             </div>
           </div>
         </div>
