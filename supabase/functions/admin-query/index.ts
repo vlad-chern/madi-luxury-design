@@ -1,0 +1,150 @@
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    const { session_token, query, action, data, id } = await req.json()
+
+    if (!session_token) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Session token required' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      )
+    }
+
+    // Создаем админский клиент с service role key
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Проверяем валидность сессии администратора
+    const { data: sessionData, error: sessionError } = await supabaseAdmin
+      .from('admin_sessions')
+      .select(`
+        admin_id,
+        expires_at,
+        admins!inner(
+          id,
+          email,
+          is_active
+        )
+      `)
+      .eq('session_token', session_token)
+      .gt('expires_at', new Date().toISOString())
+      .single()
+
+    if (sessionError || !sessionData) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid or expired session' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      )
+    }
+
+    if (!sessionData.admins.is_active) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Admin account is disabled' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 403 
+        }
+      )
+    }
+
+    let result;
+
+    // Выполняем запрос в зависимости от действия
+    switch (action) {
+      case 'select':
+        if (query === 'customers') {
+          const { data: customers, error } = await supabaseAdmin
+            .from('customers')
+            .select('*')
+            .order('created_at', { ascending: false })
+          
+          if (error) throw error
+          result = { success: true, data: customers }
+        }
+        break
+
+      case 'insert':
+        if (query === 'customers') {
+          const { data: customer, error } = await supabaseAdmin
+            .from('customers')
+            .insert([data])
+            .select()
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: customer }
+        }
+        break
+
+      case 'update':
+        if (query === 'customers') {
+          const { data: customer, error } = await supabaseAdmin
+            .from('customers')
+            .update(data)
+            .eq('id', id)
+            .select()
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: customer }
+        }
+        break
+
+      case 'delete':
+        if (query === 'customers') {
+          const { error } = await supabaseAdmin
+            .from('customers')
+            .delete()
+            .eq('id', id)
+          
+          if (error) throw error
+          result = { success: true }
+        }
+        break
+
+      default:
+        throw new Error('Invalid action')
+    }
+
+    return new Response(
+      JSON.stringify(result),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+
+  } catch (error) {
+    console.error('Admin query error:', error)
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || 'Internal server error' 
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
+    )
+  }
+})

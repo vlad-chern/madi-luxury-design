@@ -158,13 +158,27 @@ const CustomerManager: React.FC<CustomerManagerProps> = ({ language = 'es' }) =>
 
   const fetchCustomers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const sessionToken = localStorage.getItem('admin_session_token');
+      if (!sessionToken) {
+        console.error('No admin session token found');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('admin-query', {
+        body: { 
+          session_token: sessionToken,
+          query: 'customers',
+          action: 'select'
+        }
+      });
 
       if (error) throw error;
-      setCustomers(data || []);
+      
+      if (data?.success) {
+        setCustomers(data.data || []);
+      } else {
+        throw new Error(data?.error || 'Failed to fetch customers');
+      }
     } catch (error) {
       console.error('Error fetching customers:', error);
       toast({
@@ -179,24 +193,47 @@ const CustomerManager: React.FC<CustomerManagerProps> = ({ language = 'es' }) =>
     e.preventDefault();
     
     try {
+      const sessionToken = localStorage.getItem('admin_session_token');
+      if (!sessionToken) {
+        throw new Error('No admin session found');
+      }
+
       if (editingCustomer) {
-        const { error } = await supabase
-          .from('customers')
-          .update(formData)
-          .eq('id', editingCustomer.id);
+        const { data, error } = await supabase.functions.invoke('admin-query', {
+          body: { 
+            session_token: sessionToken,
+            query: 'customers',
+            action: 'update',
+            data: formData,
+            id: editingCustomer.id
+          }
+        });
 
         if (error) throw error;
+        
+        if (!data?.success) {
+          throw new Error(data?.error || 'Failed to update customer');
+        }
 
         toast({
           title: t.customerUpdated,
           description: t.customerUpdatedSuccess,
         });
       } else {
-        const { error } = await supabase
-          .from('customers')
-          .insert([formData]);
+        const { data, error } = await supabase.functions.invoke('admin-query', {
+          body: { 
+            session_token: sessionToken,
+            query: 'customers',
+            action: 'insert',
+            data: formData
+          }
+        });
 
         if (error) throw error;
+        
+        if (!data?.success) {
+          throw new Error(data?.error || 'Failed to create customer');
+        }
 
         toast({
           title: t.customerAdded,
@@ -212,7 +249,7 @@ const CustomerManager: React.FC<CustomerManagerProps> = ({ language = 'es' }) =>
       console.error('Error saving customer:', error);
       toast({
         title: t.error,
-        description: t.saveError,
+        description: error instanceof Error ? error.message : t.saveError,
         variant: "destructive",
       });
     }
@@ -232,12 +269,25 @@ const CustomerManager: React.FC<CustomerManagerProps> = ({ language = 'es' }) =>
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('customers')
-        .delete()
-        .eq('id', id);
+      const sessionToken = localStorage.getItem('admin_session_token');
+      if (!sessionToken) {
+        throw new Error('No admin session found');
+      }
+
+      const { data, error } = await supabase.functions.invoke('admin-query', {
+        body: { 
+          session_token: sessionToken,
+          query: 'customers',
+          action: 'delete',
+          id: id
+        }
+      });
 
       if (error) throw error;
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to delete customer');
+      }
 
       toast({
         title: t.customerDeleted,
@@ -248,7 +298,7 @@ const CustomerManager: React.FC<CustomerManagerProps> = ({ language = 'es' }) =>
       console.error('Error deleting customer:', error);
       toast({
         title: t.error,
-        description: t.deleteError,
+        description: error instanceof Error ? error.message : t.deleteError,
         variant: "destructive",
       });
     }
