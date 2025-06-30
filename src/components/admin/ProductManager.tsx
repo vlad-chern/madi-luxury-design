@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +10,37 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Trash2, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase, Product, Category } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+
+// Define types locally to avoid conflicts
+interface Category {
+  id: string;
+  name: string;
+  description: string;
+  slug: string;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price_from: number | null;
+  price_fixed: number | null;
+  price_type: 'from' | 'fixed';
+  category_id: string;
+  images: string[];
+  videos: string[];
+  includes: string[];
+  specifications: Record<string, any>;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  categories?: Category;
+}
 
 const ProductManager = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -76,7 +105,11 @@ const ProductManager = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
       console.log('Fetched products:', data);
       setProducts(data || []);
     } catch (error) {
@@ -144,28 +177,37 @@ const ProductManager = () => {
 
       console.log('Saving product data:', productData);
 
+      let result;
       if (editingProduct) {
-        const { data, error } = await supabase
+        result = await supabase
           .from('products')
           .update(productData)
           .eq('id', editingProduct.id)
           .select();
 
-        if (error) throw error;
-        console.log('Product updated:', data);
+        if (result.error) {
+          console.error('Update error:', result.error);
+          throw result.error;
+        }
+        
+        console.log('Product updated:', result.data);
 
         toast({
           title: "Товар обновлен",
           description: `Товар "${formData.name}" успешно обновлен`,
         });
       } else {
-        const { data, error } = await supabase
+        result = await supabase
           .from('products')
           .insert([productData])
           .select();
 
-        if (error) throw error;
-        console.log('Product created:', data);
+        if (result.error) {
+          console.error('Insert error:', result.error);
+          throw result.error;
+        }
+        
+        console.log('Product created:', result.data);
 
         toast({
           title: "Товар добавлен",
@@ -173,13 +215,16 @@ const ProductManager = () => {
         });
       }
 
+      // Принудительно обновляем список товаров
+      await fetchProducts();
+      
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
       console.error('Error saving product:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось сохранить товар",
+        description: `Не удалось сохранить товар: ${error.message || 'Неизвестная ошибка'}`,
         variant: "destructive",
       });
     }
@@ -240,6 +285,9 @@ const ProductManager = () => {
         title: "Товар удален",
         description: "Товар успешно удален",
       });
+      
+      // Принудительно обновляем список товаров
+      await fetchProducts();
     } catch (error) {
       console.error('Error deleting product:', error);
       toast({
