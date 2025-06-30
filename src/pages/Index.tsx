@@ -182,7 +182,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[rgb(14,14,14)] text-white">
+    <div className="min-h-screen bg-[rgb(14,14,14)] text-white overflow-x-hidden">
       <SEOHead 
         title="MADI - Mobiliario de Autor Exclusivo | Cocinas, Vestidores y Armarios de Lujo en Madrid"
         description="MADI crea mobiliario de autor exclusivo y a medida en Madrid. Especialistas en cocinas de lujo, vestidores personalizados y armarios de diseño. Calidad artesanal premium."
@@ -193,11 +193,11 @@ const Index = () => {
       
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[rgb(14,14,14)]/90 backdrop-blur-sm border-b border-gray-800">
-        <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="text-2xl font-bold text-[rgb(180,165,142)]">MADI</div>
+        <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
+          <div className="text-xl sm:text-2xl font-bold text-[rgb(180,165,142)]">MADI</div>
           
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             <a href="#colecciones" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
               {t.nav.collections}
             </a>
@@ -212,7 +212,7 @@ const Index = () => {
             </a>
             <button 
               onClick={toggleLanguage}
-              className="text-sm hover:text-[rgb(180,165,142)] transition-colors"
+              className="text-sm hover:text-[rgb(180,165,142)] transition-colors px-2 py-1 rounded border border-gray-600"
             >
               {language} / {language === 'ES' ? 'EN' : 'ES'}
             </button>
@@ -222,7 +222,7 @@ const Index = () => {
           <div className="lg:hidden flex items-center space-x-2">
             <button 
               onClick={toggleLanguage}
-              className="text-sm hover:text-[rgb(180,165,142)] transition-colors px-2"
+              className="text-xs hover:text-[rgb(180,165,142)] transition-colors px-2 py-1 rounded border border-gray-600 min-w-[40px]"
             >
               {language}
             </button>
@@ -230,14 +230,14 @@ const Index = () => {
               variant="ghost"
               size="sm"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-white hover:text-[rgb(180,165,142)]"
+              className="text-white hover:text-[rgb(180,165,142)] p-2"
             >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
           </div>
 
           {/* Desktop CTA */}
-          <Button className="hidden lg:block bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] border border-[rgb(180,165,142)] text-sm xl:text-base px-4 xl:px-6">
+          <Button className="hidden lg:block bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] border border-[rgb(180,165,142)] text-sm xl:text-base px-4 xl:px-6 py-2">
             {t.nav.startConsultation}
           </Button>
         </div>
@@ -245,37 +245,37 @@ const Index = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-[rgb(14,14,14)] border-t border-gray-800">
-            <div className="container mx-auto px-4 py-4 space-y-4">
+            <div className="container mx-auto px-4 py-4 space-y-3">
               <a 
                 href="#colecciones" 
-                className="block py-2 hover:text-[rgb(180,165,142)] transition-colors"
+                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t.nav.collections}
               </a>
               <a 
                 href="#proyectos" 
-                className="block py-2 hover:text-[rgb(180,165,142)] transition-colors"
+                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t.nav.projects}
               </a>
               <a 
                 href="#proceso" 
-                className="block py-2 hover:text-[rgb(180,165,142)] transition-colors"
+                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t.nav.process}
               </a>
               <a 
                 href="#contacto" 
-                className="block py-2 hover:text-[rgb(180,165,142)] transition-colors"
+                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t.nav.contact}
               </a>
               <Button 
-                className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
+                className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] text-sm py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t.nav.startConsultation}
@@ -294,17 +294,17 @@ const Index = () => {
             filter: 'brightness(0.3)'
           }}
         />
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6">
-          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight">
+        <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
+          <h1 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
             {t.hero.title}<br />
             <span className="text-[rgb(180,165,142)]">{t.hero.subtitle}</span>
           </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-6 sm:mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed px-2">
             {t.hero.description}
           </p>
           <Button 
             size={isMobile ? "default" : "lg"} 
-            className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg"
+            className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-6 sm:px-8 md:px-12 py-3 sm:py-4 text-sm sm:text-base md:text-lg"
             onClick={scrollToCollections}
           >
             {t.hero.cta}
@@ -313,25 +313,25 @@ const Index = () => {
       </section>
 
       {/* Social Proof Bar */}
-      <section className="py-12 border-y border-gray-800">
-        <div className="container mx-auto px-4 sm:px-6">
+      <section className="py-8 sm:py-12 border-y border-gray-800">
+        <div className="container mx-auto px-4">
           <div className="text-center">
-            <p className="text-gray-400 text-base sm:text-lg mb-8">
+            <p className="text-gray-400 text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 px-2">
               {t.social.collaborate}
             </p>
-            <div className="flex justify-center items-center space-x-8 sm:space-x-12 opacity-60">
-              <div className="text-lg sm:text-2xl font-bold">ARQUITECTOS+</div>
-              <div className="text-lg sm:text-2xl font-bold">DESIGN STUDIO</div>
-              <div className="text-lg sm:text-2xl font-bold">LUXURY HOMES</div>
+            <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 lg:space-x-12 opacity-60">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">ARQUITECTOS+</div>
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">DESIGN STUDIO</div>
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">LUXURY HOMES</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Philosophy Section */}
-      <section className="py-16 sm:py-24">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="grid md:grid-cols-2 gap-12 sm:gap-16 items-center">
+      <section className="py-12 sm:py-16 lg:py-24">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
             <div 
               className="aspect-square bg-cover bg-center rounded-lg"
               style={{
@@ -339,15 +339,15 @@ const Index = () => {
                 filter: 'grayscale(100%)'
               }}
             />
-            <div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 leading-tight">
+            <div className="px-2">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight">
                 {t.philosophy.title}<br />
                 <span className="text-[rgb(180,165,142)]">{t.philosophy.subtitle}</span>
               </h2>
-              <p className="text-gray-300 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
+              <p className="text-gray-300 text-sm sm:text-base lg:text-lg leading-relaxed mb-4 sm:mb-6 lg:mb-8">
                 {t.philosophy.description}
               </p>
-              <button className="text-[rgb(180,165,142)] text-base sm:text-lg hover:underline">
+              <button className="text-[rgb(180,165,142)] text-sm sm:text-base lg:text-lg hover:underline">
                 {t.philosophy.cta}
               </button>
             </div>
@@ -356,12 +356,12 @@ const Index = () => {
       </section>
 
       {/* Portfolio Section */}
-      <section id="proyectos" className="py-16 sm:py-24">
-        <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-12 sm:mb-16">
+      <section id="proyectos" className="py-12 sm:py-16 lg:py-24">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 sm:mb-12 lg:mb-16 px-2">
             {t.portfolio.title} <span className="text-[rgb(180,165,142)]">{t.portfolio.subtitle}</span>
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {portfolioImages.map((image, index) => (
               <div 
                 key={index}
@@ -376,24 +376,24 @@ const Index = () => {
       </section>
 
       {/* Collections Section */}
-      <section id="colecciones" className="py-16 sm:py-24 bg-[rgb(18,18,18)]">
+      <section id="colecciones" className="py-12 sm:py-16 lg:py-24 bg-[rgb(18,18,18)]">
         <DynamicCollections />
       </section>
 
       {/* Process Section */}
-      <section id="proceso" className="py-16 sm:py-24">
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
+      <section id="proceso" className="py-12 sm:py-16 lg:py-24">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 sm:mb-12 lg:mb-16 px-2">
             {t.process.title} <span className="text-[rgb(180,165,142)]">{t.process.subtitle}</span>
           </h2>
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {t.process.steps.map((item, index) => (
-              <div key={index} className="text-center">
-                <div className="w-16 h-16 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center text-[rgb(14,14,14)] font-bold text-xl mx-auto mb-6">
+              <div key={index} className="text-center px-2">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center text-[rgb(14,14,14)] font-bold text-lg sm:text-xl mx-auto mb-4 sm:mb-6">
                   {item.step}
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-[rgb(180,165,142)]">{item.title}</h3>
-                <p className="text-gray-300">{item.desc}</p>
+                <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-[rgb(180,165,142)]">{item.title}</h3>
+                <p className="text-gray-300 text-sm sm:text-base">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -401,40 +401,40 @@ const Index = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 sm:py-24 bg-[rgb(18,18,18)]">
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
+      <section className="py-12 sm:py-16 lg:py-24 bg-[rgb(18,18,18)]">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 sm:mb-12 lg:mb-16 px-2">
             {t.testimonials.title} <span className="text-[rgb(180,165,142)]">{t.testimonials.subtitle}</span>
           </h2>
           <div className="max-w-4xl mx-auto">
-            <div className="bg-[rgb(22,22,22)] rounded-lg p-12 text-center">
-              <div className="flex justify-center mb-6">
+            <div className="bg-[rgb(22,22,22)] rounded-lg p-6 sm:p-8 lg:p-12 text-center">
+              <div className="flex justify-center mb-4 sm:mb-6">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <Star key={star} className="w-6 h-6 fill-[rgb(180,165,142)] text-[rgb(180,165,142)]" />
+                  <Star key={star} className="w-4 h-4 sm:w-6 sm:h-6 fill-[rgb(180,165,142)] text-[rgb(180,165,142)]" />
                 ))}
               </div>
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed italic">
+              <p className="text-base sm:text-lg lg:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed italic px-2">
                 "{testimonials[currentTestimonial].text}"
               </p>
-              <div className="text-[rgb(180,165,142)] font-bold text-lg">
+              <div className="text-[rgb(180,165,142)] font-bold text-base sm:text-lg">
                 {testimonials[currentTestimonial].author}
               </div>
-              <div className="text-gray-400">
+              <div className="text-gray-400 text-sm sm:text-base">
                 {testimonials[currentTestimonial].project}
               </div>
             </div>
-            <div className="flex justify-center items-center mt-8 space-x-4">
+            <div className="flex justify-center items-center mt-6 sm:mt-8 space-x-4">
               <button 
                 onClick={prevTestimonial}
                 className="p-2 rounded-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
               >
-                <ChevronLeft className="w-6 h-6" />
+                <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
               </button>
               <div className="flex space-x-2">
                 {testimonials.map((_, index) => (
                   <div 
                     key={index}
-                    className={`w-3 h-3 rounded-full ${
+                    className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${
                       index === currentTestimonial ? 'bg-[rgb(180,165,142)]' : 'bg-gray-600'
                     }`}
                   />
@@ -444,7 +444,7 @@ const Index = () => {
                 onClick={nextTestimonial}
                 className="p-2 rounded-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
               </button>
             </div>
           </div>
@@ -452,33 +452,33 @@ const Index = () => {
       </section>
 
       {/* Contact Section */}
-      <section id="contacto" className="py-16 sm:py-24">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="grid md:grid-cols-2 gap-12 sm:gap-16">
-            <div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8">
+      <section id="contacto" className="py-12 sm:py-16 lg:py-24">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-8 sm:gap-12 lg:gap-16">
+            <div className="px-2">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 lg:mb-8">
                 {t.contact.title}<br />
                 <span className="text-[rgb(180,165,142)]">{t.contact.subtitle}</span>
               </h2>
-              <p className="text-gray-300 text-base sm:text-lg mb-8 sm:mb-12 leading-relaxed">
+              <p className="text-gray-300 text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 lg:mb-12 leading-relaxed">
                 {t.contact.description}
               </p>
-              <div className="space-y-4 sm:space-y-6">
-                <div className="flex items-center space-x-4">
-                  <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-[rgb(180,165,142)]" />
-                  <span className="text-gray-300">+34 643 550 964</span>
+              <div className="space-y-3 sm:space-y-4 lg:space-y-6">
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <Phone className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-[rgb(180,165,142)] flex-shrink-0" />
+                  <span className="text-gray-300 text-sm sm:text-base">+34 643 550 964</span>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-[rgb(180,165,142)]" />
-                  <span className="text-gray-300">info@madiluxe.com</span>
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <Mail className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-[rgb(180,165,142)] flex-shrink-0" />
+                  <span className="text-gray-300 text-sm sm:text-base">info@madiluxe.com</span>
                 </div>
-                <div className="flex items-start space-x-4">
-                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-[rgb(180,165,142)] mt-1" />
-                  <span className="text-gray-300">C. Bruselas, 17, 28232 Las Rozas de Madrid, Madrid, España</span>
+                <div className="flex items-start space-x-3 sm:space-x-4">
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-[rgb(180,165,142)] flex-shrink-0 mt-1" />
+                  <span className="text-gray-300 text-sm sm:text-base">C. Bruselas, 17, 28232 Las Rozas de Madrid, Madrid, España</span>
                 </div>
               </div>
             </div>
-            <div>
+            <div className="px-2">
               <ContactForm language={language === 'ES' ? 'es' : 'en'} />
             </div>
           </div>
