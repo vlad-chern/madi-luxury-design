@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin } from 'lucide-react';
@@ -191,83 +190,127 @@ const Index = () => {
       {/* Collections Section */}
       <section id="colecciones" className="py-24 bg-[rgb(18,18,18)]">
         <div className="container mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
-            Nuestras <span className="text-[rgb(180,165,142)]">Colecciones</span>
-          </h2>
-
-          {/* Cocinas */}
-          <div className="mb-24">
-            <div className="grid md:grid-cols-2 gap-16 items-center">
-              <div 
-                className="aspect-video bg-cover bg-center rounded-lg cursor-pointer hover:scale-105 transition-transform duration-300"
-                style={{
-                  backgroundImage: `url('/lovable-uploads/3473e16d-3e78-4595-83ba-3de762170ac5.png')`
-                }}
-                onClick={() => handleCategoryClick('cocinas')}
-              />
-              <div>
-                <h3 className="text-3xl font-bold mb-6 text-[rgb(180,165,142)]">Cocinas</h3>
-                <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                  Diseños funcionales y elegantes que transforman el corazón del hogar.
-                </p>
-                <Button 
-                  className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
-                  onClick={() => handleCategoryClick('cocinas')}
-                >
-                  Ver Colección
-                </Button>
-              </div>
-            </div>
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-6xl font-bold mb-6">
+              Nuestras <span className="text-[rgb(180,165,142)]">Colecciones</span>
+            </h2>
+            <p className="text-gray-400 text-lg max-w-3xl mx-auto">
+              Cada colección refleja nuestra pasión por la excelencia y el diseño personalizado
+            </p>
           </div>
 
-          {/* Vestidores */}
-          <div className="mb-24">
-            <div className="grid md:grid-cols-2 gap-16 items-center">
-              <div>
-                <h3 className="text-3xl font-bold mb-6 text-[rgb(180,165,142)]">Vestidores</h3>
-                <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                  Organización con estilo: espacios hechos a medida para tu día a día.
-                </p>
-                <Button 
-                  className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
+          <div className="grid lg:grid-cols-3 gap-8 mb-16">
+            {/* Cocinas - Featured */}
+            <div className="lg:col-span-2 group">
+              <div className="relative overflow-hidden rounded-xl">
+                <div 
+                  className="aspect-[16/10] bg-cover bg-center cursor-pointer transition-transform duration-500 group-hover:scale-105"
+                  style={{
+                    backgroundImage: `url('/lovable-uploads/3473e16d-3e78-4595-83ba-3de762170ac5.png')`
+                  }}
+                  onClick={() => handleCategoryClick('cocinas')}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-8">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center">
+                        <span className="text-[rgb(14,14,14)] font-bold text-lg">01</span>
+                      </div>
+                      <h3 className="text-3xl font-bold text-white">Cocinas</h3>
+                    </div>
+                    <p className="text-gray-200 text-lg mb-6 max-w-lg">
+                      El corazón del hogar merece un diseño excepcional. Funcionalidad y elegancia en perfecta armonía.
+                    </p>
+                    <Button 
+                      className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] group-hover:scale-105 transition-all duration-300"
+                      onClick={() => handleCategoryClick('cocinas')}
+                    >
+                      Explorar Cocinas →
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Vestidores */}
+            <div className="group">
+              <div className="relative overflow-hidden rounded-xl h-full">
+                <div 
+                  className="aspect-square lg:aspect-auto lg:h-full bg-cover bg-center cursor-pointer transition-transform duration-500 group-hover:scale-105"
+                  style={{
+                    backgroundImage: `url('/lovable-uploads/6077d6cb-0b90-4c79-bc56-1688ceb20f0a.png')`
+                  }}
                   onClick={() => handleCategoryClick('vestidores')}
                 >
-                  Ver Colección
-                </Button>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center">
+                        <span className="text-[rgb(14,14,14)] font-bold">02</span>
+                      </div>
+                      <h3 className="text-2xl font-bold text-white">Vestidores</h3>
+                    </div>
+                    <p className="text-gray-200 mb-4">
+                      Organización con estilo para tu día a día
+                    </p>
+                    <Button 
+                      variant="outline"
+                      className="border-white text-white hover:bg-white hover:text-[rgb(14,14,14)] group-hover:scale-105 transition-all duration-300"
+                      onClick={() => handleCategoryClick('vestidores')}
+                    >
+                      Ver Más
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div 
-                className="aspect-video bg-cover bg-center rounded-lg cursor-pointer hover:scale-105 transition-transform duration-300"
-                style={{
-                  backgroundImage: `url('/lovable-uploads/6077d6cb-0b90-4c79-bc56-1688ceb20f0a.png')`
-                }}
-                onClick={() => handleCategoryClick('vestidores')}
-              />
             </div>
           </div>
 
           {/* Armarios y Zonas de Entrada */}
-          <div>
-            <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="group">
+            <div className="relative overflow-hidden rounded-xl">
               <div 
-                className="aspect-video bg-cover bg-center rounded-lg cursor-pointer hover:scale-105 transition-transform duration-300"
+                className="aspect-[21/9] bg-cover bg-center cursor-pointer transition-transform duration-500 group-hover:scale-105"
                 style={{
                   backgroundImage: `url('/lovable-uploads/c0bfff03-02b0-4ff8-8777-ae7ad8a62484.png')`
                 }}
                 onClick={() => handleCategoryClick('armarios')}
-              />
-              <div>
-                <h3 className="text-3xl font-bold mb-6 text-[rgb(180,165,142)]">Armarios y Zonas de Entrada</h3>
-                <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                  Soluciones que combinan funcionalidad y diseño.
-                </p>
-                <Button 
-                  className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
-                  onClick={() => handleCategoryClick('armarios')}
-                >
-                  Ver Colección
-                </Button>
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-transparent" />
+                <div className="absolute left-0 top-0 bottom-0 flex items-center">
+                  <div className="p-8 max-w-xl">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center">
+                        <span className="text-[rgb(14,14,14)] font-bold text-lg">03</span>
+                      </div>
+                      <h3 className="text-3xl font-bold text-white">Armarios y Zonas de Entrada</h3>
+                    </div>
+                    <p className="text-gray-200 text-lg mb-6">
+                      La primera impresión cuenta. Espacios de recibimiento que combinan funcionalidad y diseño impecable.
+                    </p>
+                    <Button 
+                      className="bg-transparent border-2 border-[rgb(180,165,142)] text-[rgb(180,165,142)] hover:bg-[rgb(180,165,142)] hover:text-[rgb(14,14,14)] group-hover:scale-105 transition-all duration-300"
+                      onClick={() => handleCategoryClick('armarios')}
+                    >
+                      Descubrir Armarios →
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
+
+          {/* Call to Action */}
+          <div className="text-center mt-16">
+            <p className="text-gray-400 text-lg mb-6">
+              ¿No encuentra lo que busca? Creamos soluciones completamente personalizadas.
+            </p>
+            <Button 
+              size="lg"
+              className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-8 py-4"
+            >
+              Solicitar Diseño Personalizado
+            </Button>
           </div>
         </div>
       </section>
