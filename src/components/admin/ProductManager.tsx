@@ -39,6 +39,27 @@ const ProductManager = () => {
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+
+    // Подписка на изменения в таблице products
+    const channel = supabase
+      .channel('product-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products'
+        },
+        (payload) => {
+          console.log('Product change detected:', payload);
+          fetchProducts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchProducts = async () => {
@@ -56,6 +77,7 @@ const ProductManager = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('Fetched products:', data);
       setProducts(data || []);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -95,31 +117,44 @@ const ProductManager = () => {
       }, {} as Record<string, any>);
 
       const productData = {
-        ...formData,
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
         price_from: formData.price_type === 'from' && formData.price_from ? parseFloat(formData.price_from) : null,
         price_fixed: formData.price_type === 'fixed' && formData.price_fixed ? parseFloat(formData.price_fixed) : null,
+        price_type: formData.price_type,
+        category_id: formData.category_id,
+        images: formData.images,
+        videos: formData.videos,
         includes,
-        specifications
+        specifications,
+        is_active: formData.is_active
       };
 
+      console.log('Saving product data:', productData);
+
       if (editingProduct) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('products')
           .update(productData)
-          .eq('id', editingProduct.id);
+          .eq('id', editingProduct.id)
+          .select();
 
         if (error) throw error;
+        console.log('Product updated:', data);
 
         toast({
           title: "Товар обновлен",
           description: `Товар "${formData.name}" успешно обновлен`,
         });
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('products')
-          .insert([productData]);
+          .insert([productData])
+          .select();
 
         if (error) throw error;
+        console.log('Product created:', data);
 
         toast({
           title: "Товар добавлен",
@@ -129,7 +164,6 @@ const ProductManager = () => {
 
       resetForm();
       setIsDialogOpen(false);
-      fetchProducts();
     } catch (error) {
       console.error('Error saving product:', error);
       toast({
@@ -161,6 +195,7 @@ const ProductManager = () => {
   };
 
   const handleEdit = (product: Product) => {
+    console.log('Editing product:', product);
     setEditingProduct(product);
     setFormData({
       name: product.name,
@@ -194,7 +229,6 @@ const ProductManager = () => {
         title: "Товар удален",
         description: "Товар успешно удален",
       });
-      fetchProducts();
     } catch (error) {
       console.error('Error deleting product:', error);
       toast({

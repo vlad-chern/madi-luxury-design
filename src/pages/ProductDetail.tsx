@@ -18,6 +18,30 @@ const ProductDetail = () => {
 
   useEffect(() => {
     fetchProduct();
+
+    // Подписка на изменения в таблице products
+    const channel = supabase
+      .channel('product-detail-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'products'
+        },
+        (payload) => {
+          console.log('Product updated:', payload);
+          // Обновляем только если это тот же товар
+          if (payload.new.slug === productId) {
+            fetchProduct();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [productId]);
 
   const fetchProduct = async () => {
@@ -37,6 +61,7 @@ const ProductDetail = () => {
       
       if (error) throw error;
       
+      console.log('Fetched product:', data);
       setProduct(data);
     } catch (error) {
       console.error('Error fetching product:', error);

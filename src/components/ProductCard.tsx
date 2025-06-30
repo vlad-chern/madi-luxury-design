@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Phone, Eye } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase, Product } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -12,11 +12,41 @@ interface ProductCardProps {
   product: Product;
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product: initialProduct }: ProductCardProps) => {
+  const [product, setProduct] = useState<Product>(initialProduct);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Подписка на изменения конкретного продукта
+    const channel = supabase
+      .channel(`product-card-${product.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'products',
+          filter: `id=eq.${product.id}`
+        },
+        (payload) => {
+          console.log('Product card updated:', payload);
+          setProduct(payload.new as Product);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [product.id]);
+
+  // Обновляем product если изменился initialProduct
+  useEffect(() => {
+    setProduct(initialProduct);
+  }, [initialProduct]);
 
   const formatPrice = () => {
     if (product.price_type === 'fixed' && product.price_fixed) {
