@@ -1,10 +1,27 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { supabase, Order } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Order {
+  id: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string | null;
+  product_id: string | null;
+  message: string | null;
+  status: 'new' | 'processing' | 'completed' | 'cancelled';
+  created_at: string;
+  updated_at: string;
+  products?: {
+    id: string;
+    name: string;
+  };
+}
 
 interface OrdersManagerProps {
   language?: 'es' | 'en' | 'ru';
@@ -90,7 +107,7 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ language = 'es' }) => {
 
     // Real-time подписка на изменения заказов
     const channel = supabase
-      .channel('order-changes')
+      .channel('orders-changes')
       .on(
         'postgres_changes',
         {
@@ -117,7 +134,7 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ language = 'es' }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [language]);
+  }, [language, t.newOrder]);
 
   const fetchOrders = async () => {
     try {

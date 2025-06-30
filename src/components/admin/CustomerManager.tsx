@@ -9,9 +9,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase, Customer } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
-const CustomerManager = () => {
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  address: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CustomerManagerProps {
+  language?: 'es' | 'en' | 'ru';
+}
+
+const CustomerManager: React.FC<CustomerManagerProps> = ({ language = 'es' }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -24,9 +39,122 @@ const CustomerManager = () => {
   });
   const { toast } = useToast();
 
+  const translations = {
+    es: {
+      title: 'Gestión de Clientes',
+      addCustomer: 'Agregar Cliente',
+      editCustomer: 'Editar Cliente',
+      name: 'Nombre',
+      email: 'Email',
+      phone: 'Teléfono',
+      address: 'Dirección',
+      notes: 'Notas',
+      actions: 'Acciones',
+      registrationDate: 'Fecha de Registro',
+      notSpecified: 'No especificado',
+      customerAdded: 'Cliente agregado',
+      customerUpdated: 'Cliente actualizado',
+      customerDeleted: 'Cliente eliminado',
+      customerAddedSuccess: 'Cliente agregado exitosamente',
+      customerUpdatedSuccess: 'Cliente actualizado exitosamente',
+      customerDeletedSuccess: 'Cliente eliminado exitosamente',
+      error: 'Error',
+      loadError: 'No se pudieron cargar los clientes',
+      saveError: 'No se pudo guardar el cliente',
+      deleteError: 'No se pudo eliminar el cliente',
+      add: 'Agregar',
+      update: 'Actualizar',
+      newCustomer: 'Nuevo cliente registrado'
+    },
+    en: {
+      title: 'Customer Management',
+      addCustomer: 'Add Customer',
+      editCustomer: 'Edit Customer',
+      name: 'Name',
+      email: 'Email',
+      phone: 'Phone',
+      address: 'Address',
+      notes: 'Notes',
+      actions: 'Actions',
+      registrationDate: 'Registration Date',
+      notSpecified: 'Not specified',
+      customerAdded: 'Customer added',
+      customerUpdated: 'Customer updated',
+      customerDeleted: 'Customer deleted',
+      customerAddedSuccess: 'Customer added successfully',
+      customerUpdatedSuccess: 'Customer updated successfully',
+      customerDeletedSuccess: 'Customer deleted successfully',
+      error: 'Error',
+      loadError: 'Could not load customers',
+      saveError: 'Could not save customer',
+      deleteError: 'Could not delete customer',
+      add: 'Add',
+      update: 'Update',
+      newCustomer: 'New customer registered'
+    },
+    ru: {
+      title: 'Управление клиентами',
+      addCustomer: 'Добавить клиента',
+      editCustomer: 'Редактировать клиента',
+      name: 'Имя',
+      email: 'Email',
+      phone: 'Телефон',
+      address: 'Адрес',
+      notes: 'Заметки',
+      actions: 'Действия',
+      registrationDate: 'Дата регистрации',
+      notSpecified: 'Не указан',
+      customerAdded: 'Клиент добавлен',
+      customerUpdated: 'Клиент обновлен',
+      customerDeleted: 'Клиент удален',
+      customerAddedSuccess: 'Клиент успешно добавлен',
+      customerUpdatedSuccess: 'Данные клиента успешно обновлены',
+      customerDeletedSuccess: 'Клиент успешно удален',
+      error: 'Ошибка',
+      loadError: 'Не удалось загрузить клиентов',
+      saveError: 'Не удалось сохранить данные клиента',
+      deleteError: 'Не удалось удалить клиента',
+      add: 'Добавить',
+      update: 'Обновить',
+      newCustomer: 'Зарегистрирован новый клиент'
+    }
+  };
+
+  const t = translations[language];
+
   useEffect(() => {
     fetchCustomers();
-  }, []);
+
+    // Real-time подписка на изменения клиентов
+    const channel = supabase
+      .channel('customers-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'customers'
+        },
+        (payload) => {
+          console.log('Customer change detected:', payload);
+          
+          // Показываем уведомление о новом клиенте
+          if (payload.eventType === 'INSERT') {
+            toast({
+              title: t.newCustomer,
+              description: `${payload.new.name} - ${payload.new.email}`,
+            });
+          }
+          
+          fetchCustomers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [language, t.newCustomer]);
 
   const fetchCustomers = async () => {
     try {
@@ -40,8 +168,8 @@ const CustomerManager = () => {
     } catch (error) {
       console.error('Error fetching customers:', error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить клиентов",
+        title: t.error,
+        description: t.loadError,
         variant: "destructive",
       });
     }
@@ -60,8 +188,8 @@ const CustomerManager = () => {
         if (error) throw error;
 
         toast({
-          title: "Клиент обновлен",
-          description: `Данные клиента "${formData.name}" успешно обновлены`,
+          title: t.customerUpdated,
+          description: t.customerUpdatedSuccess,
         });
       } else {
         const { error } = await supabase
@@ -71,8 +199,8 @@ const CustomerManager = () => {
         if (error) throw error;
 
         toast({
-          title: "Клиент добавлен",
-          description: `Клиент "${formData.name}" успешно добавлен`,
+          title: t.customerAdded,
+          description: t.customerAddedSuccess,
         });
       }
 
@@ -83,8 +211,8 @@ const CustomerManager = () => {
     } catch (error) {
       console.error('Error saving customer:', error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось сохранить данные клиента",
+        title: t.error,
+        description: t.saveError,
         variant: "destructive",
       });
     }
@@ -112,15 +240,15 @@ const CustomerManager = () => {
       if (error) throw error;
 
       toast({
-        title: "Клиент удален",
-        description: "Клиент успешно удален",
+        title: t.customerDeleted,
+        description: t.customerDeletedSuccess,
       });
       fetchCustomers();
     } catch (error) {
       console.error('Error deleting customer:', error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось удалить клиента",
+        title: t.error,
+        description: t.deleteError,
         variant: "destructive",
       });
     }
@@ -136,23 +264,23 @@ const CustomerManager = () => {
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Управление клиентами</CardTitle>
+          <CardTitle>{t.title}</CardTitle>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={openAddDialog}>
                 <Plus className="w-4 h-4 mr-2" />
-                Добавить клиента
+                {t.addCustomer}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editingCustomer ? 'Редактировать клиента' : 'Добавить клиента'}
+                  {editingCustomer ? t.editCustomer : t.addCustomer}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Имя</Label>
+                  <Label htmlFor="name">{t.name}</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -161,7 +289,7 @@ const CustomerManager = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t.email}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -171,7 +299,7 @@ const CustomerManager = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Телефон</Label>
+                  <Label htmlFor="phone">{t.phone}</Label>
                   <Input
                     id="phone"
                     value={formData.phone}
@@ -179,7 +307,7 @@ const CustomerManager = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="address">Адрес</Label>
+                  <Label htmlFor="address">{t.address}</Label>
                   <Input
                     id="address"
                     value={formData.address}
@@ -187,7 +315,7 @@ const CustomerManager = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="notes">Заметки</Label>
+                  <Label htmlFor="notes">{t.notes}</Label>
                   <Textarea
                     id="notes"
                     value={formData.notes}
@@ -195,7 +323,7 @@ const CustomerManager = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full">
-                  {editingCustomer ? 'Обновить' : 'Добавить'}
+                  {editingCustomer ? t.update : t.add}
                 </Button>
               </form>
             </DialogContent>
@@ -206,11 +334,11 @@ const CustomerManager = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Имя</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Телефон</TableHead>
-              <TableHead>Дата регистрации</TableHead>
-              <TableHead>Действия</TableHead>
+              <TableHead>{t.name}</TableHead>
+              <TableHead>{t.email}</TableHead>
+              <TableHead>{t.phone}</TableHead>
+              <TableHead>{t.registrationDate}</TableHead>
+              <TableHead>{t.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -218,9 +346,11 @@ const CustomerManager = () => {
               <TableRow key={customer.id}>
                 <TableCell>{customer.name}</TableCell>
                 <TableCell>{customer.email}</TableCell>
-                <TableCell>{customer.phone || 'Не указан'}</TableCell>
+                <TableCell>{customer.phone || t.notSpecified}</TableCell>
                 <TableCell>
-                  {new Date(customer.created_at).toLocaleDateString('ru-RU')}
+                  {new Date(customer.created_at).toLocaleDateString(
+                    language === 'en' ? 'en-US' : language === 'ru' ? 'ru-RU' : 'es-ES'
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
