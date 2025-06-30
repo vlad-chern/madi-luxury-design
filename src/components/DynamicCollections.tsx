@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { useCategories } from '@/hooks/useCategories';
 import { useNavigate } from 'react-router-dom';
@@ -81,8 +82,8 @@ const DynamicCollections = () => {
                 {/* Gradient overlay for better text visibility */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
                 
-                {/* Content container - centered */}
-                <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-6">
+                {/* Content container - left aligned */}
+                <div className="absolute inset-0 flex flex-col justify-center items-start text-left p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center shadow-lg">
                       <span className="text-[rgb(14,14,14)] font-bold text-lg">
