@@ -21,8 +21,10 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
   console.log('ProductImageGallery - mainImage:', mainImage);
   console.log('ProductImageGallery - images array:', images);
   
-  // Создаем массив всех изображений (главное + дополнительные)
-  const allImages = [mainImage, ...images].filter(Boolean);
+  // Создаем массив всех изображений, убираем дубликаты
+  const allImages = [mainImage, ...images].filter((image, index, arr) => 
+    image && arr.indexOf(image) === index
+  );
   console.log('ProductImageGallery - allImages:', allImages);
   
   const handleThumbnailClick = (index: number) => {
@@ -58,7 +60,7 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
                 variant="outline"
                 size="icon"
                 onClick={goToPrevious}
-                className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 border-white/20 text-white hover:bg-black/70"
+                className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 border-white/20 text-white hover:bg-black/90"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -66,7 +68,7 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
                 variant="outline"
                 size="icon"
                 onClick={goToNext}
-                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 border-white/20 text-white hover:bg-black/70"
+                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 border-white/20 text-white hover:bg-black/90"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -101,8 +103,8 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
             </CarouselContent>
             {allImages.length > 4 && (
               <>
-                <CarouselPrevious className="text-white border-white/20 hover:bg-white/10" />
-                <CarouselNext className="text-white border-white/20 hover:bg-white/10" />
+                <CarouselPrevious className="text-white border-white/20 hover:bg-white/10 bg-black/50" />
+                <CarouselNext className="text-white border-white/20 hover:bg-white/10 bg-black/50" />
               </>
             )}
           </Carousel>

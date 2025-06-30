@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,7 +31,7 @@ const AdminPanel = () => {
       orders: 'Pedidos',
       customers: 'Clientes',
       integrations: 'Integraciones',
-      admins: 'Administradores',
+      admins: 'Usuarios',
       storage: 'Storage',
       presence: 'Presencia',
       checking: 'Verificando autorización...'
@@ -43,7 +44,7 @@ const AdminPanel = () => {
       orders: 'Orders',
       customers: 'Customers',
       integrations: 'Integrations',
-      admins: 'Administrators',
+      admins: 'Users',
       storage: 'Storage',
       presence: 'Presence',
       checking: 'Checking authorization...'
@@ -56,7 +57,7 @@ const AdminPanel = () => {
       orders: 'Заказы',
       customers: 'Клиенты',
       integrations: 'Интеграции',
-      admins: 'Администраторы',
+      admins: 'Пользователи',
       storage: 'Хранилище',
       presence: 'Присутствие',
       checking: 'Проверка авторизации...'
@@ -77,6 +78,7 @@ const AdminPanel = () => {
           if (data?.success) {
             setIsAuthenticated(true);
             setCurrentAdmin(data.admin);
+            console.log('Current admin:', data.admin);
           } else {
             localStorage.removeItem('admin_session_token');
             navigate('/admin/login');
@@ -112,6 +114,7 @@ const AdminPanel = () => {
   };
 
   const canAccessAdminManagement = () => {
+    console.log('Checking admin access:', currentAdmin);
     return currentAdmin?.role === 'admin';
   };
 
@@ -162,7 +165,7 @@ const AdminPanel = () => {
                 <TabsTrigger value="customers" className="px-2 py-1 md:px-3 md:py-1.5">{t.customers}</TabsTrigger>
                 <TabsTrigger value="integrations" className="px-2 py-1 md:px-3 md:py-1.5">{t.integrations}</TabsTrigger>
                 {canAccessAdminManagement() && (
-                  <TabsTrigger value="admins" className="px-2 py-1 md:px-3 md:py-1.5">{t.admins}</TabsTrigger>
+                  <TabsTrigger value="users" className="px-2 py-1 md:px-3 md:py-1.5">{t.admins}</TabsTrigger>
                 )}
               </TabsList>
 
@@ -187,7 +190,7 @@ const AdminPanel = () => {
               </TabsContent>
 
               {canAccessAdminManagement() && (
-                <TabsContent value="admins">
+                <TabsContent value="users">
                   <AdminManager language={language} />
                 </TabsContent>
               )}

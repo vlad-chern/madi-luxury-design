@@ -519,44 +519,53 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     if (imagePath.startsWith('lovable-uploads/')) {
       return `/${imagePath}`;
     }
+    if (imagePath.startsWith('blob:')) {
+      return imagePath;
+    }
     return `https://images.unsplash.com/${imagePath}`;
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    // Check if it's an image
-    if (!file.type.startsWith('image/')) {
+    // Проверяем, что все файлы - изображения
+    const validFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length !== files.length) {
       toast({
         title: t.error,
-        description: 'Por favor selecciona un archivo de imagen válido',
+        description: 'Некоторые файлы не являются изображениями и были пропущены',
         variant: "destructive",
       });
-      return;
     }
+
+    if (validFiles.length === 0) return;
 
     setIsUploading(true);
     
     try {
-      // Compress and upload the image
-      const compressedFile = await compressImage(file);
+      const imageUrls: string[] = [];
       
-      // For now, create a local URL since Supabase storage isn't configured
-      const imageUrl = URL.createObjectURL(compressedFile);
+      for (const file of validFiles) {
+        // Сжимаем и создаем URL для каждого файла
+        const compressedFile = await compressImage(file);
+        const imageUrl = URL.createObjectURL(compressedFile);
+        imageUrls.push(imageUrl);
+      }
       
-      // Add the image to the form data
+      // Добавляем все изображения к форме
       setFormData(prev => ({
         ...prev,
-        images: [...prev.images, imageUrl]
+        images: [...prev.images, ...imageUrls]
       }));
 
       toast({
-        title: 'Imagen añadida',
-        description: 'La imagen ha sido comprimida y añadida exitosamente',
+        title: 'Изображения добавлены',
+        description: `${validFiles.length} изображений успешно добавлено`,
       });
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error uploading images:', error);
       toast({
         title: t.error,
         description: t.imageUploadError,
@@ -575,35 +584,43 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
 
-    if (!file.type.startsWith('image/')) {
+    const validFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length !== files.length) {
       toast({
         title: t.error,
-        description: 'Por favor selecciona un archivo de imagen válido',
+        description: 'Некоторые файлы не являются изображениями и были пропущены',
         variant: "destructive",
       });
-      return;
     }
+
+    if (validFiles.length === 0) return;
 
     setIsUploading(true);
     
     try {
-      const compressedFile = await compressImage(file);
-      const imageUrl = URL.createObjectURL(compressedFile);
+      const imageUrls: string[] = [];
+      
+      for (const file of validFiles) {
+        const compressedFile = await compressImage(file);
+        const imageUrl = URL.createObjectURL(compressedFile);
+        imageUrls.push(imageUrl);
+      }
       
       setFormData(prev => ({
         ...prev,
-        images: [...prev.images, imageUrl]
+        images: [...prev.images, ...imageUrls]
       }));
 
       toast({
-        title: 'Imagen añadida',
-        description: 'La imagen ha sido comprimida y añadida exitosamente',
+        title: 'Изображения добавлены',
+        description: `${validFiles.length} изображений успешно добавлено`,
       });
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error uploading images:', error);
       toast({
         title: t.error,
         description: t.imageUploadError,
@@ -621,7 +638,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     // Render existing images
     for (let i = 0; i < Math.min(images.length, maxSlots); i++) {
       slots.push(
-        <div key={`image-${i}`} className="relative">
+        <div key={`image-${i}`} className="relative group">
           <img 
             src={getImageUrl(images[i])} 
             alt={`Product ${i + 1}`}
@@ -635,10 +652,10 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
             type="button"
             variant="destructive"
             size="sm"
-            className="absolute -top-2 -right-2 w-5 h-5 p-0"
+            className="absolute -top-1 -right-1 w-4 h-4 p-0 rounded-full opacity-80 hover:opacity-100"
             onClick={() => removeImage(i)}
           >
-            <X className="w-3 h-3" />
+            <X className="w-2 h-2" />
           </Button>
         </div>
       );
@@ -773,6 +790,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                       <input
                         type="file"
                         accept="image/*"
+                        multiple
                         onChange={handleImageUpload}
                         disabled={isUploading}
                         className="hidden"
@@ -787,7 +805,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                           asChild
                         >
                           <span>
-                            {isUploading ? t.uploadingImage : t.selectImage}
+                            {isUploading ? t.uploadingImage : 'Выбрать изображения'}
                           </span>
                         </Button>
                       </label>
