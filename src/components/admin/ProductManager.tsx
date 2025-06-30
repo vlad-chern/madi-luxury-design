@@ -111,10 +111,18 @@ const ProductManager = () => {
       }
       
       console.log('Fetched products:', data);
-      // Properly cast the price_type to match our interface
-      const typedProducts = data?.map(product => ({
+      // Properly cast and transform the data to match our interface
+      const typedProducts: Product[] = data?.map(product => ({
         ...product,
-        price_type: (product.price_type as 'from' | 'fixed') || 'from'
+        price_type: (product.price_type as 'from' | 'fixed') || 'from',
+        description: product.description || '',
+        category_id: product.category_id || '',
+        images: product.images || [],
+        videos: product.videos || [],
+        includes: product.includes || [],
+        specifications: (product.specifications as Record<string, any>) || {},
+        created_at: product.created_at || '',
+        updated_at: product.updated_at || ''
       })) || [];
       setProducts(typedProducts);
     } catch (error) {
