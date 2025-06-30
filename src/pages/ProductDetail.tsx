@@ -184,7 +184,10 @@ const ProductDetail = () => {
         <section className="py-12">
           <div className="container mx-auto px-6">
             <div className="grid lg:grid-cols-2 gap-12">
-              <ProductImageGallery mainImage={mainImage} />
+              <ProductImageGallery 
+                mainImage={mainImage} 
+                images={product.images?.slice(1) || []} 
+              />
 
               <div className="space-y-8">
                 <ProductInfo product={product} />
