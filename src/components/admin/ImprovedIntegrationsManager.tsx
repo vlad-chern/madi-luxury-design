@@ -164,30 +164,56 @@ const ImprovedIntegrationsManager = ({ language }: ImprovedIntegrationsManagerPr
   };
 
   const renderIntegrationDetails = () => {
+    const handleBackToList = () => setSelectedIntegration(null);
+    
     switch (selectedIntegration) {
       case 'telegram':
-        return <TelegramIntegration language={language} onUpdate={loadIntegrations} />;
+        return (
+          <div className="space-y-4">
+            <Button variant="outline" onClick={handleBackToList}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t.backToIntegrations}
+            </Button>
+            <TelegramIntegration language={language} onUpdate={loadIntegrations} />
+          </div>
+        );
       case 'facebook_capi':
-        return <FacebookIntegration language={language} onUpdate={loadIntegrations} />;
+        return (
+          <div className="space-y-4">
+            <Button variant="outline" onClick={handleBackToList}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t.backToIntegrations}
+            </Button>
+            <FacebookIntegration language={language} onUpdate={loadIntegrations} />
+          </div>
+        );
       case 'analytics':
-        return <AnalyticsIntegration language={language} onUpdate={loadIntegrations} />;
+        return (
+          <div className="space-y-4">
+            <Button variant="outline" onClick={handleBackToList}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t.backToIntegrations}
+            </Button>
+            <AnalyticsIntegration language={language} onUpdate={loadIntegrations} />
+          </div>
+        );
       case 'product_feed':
-        return <ProductFeedIntegration language={language} onUpdate={loadIntegrations} />;
+        return (
+          <div className="space-y-4">
+            <Button variant="outline" onClick={handleBackToList}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t.backToIntegrations}
+            </Button>
+            <ProductFeedIntegration language={language} onUpdate={loadIntegrations} />
+          </div>
+        );
       default:
         return null;
     }
   };
 
   if (selectedIntegration) {
-    return (
-      <div className="space-y-6">
-        <Button variant="outline" onClick={() => setSelectedIntegration(null)}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          {t.backToIntegrations}
-        </Button>
-        {renderIntegrationDetails()}
-      </div>
-    );
+    return renderIntegrationDetails();
   }
 
   return (
@@ -208,7 +234,7 @@ const ImprovedIntegrationsManager = ({ language }: ImprovedIntegrationsManagerPr
               const IconComponent = config.icon;
               
               return (
-                <Card key={config.name} className="hover:shadow-md transition-shadow cursor-pointer">
+                <Card key={config.name} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className={`p-3 rounded-lg ${config.color}`}>
