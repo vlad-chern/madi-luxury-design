@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +5,8 @@ import { ArrowLeft, Phone, Star } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase, Product } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import Footer from '@/components/Footer';
+import WhatsAppWidget from '@/components/WhatsAppWidget';
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -294,6 +295,9 @@ const ProductDetail = () => {
           </div>
         </section>
       </div>
+
+      <Footer />
+      <WhatsAppWidget />
     </div>
   );
 };
