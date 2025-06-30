@@ -81,3 +81,30 @@ export const getCurrentUser = async () => {
   const { data: { user } } = await supabase.auth.getUser();
   return user;
 };
+
+// Integration functions
+export interface Integration {
+  id: string;
+  name: string;
+  config: Record<string, any>;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export const getIntegrations = async () => {
+  const { data, error } = await supabase
+    .from('integrations')
+    .select('*');
+  return { data, error };
+};
+
+export const updateIntegration = async (name: string, config: Record<string, any>, is_active: boolean) => {
+  const { data, error } = await supabase
+    .from('integrations')
+    .update({ config, is_active })
+    .eq('name', name)
+    .select()
+    .single();
+  return { data, error };
+};
