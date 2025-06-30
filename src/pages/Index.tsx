@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,7 +30,9 @@ const Index = () => {
     }
   ];
 
-  const kitchenModelsMinimalista = [
+  // All kitchen models combined
+  const allKitchenModels = [
+    // Minimalistas
     {
       id: "cocina-minimalista-utility",
       name: "COCINA MINIMALISTA UTILITY",
@@ -64,10 +67,8 @@ const Index = () => {
       image: "/lovable-uploads/38b171b9-871d-4140-8816-8b9e700c233b.png",
       price: "desde €22,500",
       description: "Cocina con isla central y partición de vidrio, creando un espacio abierto y luminoso con máxima funcionalidad."
-    }
-  ];
-
-  const kitchenModelsMediterranea = [
+    },
+    // Mediterráneas
     {
       id: "cocina-mediterranea-island",
       name: "COCINA MEDITERRÁNEA ISLAND",
@@ -102,10 +103,8 @@ const Index = () => {
       image: "/lovable-uploads/83f9b699-0e6f-4376-ae1b-c42698cbfa9d.png",
       price: "desde €31,800",
       description: "Interpretación moderna del estilo mediterráneo con iluminación artística y superficies de mármol que reflejan la luz natural."
-    }
-  ];
-
-  const kitchenModelsModernaOscura = [
+    },
+    // Moderna Oscura
     {
       id: "cocina-moderna-island-premium",
       name: "COCINA MODERNA ISLAND PREMIUM",
@@ -157,7 +156,19 @@ const Index = () => {
     }
   ];
 
-  const wardrobeModels = [
+  // Vestidores (Walk-in closets)
+  const vestidorModels = [
+    {
+      id: "vestidor-moderna-lumina",
+      name: "VESTIDOR MODERNA LUMINA",
+      image: "/lovable-uploads/914ee2d0-75d6-425d-b8f3-a9f4f22e7698.png",
+      price: "desde €12,800",
+      description: "Vestidor moderno con acabado en madera natural, espejo con iluminación LED perimetral y asientos tapizados. Diseño funcional que maximiza el almacenamiento."
+    }
+  ];
+
+  // Armarios y Zonas de Entrada
+  const armarioModels = [
     {
       id: "vitrina-contempo",
       name: "VITRINA CONTEMPO",
@@ -199,13 +210,6 @@ const Index = () => {
       image: "photo-1586023492125-27b2c045efd7",
       price: "desde €11,400",
       description: "Inspirada en la proporción áurea, esta estantería combina funcionalidad y arte, creando un punto focal que organiza y embellece el espacio."
-    },
-    {
-      id: "vestidor-moderna-lumina",
-      name: "VESTIDOR MODERNA LUMINA",
-      image: "/lovable-uploads/914ee2d0-75d6-425d-b8f3-a9f4f22e7698.png",
-      price: "desde €12,800",
-      description: "Vestidor moderno con acabado en madera natural, espejo con iluminación LED perimetral y asientos tapizados. Diseño funcional que maximiza el almacenamiento."
     },
     {
       id: "armario-moderna-elegance",
@@ -398,59 +402,70 @@ const Index = () => {
             Nuestras <span className="text-[rgb(180,165,142)]">Colecciones</span>
           </h2>
 
-          {/* Cocinas Minimalistas */}
+          {/* Cocinas */}
           <div className="mb-24">
-            <h3 className="text-3xl font-bold mb-8 text-[rgb(180,165,142)]">COCINAS MINIMALISTAS</h3>
-            <p className="text-gray-300 text-lg mb-12 max-w-4xl">
-              El epitome de la elegancia moderna, con superficies continuas, almacenamiento integrado 
-              y una paleta de colores neutros sofisticados. Cada diseño busca la perfección en la simplicidad.
-            </p>
+            <div className="grid md:grid-cols-2 gap-16 items-center mb-12">
+              <div 
+                className="aspect-video bg-cover bg-center rounded-lg"
+                style={{
+                  backgroundImage: `url('/lovable-uploads/3473e16d-3e78-4595-83ba-3de762170ac5.png')`
+                }}
+              />
+              <div>
+                <h3 className="text-3xl font-bold mb-6 text-[rgb(180,165,142)]">Cocinas</h3>
+                <p className="text-gray-300 text-lg leading-relaxed">
+                  Diseños funcionales y elegantes que transforman el corazón del hogar.
+                </p>
+              </div>
+            </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {kitchenModelsMinimalista.map((model, index) => (
+              {allKitchenModels.map((model, index) => (
                 <ProductCard key={index} product={model} type="kitchen" />
               ))}
             </div>
           </div>
 
-          {/* Cocinas Mediterráneas */}
+          {/* Vestidores */}
           <div className="mb-24">
-            <h3 className="text-3xl font-bold mb-8 text-[rgb(180,165,142)]">COCINAS MEDITERRÁNEAS</h3>
-            <p className="text-gray-300 text-lg mb-12 max-w-4xl">
-              Inspiradas en la tradición mediterránea, combinan piedra natural, madera envejecida 
-              y herrajes artesanales para crear ambientes acogedores llenos de carácter y sofisticación.
-            </p>
+            <div className="grid md:grid-cols-2 gap-16 items-center mb-12">
+              <div 
+                className="aspect-video bg-cover bg-center rounded-lg"
+                style={{
+                  backgroundImage: `url('/lovable-uploads/6077d6cb-0b90-4c79-bc56-1688ceb20f0a.png')`
+                }}
+              />
+              <div>
+                <h3 className="text-3xl font-bold mb-6 text-[rgb(180,165,142)]">Vestidores</h3>
+                <p className="text-gray-300 text-lg leading-relaxed">
+                  Organización con estilo: espacios hechos a medida para tu día a día.
+                </p>
+              </div>
+            </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {kitchenModelsMediterranea.map((model, index) => (
-                <ProductCard key={index} product={model} type="kitchen" />
+              {vestidorModels.map((model, index) => (
+                <ProductCard key={index} product={model} type="wardrobe" />
               ))}
             </div>
           </div>
 
-          {/* Cocinas Moderna Oscura */}
-          <div className="mb-24">
-            <h3 className="text-3xl font-bold mb-8 text-[rgb(180,165,142)]">COCINAS MODERNA OSCURA</h3>
-            <p className="text-gray-300 text-lg mb-12 max-w-4xl">
-              Diseños contemporáneos que juegan con contrastes dramáticos, iluminación arquitectónica 
-              y materiales nobles. Perfecta fusión entre tecnología avanzada y elegancia atemporal.
-            </p>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {kitchenModelsModernaOscura.map((model, index) => (
-                <ProductCard key={index} product={model} type="kitchen" />
-              ))}
-            </div>
-          </div>
-
-          {/* Vestidores y Armarios */}
+          {/* Armarios y Zonas de Entrada */}
           <div>
-            <h3 className="text-3xl font-bold mb-8 text-[rgb(180,165,142)]">ARMARIOS QUE INSPIRAN</h3>
-            <p className="text-gray-300 text-lg mb-12 max-w-4xl">
-              En MADI, creemos que cada espacio debe reflejar la personalidad y estilo de vida 
-              de quien lo habita. Por eso creamos diseños únicos de armarios y mobiliario a medida, 
-              pensados hasta el último detalle. Si buscas una transformación auténtica, 
-              personalizada y con alma, MADI es tu mejor elección.
-            </p>
+            <div className="grid md:grid-cols-2 gap-16 items-center mb-12">
+              <div 
+                className="aspect-video bg-cover bg-center rounded-lg"
+                style={{
+                  backgroundImage: `url('/lovable-uploads/c0bfff03-02b0-4ff8-8777-ae7ad8a62484.png')`
+                }}
+              />
+              <div>
+                <h3 className="text-3xl font-bold mb-6 text-[rgb(180,165,142)]">Armarios y Zonas de Entrada</h3>
+                <p className="text-gray-300 text-lg leading-relaxed">
+                  Soluciones que combinan funcionalidad y diseño.
+                </p>
+              </div>
+            </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {wardrobeModels.map((model, index) => (
+              {armarioModels.map((model, index) => (
                 <ProductCard key={index} product={model} type="wardrobe" />
               ))}
             </div>
