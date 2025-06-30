@@ -23,40 +23,66 @@ interface IntegrationsManagerProps {
   language: 'es' | 'en' | 'ru';
 }
 
+interface TelegramConfig {
+  bot_token: string;
+  chat_id: string;
+  is_active: boolean;
+}
+
+interface FacebookConfig {
+  access_token: string;
+  pixel_id: string;
+  is_active: boolean;
+}
+
+interface ProductFeedConfig {
+  catalog_id?: string;
+  access_token?: string;
+  merchant_id?: string;
+  feed_url?: string;
+  is_active: boolean;
+}
+
+interface AnalyticsConfig {
+  container_id?: string;
+  measurement_id?: string;
+  is_active: boolean;
+}
+
 const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) => {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const [telegramConfig, setTelegramConfig] = useState({
+  const [telegramConfig, setTelegramConfig] = useState<TelegramConfig>({
     bot_token: '',
     chat_id: '',
     is_active: false
   });
 
-  const [facebookConfig, setFacebookConfig] = useState({
+  const [facebookConfig, setFacebookConfig] = useState<FacebookConfig>({
     access_token: '',
     pixel_id: '',
     is_active: false
   });
 
-  const [gtmConfig, setGtmConfig] = useState({
+  const [gtmConfig, setGtmConfig] = useState<AnalyticsConfig>({
     container_id: '',
     is_active: false
   });
 
-  const [gaConfig, setGaConfig] = useState({
+  const [gaConfig, setGaConfig] = useState<AnalyticsConfig>({
     measurement_id: '',
     is_active: false
   });
 
-  const [facebookCatalogConfig, setFacebookCatalogConfig] = useState({
+  const [facebookCatalogConfig, setFacebookCatalogConfig] = useState<ProductFeedConfig>({
     catalog_id: '',
     access_token: '',
     is_active: false
   });
 
-  const [googleMerchantConfig, setGoogleMerchantConfig] = useState({
+  const [googleMerchantConfig, setGoogleMerchantConfig] = useState<ProductFeedConfig>({
     merchant_id: '',
     feed_url: '',
     is_active: false
