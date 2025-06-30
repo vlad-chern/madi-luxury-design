@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,10 +14,10 @@ interface AdminUser {
 }
 
 interface AdminPresenceProps {
-  language?: 'es' | 'en' | 'ru';
+  language: 'es' | 'en' | 'ru';
 }
 
-const AdminPresence: React.FC<AdminPresenceProps> = ({ language = 'es' }) => {
+const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
   const [activeAdmins, setActiveAdmins] = useState<AdminUser[]>([]);
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(null);
 

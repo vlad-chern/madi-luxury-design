@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,10 +16,10 @@ interface StorageEvent {
 }
 
 interface StorageMonitorProps {
-  language?: 'es' | 'en' | 'ru';
+  language: 'es' | 'en' | 'ru';
 }
 
-const StorageMonitor: React.FC<StorageMonitorProps> = ({ language = 'es' }) => {
+const StorageMonitor: React.FC<StorageMonitorProps> = ({ language }) => {
   const [storageEvents, setStorageEvents] = useState<StorageEvent[]>([]);
   const [isMonitoring, setIsMonitoring] = useState(false);
   const { toast } = useToast();
