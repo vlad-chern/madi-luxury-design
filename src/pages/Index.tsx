@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin } from 'lucide-react';
@@ -254,8 +255,7 @@ const Index = () => {
                       Organización con estilo para tu día a día
                     </p>
                     <Button 
-                      variant="outline"
-                      className="border-white text-white hover:bg-white hover:text-[rgb(14,14,14)] group-hover:scale-105 transition-all duration-300"
+                      className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] group-hover:scale-105 transition-all duration-300"
                       onClick={() => handleCategoryClick('vestidores')}
                     >
                       Ver Más
