@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Users, Circle, Plus, Edit2, Trash2, Shield, UserCheck, DollarSign } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -27,6 +27,7 @@ interface AdminPresenceProps {
 }
 
 const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
+  const isMobile = useIsMobile();
   const [activeAdmins, setActiveAdmins] = useState<AdminUser[]>([]);
   const [allAdmins, setAllAdmins] = useState<AdminUser[]>([]);
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(null);
@@ -417,52 +418,59 @@ const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
   };
 
   return (
-    <Card className="h-fit">
-      <CardHeader>
+    <Card className="h-fit w-full">
+      <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            <span className="truncate">{t.title}</span>
-            <Badge variant="secondary">{allAdmins.length}</Badge>
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <Users className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate text-xs sm:text-sm">{isMobile ? 'Admins' : t.title}</span>
+            <Badge variant="secondary" className="text-xs">{allAdmins.length}</Badge>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" onClick={() => {
-                setEditingAdmin(null);
-                setFormData({ email: '', name: '', role: 'content_manager', password: '' });
-              }}>
+              <Button 
+                size="sm" 
+                className="flex-shrink-0"
+                onClick={() => {
+                  setEditingAdmin(null);
+                  setFormData({ email: '', name: '', role: 'content_manager', password: '' });
+                }}
+              >
                 <Plus className="w-3 h-3" />
+                {!isMobile && <span className="ml-1">Add</span>}
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className={isMobile ? "w-[95vw] max-w-[95vw]" : ""}>
               <DialogHeader>
-                <DialogTitle>
+                <DialogTitle className="text-sm sm:text-base">
                   {editingAdmin ? t.editAdmin : t.addAdmin}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="email">{t.email}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-xs sm:text-sm">{t.email}</Label>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
+                    className="text-sm"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="name">{t.name}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-xs sm:text-sm">{t.name}</Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="text-sm"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="role">{t.role}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="role" className="text-xs sm:text-sm">{t.role}</Label>
                   <Select value={formData.role} onValueChange={(value: 'admin' | 'content_manager' | 'sales') => setFormData({ ...formData, role: value })}>
-                    <SelectTrigger>
+                    <SelectTrigger className="text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -472,8 +480,8 @@ const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="password">{t.password}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-xs sm:text-sm">{t.password}</Label>
                   <Input
                     id="password"
                     type="password"
@@ -481,13 +489,14 @@ const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder={editingAdmin ? t.passwordHint : ''}
                     required={!editingAdmin}
+                    className="text-sm"
                   />
                 </div>
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} size="sm">
                     {t.cancel}
                   </Button>
-                  <Button type="submit" disabled={isLoading}>
+                  <Button type="submit" disabled={isLoading} size="sm">
                     {t.save}
                   </Button>
                 </div>
@@ -496,42 +505,51 @@ const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
           </Dialog>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4">
-        <div className="space-y-3">
+      <CardContent className="p-3 sm:p-4">
+        <div className="space-y-2">
           {allAdmins.length === 0 ? (
-            <div className="text-center text-gray-500 py-4">
-              <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-xs">{t.noActiveAdmins}</p>
+            <div className="text-center text-gray-500 py-6">
+              <Users className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-xs sm:text-sm">{t.noActiveAdmins}</p>
             </div>
           ) : (
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+            <div className={`space-y-2 ${isMobile ? 'max-h-48' : 'max-h-64'} overflow-y-auto`}>
               {allAdmins.map((admin) => (
-                <div key={admin.id} className="flex items-center justify-between p-2 border rounded-lg">
+                <div key={admin.id} className="flex items-center justify-between p-2 sm:p-3 border rounded-lg bg-white">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div className="relative flex-shrink-0">
-                      <Avatar className="w-8 h-8">
+                      <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
                         <AvatarFallback className="text-xs">{getInitials(admin.name || admin.email)}</AvatarFallback>
                       </Avatar>
-                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${getStatusColor(admin.status)}`}>
-                        <Circle className="w-full h-full" />
+                      <div className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 sm:w-3 sm:h-3 rounded-full border border-white ${getStatusColor(admin.status)}`}>
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1">
-                        <p className="font-medium text-xs truncate">{admin.name || admin.email}</p>
-                        <Badge className={`${getRoleColor(admin.role)} text-xs`}>
+                      <div className="flex items-center gap-1 mb-1">
+                        <p className="font-medium text-xs sm:text-sm truncate">{admin.name || admin.email}</p>
+                        <Badge className={`${getRoleColor(admin.role)} text-xs px-1 py-0`}>
                           {getRoleIcon(admin.role)}
-                          <span className="ml-1">{getRoleLabel(admin.role)}</span>
+                          {!isMobile && <span className="ml-1">{getRoleLabel(admin.role)}</span>}
                         </Badge>
                       </div>
                       <p className="text-xs text-gray-500 truncate">{admin.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(admin)}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleEdit(admin)}
+                      className="h-6 w-6 p-0 sm:h-8 sm:w-8"
+                    >
                       <Edit2 className="w-3 h-3" />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDelete(admin.id)}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleDelete(admin.id)}
+                      className="h-6 w-6 p-0 sm:h-8 sm:w-8"
+                    >
                       <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
