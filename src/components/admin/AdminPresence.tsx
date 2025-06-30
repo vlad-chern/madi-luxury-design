@@ -144,47 +144,47 @@ const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
   };
 
   return (
-    <Card>
+    <Card className="h-fit">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="w-5 h-5" />
-          {t.title}
-          <Badge variant="secondary">{activeAdmins.length}</Badge>
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <Users className="w-4 h-4" />
+          <span className="truncate">{t.title}</span>
+          <Badge variant="secondary" className="ml-auto">{activeAdmins.length}</Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="p-4">
+        <div className="space-y-3">
           {activeAdmins.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>{t.noActiveAdmins}</p>
+            <div className="text-center text-gray-500 py-4">
+              <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-xs">{t.noActiveAdmins}</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 max-h-64 overflow-y-auto">
               {activeAdmins.map((admin) => (
-                <div key={admin.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <Avatar className="w-10 h-10">
-                        <AvatarFallback>{getInitials(admin.name)}</AvatarFallback>
+                <div key={admin.id} className="flex items-center justify-between p-2 border rounded-lg">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback className="text-xs">{getInitials(admin.name)}</AvatarFallback>
                       </Avatar>
-                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(admin.status)}`}>
+                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${getStatusColor(admin.status)}`}>
                         <Circle className="w-full h-full" />
                       </div>
                     </div>
-                    <div>
-                      <p className="font-medium">{admin.name}</p>
-                      <p className="text-sm text-gray-500">{admin.email}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-xs truncate">{admin.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{admin.email}</p>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <Badge variant={admin.status === 'online' ? 'default' : 'secondary'}>
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <Badge variant={admin.status === 'online' ? 'default' : 'secondary'} className="text-xs">
                       {getStatusLabel(admin.status)}
                     </Badge>
                     <span className="text-xs text-gray-500">
                       {isRecentlyActive(admin.online_at) 
                         ? t.nowOnline
-                        : `${t.lastSeen}: ${new Date(admin.online_at).toLocaleTimeString()}`
+                        : new Date(admin.online_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                       }
                     </span>
                   </div>

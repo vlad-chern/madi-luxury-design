@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
@@ -6,7 +5,7 @@ import { supabase, Product } from '@/lib/supabase';
 import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import SEOHead from '@/components/SEOHead';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import ContactForm from '@/components/ContactForm';
 import ProductHeader from '@/components/product/ProductHeader';
 import ProductImageGallery from '@/components/product/ProductImageGallery';
@@ -206,9 +205,6 @@ const ProductDetail = () => {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Consulta sobre {product.name}</DialogTitle>
-                    </DialogHeader>
                     <ContactForm 
                       productId={product.id}
                       productName={product.name}

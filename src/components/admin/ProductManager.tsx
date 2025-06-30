@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Edit, Trash2, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -42,7 +42,11 @@ interface Product {
   categories?: Category;
 }
 
-const ProductManager = () => {
+interface ProductManagerProps {
+  language: 'es' | 'en' | 'ru';
+}
+
+const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -63,7 +67,133 @@ const ProductManager = () => {
   });
   const [includesList, setIncludesList] = useState('');
   const [specificationsList, setSpecificationsList] = useState('');
+  const [newImageUrl, setNewImageUrl] = useState('');
   const { toast } = useToast();
+
+  const translations = {
+    es: {
+      title: 'Управление товарами',
+      addProduct: 'Добавить товар',
+      editProduct: 'Редактировать товар',
+      name: 'Название',
+      slug: 'Слаг (URL)',
+      description: 'Описание',
+      priceType: 'Тип цены',
+      priceFrom: 'Цена "от" (EUR)',
+      priceFixed: 'Фиксированная цена (EUR)',
+      category: 'Категория',
+      includes: 'Что включено',
+      specifications: 'Характеристики',
+      images: 'Изображения',
+      addImage: 'Добавить изображение',
+      imageUrl: 'URL изображения',
+      active: 'Активный товар',
+      update: 'Обновить',
+      add: 'Добавить',
+      actions: 'Действия',
+      price: 'Цена',
+      status: 'Статус',
+      activeStatus: 'Активен',
+      inactiveStatus: 'Неактивен',
+      noPriceSet: 'Не указана',
+      selectCategory: 'Выберите категорию',
+      includesPlaceholder: 'Дизайн персонализированный и asesoramiento profesional\nFabricación artesanal con materiales premium',
+      specificationsPlaceholder: 'Tiempo de entrega: 6-8 semanas\nMateriales: Madera noble, mármol natural',
+      priceFromType: 'От (цены)',
+      fixedPriceType: 'Фиксированная',
+      productAdded: 'Товар добавлен',
+      productUpdated: 'Товар обновлен',
+      productDeleted: 'Товар удален',
+      productAddedDesc: 'Товар успешно добавлен',
+      productUpdatedDesc: 'Товар успешно обновлен',
+      productDeletedDesc: 'Товар успешно удален',
+      error: 'Ошибка',
+      saveError: 'Не удалось сохранить товар',
+      deleteError: 'Не удалось удалить товар'
+    },
+    en: {
+      title: 'Product Management',
+      addProduct: 'Add Product',
+      editProduct: 'Edit Product',
+      name: 'Name',
+      slug: 'Slug (URL)',
+      description: 'Description',
+      priceType: 'Price Type',
+      priceFrom: 'Price "from" (EUR)',
+      priceFixed: 'Fixed Price (EUR)',
+      category: 'Category',
+      includes: 'What\'s included',
+      specifications: 'Specifications',
+      images: 'Images',
+      addImage: 'Add Image',
+      imageUrl: 'Image URL',
+      active: 'Active Product',
+      update: 'Update',
+      add: 'Add',
+      actions: 'Actions',
+      price: 'Price',
+      status: 'Status',
+      activeStatus: 'Active',
+      inactiveStatus: 'Inactive',
+      noPriceSet: 'Not set',
+      selectCategory: 'Select category',
+      includesPlaceholder: 'Personalized design and professional advice\nHandcrafted with premium materials',
+      specificationsPlaceholder: 'Delivery time: 6-8 weeks\nMaterials: Noble wood, natural marble',
+      priceFromType: 'From (price)',
+      fixedPriceType: 'Fixed',
+      productAdded: 'Product Added',
+      productUpdated: 'Product Updated',
+      productDeleted: 'Product Deleted',
+      productAddedDesc: 'Product successfully added',
+      productUpdatedDesc: 'Product successfully updated',
+      productDeletedDesc: 'Product successfully deleted',
+      error: 'Error',
+      saveError: 'Could not save product',
+      deleteError: 'Could not delete product'
+    },
+    ru: {
+      title: 'Управление товарами',
+      addProduct: 'Добавить товар',
+      editProduct: 'Редактировать товар',
+      name: 'Название',
+      slug: 'Слаг (URL)',
+      description: 'Описание',
+      priceType: 'Тип цены',
+      priceFrom: 'Цена "от" (EUR)',
+      priceFixed: 'Фиксированная цена (EUR)',
+      category: 'Категория',
+      includes: 'Что включено',
+      specifications: 'Характеристики',
+      images: 'Изображения',
+      addImage: 'Добавить изображение',
+      imageUrl: 'URL изображения',
+      active: 'Активный товар',
+      update: 'Обновить',
+      add: 'Добавить',
+      actions: 'Действия',
+      price: 'Цена',
+      status: 'Статус',
+      activeStatus: 'Активен',
+      inactiveStatus: 'Неактивен',
+      noPriceSet: 'Не указана',
+      selectCategory: 'Выберите категорию',
+      includesPlaceholder: 'Персонализированный дизайн и профессиональная консультация\nРучная работа с премиальными материалами',
+      specificationsPlaceholder: 'Время доставки: 6-8 недель\nМатериалы: Благородное дерево, натуральный мрамор',
+      priceFromType: 'От (цены)',
+      fixedPriceType: 'Фиксированная',
+      productAdded: 'Товар добавлен',
+      productUpdated: 'Товар обновлен',
+      productDeleted: 'Товар удален',
+      productAddedDesc: 'Товар успешно добавлен',
+      productUpdatedDesc: 'Товар успешно обновлен',
+      productDeletedDesc: 'Товар успешно удален',
+      error: 'Ошибка',
+      saveError: 'Не удалось сохранить товар',
+      deleteError: 'Не удалось удалить товар'
+    }
+  };
+
+  const t = translations[language];
 
   useEffect(() => {
     fetchProducts();
@@ -139,7 +269,7 @@ const ProductManager = () => {
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
-        title: "Ошибка",
+        title: t.error,
         description: "Не удалось загрузить товары",
         variant: "destructive",
       });
@@ -217,8 +347,8 @@ const ProductManager = () => {
         console.log('Product updated:', result.data);
 
         toast({
-          title: "Товар обновлен",
-          description: `Товар "${formData.name}" успешно обновлен`,
+          title: t.productUpdated,
+          description: t.productUpdatedDesc,
         });
       } else {
         result = await supabase
@@ -234,8 +364,8 @@ const ProductManager = () => {
         console.log('Product created:', result.data);
 
         toast({
-          title: "Товар добавлен",
-          description: `Товар "${formData.name}" успешно добавлен`,
+          title: t.productAdded,
+          description: t.productAddedDesc,
         });
       }
 
@@ -247,8 +377,8 @@ const ProductManager = () => {
     } catch (error) {
       console.error('Error saving product:', error);
       toast({
-        title: "Ошибка",
-        description: `Не удалось сохранить товар: ${error.message || 'Неизвестная ошибка'}`,
+        title: t.error,
+        description: `${t.saveError}: ${error.message || 'Неизвестная ошибка'}`,
         variant: "destructive",
       });
     }
@@ -271,6 +401,7 @@ const ProductManager = () => {
     });
     setIncludesList('');
     setSpecificationsList('');
+    setNewImageUrl('');
     setEditingProduct(null);
   };
 
@@ -306,8 +437,8 @@ const ProductManager = () => {
       if (error) throw error;
 
       toast({
-        title: "Товар удален",
-        description: "Товар успешно удален",
+        title: t.productDeleted,
+        description: t.productDeletedDesc,
       });
       
       // Принудительно обновляем список товаров
@@ -315,8 +446,8 @@ const ProductManager = () => {
     } catch (error) {
       console.error('Error deleting product:', error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось удалить товар",
+        title: t.error,
+        description: t.deleteError,
         variant: "destructive",
       });
     }
@@ -344,28 +475,58 @@ const ProductManager = () => {
     }));
   };
 
+  const addImage = () => {
+    if (newImageUrl.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, newImageUrl.trim()]
+      }));
+      setNewImageUrl('');
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const getImageUrl = (imagePath: string) => {
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    if (imagePath.startsWith('/lovable-uploads/')) {
+      return imagePath;
+    }
+    if (imagePath.startsWith('lovable-uploads/')) {
+      return `/${imagePath}`;
+    }
+    return `https://images.unsplash.com/${imagePath}`;
+  };
+
   return (
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Управление товарами</CardTitle>
+          <CardTitle>{t.title}</CardTitle>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={openAddDialog}>
                 <Plus className="w-4 h-4 mr-2" />
-                Добавить товар
+                {t.addProduct}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
-                  {editingProduct ? 'Редактировать товар' : 'Добавить товар'}
+                  {editingProduct ? t.editProduct : t.addProduct}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">Название</Label>
+                    <Label htmlFor="name">{t.name}</Label>
                     <Input
                       id="name"
                       value={formData.name}
@@ -374,7 +535,7 @@ const ProductManager = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="slug">Слаг (URL)</Label>
+                    <Label htmlFor="slug">{t.slug}</Label>
                     <Input
                       id="slug"
                       value={formData.slug}
@@ -385,7 +546,7 @@ const ProductManager = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Описание</Label>
+                  <Label htmlFor="description">{t.description}</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
@@ -396,19 +557,19 @@ const ProductManager = () => {
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="price_type">Тип цены</Label>
+                    <Label htmlFor="price_type">{t.priceType}</Label>
                     <Select value={formData.price_type} onValueChange={(value: 'from' | 'fixed') => setFormData(prev => ({ ...prev, price_type: value }))}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="from">От (цены)</SelectItem>
-                        <SelectItem value="fixed">Фиксированная</SelectItem>
+                        <SelectItem value="from">{t.priceFromType}</SelectItem>
+                        <SelectItem value="fixed">{t.fixedPriceType}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="price_from">Цена "от" (EUR)</Label>
+                    <Label htmlFor="price_from">{t.priceFrom}</Label>
                     <Input
                       id="price_from"
                       type="number"
@@ -419,7 +580,7 @@ const ProductManager = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="price_fixed">Фиксированная цена (EUR)</Label>
+                    <Label htmlFor="price_fixed">{t.priceFixed}</Label>
                     <Input
                       id="price_fixed"
                       type="number"
@@ -432,10 +593,10 @@ const ProductManager = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="category">Категория</Label>
+                  <Label htmlFor="category">{t.category}</Label>
                   <Select value={formData.category_id} onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Выберите категорию" />
+                      <SelectValue placeholder={t.selectCategory} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map(category => (
@@ -448,23 +609,63 @@ const ProductManager = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="includes">Что включено (каждый пункт с новой строки)</Label>
+                  <Label>{t.images}</Label>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder={t.imageUrl}
+                        value={newImageUrl}
+                        onChange={(e) => setNewImageUrl(e.target.value)}
+                      />
+                      <Button type="button" onClick={addImage}>
+                        {t.addImage}
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {formData.images.map((image, index) => (
+                        <div key={index} className="relative">
+                          <img 
+                            src={getImageUrl(image)} 
+                            alt={`Product ${index + 1}`}
+                            className="w-full h-20 object-cover rounded border"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="absolute -top-2 -right-2 w-6 h-6 p-0"
+                            onClick={() => removeImage(index)}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="includes">{t.includes} (каждый пункт с новой строки)</Label>
                   <Textarea
                     id="includes"
                     value={includesList}
                     onChange={(e) => setIncludesList(e.target.value)}
-                    placeholder="Дизайн персонализированный и asesoramiento profesional&#10;Fabricación artesanal con materiales premium"
+                    placeholder={t.includesPlaceholder}
                     rows={5}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="specifications">Характеристики (формат: Ключ: Значение)</Label>
+                  <Label htmlFor="specifications">{t.specifications} (формат: Ключ: Значение)</Label>
                   <Textarea
                     id="specifications"
                     value={specificationsList}
                     onChange={(e) => setSpecificationsList(e.target.value)}
-                    placeholder="Tiempo de entrega: 6-8 semanas&#10;Materiales: Madera noble, mármol natural"
+                    placeholder={t.specificationsPlaceholder}
                     rows={5}
                   />
                 </div>
@@ -476,12 +677,12 @@ const ProductManager = () => {
                       checked={formData.is_active}
                       onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
                     />
-                    <Label htmlFor="is_active">Активный товар</Label>
+                    <Label htmlFor="is_active">{t.active}</Label>
                   </div>
                 </div>
 
                 <Button type="submit" className="w-full">
-                  {editingProduct ? 'Обновить' : 'Добавить'}
+                  {editingProduct ? t.update : t.add}
                 </Button>
               </form>
             </DialogContent>
@@ -492,16 +693,34 @@ const ProductManager = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Название</TableHead>
-              <TableHead>Категория</TableHead>
-              <TableHead>Цена</TableHead>
-              <TableHead>Статус</TableHead>
-              <TableHead>Действия</TableHead>
+              <TableHead>Изображение</TableHead>
+              <TableHead>{t.name}</TableHead>
+              <TableHead>{t.category}</TableHead>
+              <TableHead>{t.price}</TableHead>
+              <TableHead>{t.status}</TableHead>
+              <TableHead>{t.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.map((product) => (
               <TableRow key={product.id}>
+                <TableCell>
+                  {product.images && product.images.length > 0 ? (
+                    <img 
+                      src={getImageUrl(product.images[0])} 
+                      alt={product.name}
+                      className="w-12 h-12 object-cover rounded"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                      <span className="text-xs text-gray-400">No img</span>
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>{product.categories?.name}</TableCell>
                 <TableCell>
@@ -509,9 +728,9 @@ const ProductManager = () => {
                     ? `от ${product.price_from}€`
                     : product.price_fixed
                     ? `${product.price_fixed}€`
-                    : 'Не указана'}
+                    : t.noPriceSet}
                 </TableCell>
-                <TableCell>{product.is_active ? 'Активен' : 'Неактивен'}</TableCell>
+                <TableCell>{product.is_active ? t.activeStatus : t.inactiveStatus}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(product)}>

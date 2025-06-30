@@ -120,45 +120,45 @@ const StorageMonitor: React.FC<StorageMonitorProps> = ({ language }) => {
   };
 
   return (
-    <Card>
+    <Card className="h-fit">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="w-5 h-5" />
-            {t.title}
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Upload className="w-4 h-4" />
+            <span className="truncate">{t.title}</span>
           </CardTitle>
-          <Badge variant={isMonitoring ? "default" : "secondary"}>
+          <Badge variant={isMonitoring ? "default" : "secondary"} className="text-xs">
             {isMonitoring ? t.active : t.inactive}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="p-4">
+        <div className="space-y-3">
           {storageEvents.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <Upload className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>{t.noEvents}</p>
-              <p className="text-sm">{t.eventsWillAppear}</p>
+            <div className="text-center text-gray-500 py-4">
+              <Upload className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-xs">{t.noEvents}</p>
+              <p className="text-xs">{t.eventsWillAppear}</p>
             </div>
           ) : (
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-2 max-h-64 overflow-y-auto">
               {storageEvents.map((event) => (
-                <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
+                <div key={event.id} className="flex items-center justify-between p-2 border rounded-lg">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     {getFileIcon(event.file_type)}
-                    <div>
-                      <p className="font-medium">{event.file_name}</p>
-                      <p className="text-sm text-gray-500">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-xs truncate">{event.file_name}</p>
+                      <p className="text-xs text-gray-500 truncate">
                         {event.bucket_name} • {formatFileSize(event.file_size)}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={event.event_type === 'upload' ? 'default' : 'destructive'}>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <Badge variant={event.event_type === 'upload' ? 'default' : 'destructive'} className="text-xs">
                       {event.event_type === 'upload' ? t.uploaded : t.deleted}
                     </Badge>
                     <span className="text-xs text-gray-500">
-                      {new Date(event.created_at).toLocaleTimeString()}
+                      {new Date(event.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                 </div>
