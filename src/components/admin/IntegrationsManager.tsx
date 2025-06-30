@@ -23,10 +23,70 @@ interface IntegrationsManagerProps {
   language: 'es' | 'en' | 'ru';
 }
 
+interface TelegramConfig {
+  bot_token: string;
+  chat_id: string;
+  is_active: boolean;
+}
+
+interface FacebookConfig {
+  access_token: string;
+  pixel_id: string;
+  is_active: boolean;
+}
+
+interface ProductFeedConfig {
+  catalog_id?: string;
+  access_token?: string;
+  merchant_id?: string;
+  feed_url?: string;
+  is_active: boolean;
+}
+
+interface AnalyticsConfig {
+  container_id?: string;
+  measurement_id?: string;
+  is_active: boolean;
+}
+
 const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) => {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  const [telegramConfig, setTelegramConfig] = useState<TelegramConfig>({
+    bot_token: '',
+    chat_id: '',
+    is_active: false
+  });
+
+  const [facebookConfig, setFacebookConfig] = useState<FacebookConfig>({
+    access_token: '',
+    pixel_id: '',
+    is_active: false
+  });
+
+  const [gtmConfig, setGtmConfig] = useState<AnalyticsConfig>({
+    container_id: '',
+    is_active: false
+  });
+
+  const [gaConfig, setGaConfig] = useState<AnalyticsConfig>({
+    measurement_id: '',
+    is_active: false
+  });
+
+  const [facebookCatalogConfig, setFacebookCatalogConfig] = useState<ProductFeedConfig>({
+    catalog_id: '',
+    access_token: '',
+    is_active: false
+  });
+
+  const [googleMerchantConfig, setGoogleMerchantConfig] = useState<ProductFeedConfig>({
+    merchant_id: '',
+    feed_url: '',
+    is_active: false
+  });
 
   const t = translations[language];
 
@@ -43,6 +103,60 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       if (error) throw error;
 
       setIntegrations(data || []);
+      
+      // Установка конфигураций
+      const telegram = data?.find(i => i.name === 'telegram');
+      const facebook = data?.find(i => i.name === 'facebook_capi');
+      const gtm = data?.find(i => i.name === 'google_tag_manager');
+      const ga = data?.find(i => i.name === 'google_analytics');
+      const facebookCatalog = data?.find(i => i.name === 'facebook_catalog');
+      const googleMerchant = data?.find(i => i.name === 'google_merchant');
+
+      if (telegram) {
+        setTelegramConfig({
+          bot_token: telegram.config.bot_token || '',
+          chat_id: telegram.config.chat_id || '',
+          is_active: telegram.is_active
+        });
+      }
+
+      if (facebook) {
+        setFacebookConfig({
+          access_token: facebook.config.access_token || '',
+          pixel_id: facebook.config.pixel_id || '',
+          is_active: facebook.is_active
+        });
+      }
+
+      if (gtm) {
+        setGtmConfig({
+          container_id: gtm.config.container_id || '',
+          is_active: gtm.is_active
+        });
+      }
+
+      if (ga) {
+        setGaConfig({
+          measurement_id: ga.config.measurement_id || '',
+          is_active: ga.is_active
+        });
+      }
+
+      if (facebookCatalog) {
+        setFacebookCatalogConfig({
+          catalog_id: facebookCatalog.config.catalog_id || '',
+          access_token: facebookCatalog.config.access_token || '',
+          is_active: facebookCatalog.is_active
+        });
+      }
+
+      if (googleMerchant) {
+        setGoogleMerchantConfig({
+          merchant_id: googleMerchant.config.merchant_id || '',
+          feed_url: googleMerchant.config.feed_url || '',
+          is_active: googleMerchant.is_active
+        });
+      }
     } catch (error) {
       console.error('Error fetching integrations:', error);
       toast({
@@ -53,6 +167,76 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateIntegration = async (name: string, config: Record<string, any>, is_active: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('integrations')
+        .upsert({
+          name,
+          config,
+          is_active,
+        }, {
+          onConflict: 'name'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: t.success,
+        description: t.integrationUpdated,
+      });
+      
+      fetchIntegrations();
+    } catch (error) {
+      console.error('Error updating integration:', error);
+      toast({
+        title: t.error,
+        description: t.updateError,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleTelegramSave = () => {
+    updateIntegration('telegram', {
+      bot_token: telegramConfig.bot_token,
+      chat_id: telegramConfig.chat_id
+    }, telegramConfig.is_active);
+  };
+
+  const handleFacebookSave = () => {
+    updateIntegration('facebook_capi', {
+      access_token: facebookConfig.access_token,
+      pixel_id: facebookConfig.pixel_id
+    }, facebookConfig.is_active);
+  };
+
+  const handleGtmSave = () => {
+    updateIntegration('google_tag_manager', {
+      container_id: gtmConfig.container_id
+    }, gtmConfig.is_active);
+  };
+
+  const handleGaSave = () => {
+    updateIntegration('google_analytics', {
+      measurement_id: gaConfig.measurement_id
+    }, gaConfig.is_active);
+  };
+
+  const handleFacebookCatalogSave = () => {
+    updateIntegration('facebook_catalog', {
+      catalog_id: facebookCatalogConfig.catalog_id,
+      access_token: facebookCatalogConfig.access_token
+    }, facebookCatalogConfig.is_active);
+  };
+
+  const handleGoogleMerchantSave = () => {
+    updateIntegration('google_merchant', {
+      merchant_id: googleMerchantConfig.merchant_id,
+      feed_url: googleMerchantConfig.feed_url
+    }, googleMerchantConfig.is_active);
   };
 
   if (loading) {
@@ -95,27 +279,61 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
             </TabsList>
 
             <TabsContent value="telegram">
-              <TelegramIntegration language={language} onUpdate={fetchIntegrations} />
+              <TelegramIntegration
+                config={telegramConfig}
+                onConfigChange={setTelegramConfig}
+                onSave={handleTelegramSave}
+                translations={t}
+              />
             </TabsContent>
 
             <TabsContent value="facebook">
-              <FacebookIntegration language={language} onUpdate={fetchIntegrations} />
+              <FacebookIntegration
+                config={facebookConfig}
+                onConfigChange={setFacebookConfig}
+                onSave={handleFacebookSave}
+                translations={t}
+              />
             </TabsContent>
 
             <TabsContent value="facebook-catalog">
-              <ProductFeedIntegration language={language} onUpdate={fetchIntegrations} />
+              <ProductFeedIntegration
+                type="facebook"
+                config={facebookCatalogConfig}
+                onConfigChange={setFacebookCatalogConfig}
+                onSave={handleFacebookCatalogSave}
+                translations={t}
+              />
             </TabsContent>
 
             <TabsContent value="google-merchant">
-              <ProductFeedIntegration language={language} onUpdate={fetchIntegrations} />
+              <ProductFeedIntegration
+                type="google"
+                config={googleMerchantConfig}
+                onConfigChange={setGoogleMerchantConfig}
+                onSave={handleGoogleMerchantSave}
+                translations={t}
+              />
             </TabsContent>
 
             <TabsContent value="gtm">
-              <AnalyticsIntegration language={language} onUpdate={fetchIntegrations} />
+              <AnalyticsIntegration
+                type="gtm"
+                config={gtmConfig}
+                onConfigChange={setGtmConfig}
+                onSave={handleGtmSave}
+                translations={t}
+              />
             </TabsContent>
 
             <TabsContent value="ga">
-              <AnalyticsIntegration language={language} onUpdate={fetchIntegrations} />
+              <AnalyticsIntegration
+                type="ga"
+                config={gaConfig}
+                onConfigChange={setGaConfig}
+                onSave={handleGaSave}
+                translations={t}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>
