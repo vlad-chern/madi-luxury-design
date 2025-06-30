@@ -12,7 +12,7 @@ import WhatsAppWidget from '@/components/WhatsAppWidget';
 import Footer from '@/components/Footer';
 import CookieConsent from '@/components/CookieConsent';
 import DynamicCollections from '@/components/DynamicCollections';
-import SafeLink from '@/components/SafeLink';
+import { SafeLink } from '@/components/SafeLink';
 import { Menu, X, Phone, Mail } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -21,7 +21,7 @@ const Index = () => {
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
-  const { categories, isLoading: categoriesLoading } = useCategories();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
   
   useScrollToTop();
 
@@ -63,7 +63,7 @@ const Index = () => {
       <SEOHead 
         title="Madi Luxury Design - Diseño Interior de Lujo en Madrid"
         description="Transformamos espacios en experiencias únicas. Diseño interior de lujo, mobiliario exclusivo y decoración personalizada en Madrid."
-        url="https://madiluxe.com"
+        canonical="https://madiluxe.com"
       />
 
       <div className="min-h-screen bg-white">
