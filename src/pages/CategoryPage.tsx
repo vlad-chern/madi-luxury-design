@@ -10,17 +10,50 @@ import CategoryNotFound from '@/components/category/CategoryNotFound';
 import CategoryLoading from '@/components/category/CategoryLoading';
 import { useCategoryData } from '@/hooks/useCategoryData';
 import { getCategorySEOData } from '@/utils/categorySEO';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 
 const CategoryPage = () => {
-  const { category } = useParams();
-  const { products, categoryData, isLoading } = useCategoryData(category);
+  const { categorySlug } = useParams();
+  const { products, categoryData, isLoading, error, refetch } = useCategoryData(categorySlug);
 
   if (isLoading) {
     return <CategoryLoading />;
   }
 
-  if (!categoryData) {
-    return <CategoryNotFound />;
+  if (error || !categoryData) {
+    return (
+      <div className="min-h-screen bg-[rgb(14,14,14)] text-white">
+        <CategoryNavigation />
+        
+        <div className="pt-20 flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4 text-red-400">
+              {error || 'Категория не найдена'}
+            </h1>
+            <p className="text-gray-400 mb-6">
+              Возможно, проблема с подключением к серверу или категория была удалена
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Button 
+                onClick={refetch}
+                className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Попробовать снова
+              </Button>
+              <Button 
+                onClick={() => window.location.href = '/'}
+                variant="outline"
+                className="border-[rgb(180,165,142)] text-[rgb(180,165,142)] hover:bg-[rgb(180,165,142)] hover:text-[rgb(14,14,14)]"
+              >
+                На главную
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const seoData = getCategorySEOData(categoryData);
