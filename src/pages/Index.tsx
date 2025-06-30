@@ -354,7 +354,10 @@ const Index = () => {
               <p className="text-gray-300 text-sm sm:text-base lg:text-lg leading-relaxed mb-4 sm:mb-6 lg:mb-8">
                 {t.philosophy.description}
               </p>
-              <button className="text-[rgb(180,165,142)] text-sm sm:text-base lg:text-lg hover:underline">
+              <button 
+                onClick={() => navigate('/about')}
+                className="text-[rgb(180,165,142)] text-sm sm:text-base lg:text-lg hover:underline"
+              >
                 {t.philosophy.cta}
               </button>
             </div>

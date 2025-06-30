@@ -1,25 +1,23 @@
-
 import { Routes, Route } from 'react-router-dom';
-import { useScrollToTop } from '@/hooks/useScrollToTop';
 import Index from '@/pages/Index';
+import AboutUs from '@/pages/AboutUs';
 import CategoryPage from '@/pages/CategoryPage';
 import ProductDetail from '@/pages/ProductDetail';
-import AdminPanel from '@/pages/AdminPanel';
 import AdminLogin from '@/pages/AdminLogin';
+import AdminPanel from '@/pages/AdminPanel';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
 import NotFound from '@/pages/NotFound';
 
 const Router = () => {
-  useScrollToTop();
-
   return (
     <Routes>
       <Route path="/" element={<Index />} />
-      <Route path="/category/:categorySlug" element={<CategoryPage />} />
-      <Route path="/product/:productSlug" element={<ProductDetail />} />
-      <Route path="/admin/login" element={<AdminLogin />} />
-      <Route path="/admin" element={<AdminPanel />} />
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/category/:slug" element={<CategoryPage />} />
+      <Route path="/product/:categorySlug/:productSlug" element={<ProductDetail />} />
+      <Route path="/admin" element={<AdminLogin />} />
+      <Route path="/admin/panel" element={<AdminPanel />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />
       <Route path="*" element={<NotFound />} />
