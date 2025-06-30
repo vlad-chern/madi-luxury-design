@@ -150,7 +150,14 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ language = 'es' }) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setOrders(data || []);
+      
+      // Type cast the data to ensure status is properly typed
+      const typedOrders = (data || []).map(order => ({
+        ...order,
+        status: order.status as 'new' | 'processing' | 'completed' | 'cancelled'
+      }));
+      
+      setOrders(typedOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
