@@ -72,44 +72,44 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
   const translations = {
     es: {
-      title: 'Управление товарами',
-      addProduct: 'Добавить товар',
-      editProduct: 'Редактировать товар',
-      name: 'Название',
-      slug: 'Слаг (URL)',
-      description: 'Описание',
-      priceType: 'Тип цены',
-      priceFrom: 'Цена "от" (EUR)',
-      priceFixed: 'Фиксированная цена (EUR)',
-      category: 'Категория',
-      includes: 'Что включено',
-      specifications: 'Характеристики',
-      images: 'Изображения',
-      addImage: 'Добавить изображение',
-      imageUrl: 'URL изображения',
-      active: 'Активный товар',
-      update: 'Обновить',
-      add: 'Добавить',
-      actions: 'Действия',
-      price: 'Цена',
-      status: 'Статус',
-      activeStatus: 'Активен',
-      inactiveStatus: 'Неактивен',
-      noPriceSet: 'Не указана',
-      selectCategory: 'Выберите категорию',
-      includesPlaceholder: 'Дизайн персонализированный и asesoramiento profesional\nFabricación artesanal con materiales premium',
+      title: 'Gestión de Productos',
+      addProduct: 'Añadir Producto',
+      editProduct: 'Editar Producto',
+      name: 'Nombre',
+      slug: 'Slug (URL)',
+      description: 'Descripción',
+      priceType: 'Tipo de Precio',
+      priceFrom: 'Precio "desde" (EUR)',
+      priceFixed: 'Precio Fijo (EUR)',
+      category: 'Categoría',
+      includes: 'Qué incluye',
+      specifications: 'Especificaciones',
+      images: 'Imágenes',
+      addImage: 'Añadir Imagen',
+      imageUrl: 'URL de Imagen',
+      active: 'Producto Activo',
+      update: 'Actualizar',
+      add: 'Añadir',
+      actions: 'Acciones',
+      price: 'Precio',
+      status: 'Estado',
+      activeStatus: 'Activo',
+      inactiveStatus: 'Inactivo',
+      noPriceSet: 'No establecido',
+      selectCategory: 'Seleccionar categoría',
+      includesPlaceholder: 'Diseño personalizado y asesoramiento profesional\nFabricación artesanal con materiales premium',
       specificationsPlaceholder: 'Tiempo de entrega: 6-8 semanas\nMateriales: Madera noble, mármol natural',
-      priceFromType: 'От (цены)',
-      fixedPriceType: 'Фиксированная',
-      productAdded: 'Товар добавлен',
-      productUpdated: 'Товар обновлен',
-      productDeleted: 'Товар удален',
-      productAddedDesc: 'Товар успешно добавлен',
-      productUpdatedDesc: 'Товар успешно обновлен',
-      productDeletedDesc: 'Товар успешно удален',
-      error: 'Ошибка',
-      saveError: 'Не удалось сохранить товар',
-      deleteError: 'Не удалось удалить товар'
+      priceFromType: 'Desde (precio)',
+      fixedPriceType: 'Fijo',
+      productAdded: 'Producto Añadido',
+      productUpdated: 'Producto Actualizado',
+      productDeleted: 'Producto Eliminado',
+      productAddedDesc: 'Producto añadido exitosamente',
+      productUpdatedDesc: 'Producto actualizado exitosamente',
+      productDeletedDesc: 'Producto eliminado exitosamente',
+      error: 'Error',
+      saveError: 'No se pudo guardar el producto',
+      deleteError: 'No se pudo eliminar el producto'
     },
     en: {
       title: 'Product Management',
@@ -270,7 +270,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       console.error('Error fetching products:', error);
       toast({
         title: t.error,
-        description: "Не удалось загрузить товары",
+        description: "No se pudo cargar los productos",
         variant: "destructive",
       });
     }
@@ -378,7 +378,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       console.error('Error saving product:', error);
       toast({
         title: t.error,
-        description: `${t.saveError}: ${error.message || 'Неизвестная ошибка'}`,
+        description: `${t.saveError}: ${error.message || 'No se pudo guardar el producto'}`,
         variant: "destructive",
       });
     }
@@ -505,6 +505,48 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     return `https://images.unsplash.com/${imagePath}`;
   };
 
+  const renderImageSlots = (images: string[]) => {
+    const slots = [];
+    const maxSlots = 10;
+    
+    // Render existing images
+    for (let i = 0; i < Math.min(images.length, maxSlots); i++) {
+      slots.push(
+        <div key={`image-${i}`} className="relative">
+          <img 
+            src={getImageUrl(images[i])} 
+            alt={`Product ${i + 1}`}
+            className="w-16 h-16 object-cover rounded border"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+            }}
+          />
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            className="absolute -top-2 -right-2 w-5 h-5 p-0"
+            onClick={() => removeImage(i)}
+          >
+            <X className="w-3 h-3" />
+          </Button>
+        </div>
+      );
+    }
+    
+    // Render empty slots with plus icons
+    for (let i = images.length; i < maxSlots; i++) {
+      slots.push(
+        <div key={`empty-${i}`} className="w-16 h-16 bg-gray-200 rounded border border-dashed border-gray-400 flex items-center justify-center">
+          <Plus className="w-6 h-6 text-gray-400" />
+        </div>
+      );
+    }
+    
+    return slots;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -610,7 +652,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
                 <div>
                   <Label>{t.images}</Label>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <div className="flex gap-2">
                       <Input
                         placeholder={t.imageUrl}
@@ -621,35 +663,14 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                         {t.addImage}
                       </Button>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      {formData.images.map((image, index) => (
-                        <div key={index} className="relative">
-                          <img 
-                            src={getImageUrl(image)} 
-                            alt={`Product ${index + 1}`}
-                            className="w-full h-20 object-cover rounded border"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
-                            }}
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="absolute -top-2 -right-2 w-6 h-6 p-0"
-                            onClick={() => removeImage(index)}
-                          >
-                            <X className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      ))}
+                    <div className="grid grid-cols-5 gap-3">
+                      {renderImageSlots(formData.images)}
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="includes">{t.includes} (каждый пункт с новой строки)</Label>
+                  <Label htmlFor="includes">{t.includes} (cada línea con un nuevo elemento)</Label>
                   <Textarea
                     id="includes"
                     value={includesList}
@@ -660,7 +681,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                 </div>
 
                 <div>
-                  <Label htmlFor="specifications">{t.specifications} (формат: Ключ: Значение)</Label>
+                  <Label htmlFor="specifications">{t.specifications} (formato: Clave: Valor)</Label>
                   <Textarea
                     id="specifications"
                     value={specificationsList}
@@ -693,7 +714,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Изображение</TableHead>
+              <TableHead>{language === 'es' ? 'Imagen' : language === 'en' ? 'Image' : 'Изображение'}</TableHead>
               <TableHead>{t.name}</TableHead>
               <TableHead>{t.category}</TableHead>
               <TableHead>{t.price}</TableHead>
@@ -725,7 +746,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                 <TableCell>{product.categories?.name}</TableCell>
                 <TableCell>
                   {product.price_type === 'from' && product.price_from
-                    ? `от ${product.price_from}€`
+                    ? `${language === 'es' ? 'desde' : language === 'en' ? 'from' : 'от'} ${product.price_from}€`
                     : product.price_fixed
                     ? `${product.price_fixed}€`
                     : t.noPriceSet}
