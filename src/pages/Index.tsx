@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
@@ -8,27 +8,94 @@ import SEOHead from '@/components/SEOHead';
 import CookieConsent from '@/components/CookieConsent';
 import ContactForm from '@/components/ContactForm';
 import DynamicCollections from '@/components/DynamicCollections';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [language, setLanguage] = useState('ES');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
+  // Переводы для разных языков
+  const translations = {
+    ES: {
+      nav: {
+        collections: 'Colecciones',
+        projects: 'Proyectos',
+        process: 'Nuestro Proceso',
+        contact: 'Contacto',
+        startConsultation: 'Iniciar Consulta'
+      },
+      hero: {
+        title: 'Mobiliario de Autor.',
+        subtitle: 'Diseñado para su historia.',
+        description: 'Creamos piezas exclusivas y a medida que transforman espacios. Hecho a mano con pasión en nuestro taller de Madrid.',
+        cta: 'Descubra las Posibilidades'
+      },
+      philosophy: {
+        title: 'El Arte de Crear Espacios,',
+        subtitle: 'No Solo Muebles.',
+        description: 'En MADI, cada pieza nace de una conversación profunda sobre cómo vive, siente y sueña nuestro cliente. No fabricamos muebles; creamos extensiones de personalidades, espacios que cuentan historias y ambientes que inspiran cada día.',
+        cta: 'Conozca nuestra historia →'
+      },
+      contact: {
+        title: 'Hagamos Realidad',
+        subtitle: 'su Visión',
+        description: 'Cada proyecto comienza con una conversación. Cuéntenos sobre su espacio, sus sueños y su estilo de vida. Nuestro equipo de diseñadores estará encantado de transformar sus ideas en realidad.'
+      }
+    },
+    EN: {
+      nav: {
+        collections: 'Collections',
+        projects: 'Projects',
+        process: 'Our Process',
+        contact: 'Contact',
+        startConsultation: 'Start Consultation'
+      },
+      hero: {
+        title: 'Author Furniture.',
+        subtitle: 'Designed for your story.',
+        description: 'We create exclusive, custom-made pieces that transform spaces. Handcrafted with passion in our Madrid workshop.',
+        cta: 'Discover the Possibilities'
+      },
+      philosophy: {
+        title: 'The Art of Creating Spaces,',
+        subtitle: 'Not Just Furniture.',
+        description: 'At MADI, each piece is born from a deep conversation about how our client lives, feels, and dreams. We don\'t manufacture furniture; we create extensions of personalities, spaces that tell stories, and environments that inspire every day.',
+        cta: 'Learn our story →'
+      },
+      contact: {
+        title: 'Let\'s Make Your',
+        subtitle: 'Vision Reality',
+        description: 'Every project begins with a conversation. Tell us about your space, your dreams, and your lifestyle. Our design team will be delighted to transform your ideas into reality.'
+      }
+    }
+  };
+
+  const t = translations[language as keyof typeof translations];
 
   const testimonials = [
     {
-      text: "MADI transformó completamente nuestro hogar. Cada pieza es una obra de arte funcional que refleja perfectamente nuestro estilo de vida.",
+      text: language === 'ES' 
+        ? "MADI transformó completamente nuestro hogar. Cada pieza es una obra de arte funcional que refleja perfectamente nuestro estilo de vida."
+        : "MADI completely transformed our home. Each piece is a functional work of art that perfectly reflects our lifestyle.",
       author: "Elena Rodríguez",
-      project: "Reforma integral - Madrid"
+      project: language === 'ES' ? "Reforma integral - Madrid" : "Complete renovation - Madrid"
     },
     {
-      text: "La atención al detalle y la calidad artesanal de MADI es incomparable. Nuestro vestidor es exactamente como lo soñamos.",
+      text: language === 'ES'
+        ? "La atención al detalle y la calidad artesanal de MADI es incomparable. Nuestro vestidor es exactamente como lo soñamos."
+        : "MADI's attention to detail and craftsmanship quality is incomparable. Our dressing room is exactly as we dreamed.",
       author: "Carlos Mendoza",
-      project: "Vestidor principal - Barcelona"
+      project: language === 'ES' ? "Vestidor principal - Barcelona" : "Master dressing room - Barcelona"
     },
     {
-      text: "Trabajar con MADI fue una experiencia extraordinaria. Su proceso de diseño colaborativo hizo realidad nuestra visión.",
+      text: language === 'ES'
+        ? "Trabajar con MADI fue una experiencia extraordinaria. Su proceso de diseño colaborativo hizo realidad nuestra visión."
+        : "Working with MADI was an extraordinary experience. Their collaborative design process made our vision a reality.",
       author: "María García",
-      project: "Cocina de diseño - Valencia"
+      project: language === 'ES' ? "Cocina de diseño - Valencia" : "Design kitchen - Valencia"
     }
   ];
 
@@ -60,6 +127,10 @@ const Index = () => {
     }
   };
 
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'ES' ? 'EN' : 'ES');
+  };
+
   return (
     <div className="min-h-screen bg-[rgb(14,14,14)] text-white">
       <SEOHead 
@@ -72,26 +143,96 @@ const Index = () => {
       
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[rgb(14,14,14)]/90 backdrop-blur-sm border-b border-gray-800">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="text-2xl font-bold text-[rgb(180,165,142)]">MADI</div>
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="#colecciones" className="hover:text-[rgb(180,165,142)] transition-colors">Colecciones</a>
-            <a href="#proyectos" className="hover:text-[rgb(180,165,142)] transition-colors">Proyectos</a>
-            <a href="#proceso" className="hover:text-[rgb(180,165,142)] transition-colors">Nuestro Proceso</a>
-            <a href="#contacto" className="hover:text-[rgb(180,165,142)] transition-colors">Contacto</a>
-            <div className="flex items-center space-x-2">
-              <button 
-                onClick={() => setLanguage(language === 'ES' ? 'EN' : 'ES')}
-                className="text-sm hover:text-[rgb(180,165,142)] transition-colors"
-              >
-                {language} / {language === 'ES' ? 'EN' : 'ES'}
-              </button>
-            </div>
+          
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-8">
+            <a href="#colecciones" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
+              {t.nav.collections}
+            </a>
+            <a href="#proyectos" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
+              {t.nav.projects}
+            </a>
+            <a href="#proceso" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
+              {t.nav.process}
+            </a>
+            <a href="#contacto" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
+              {t.nav.contact}
+            </a>
+            <button 
+              onClick={toggleLanguage}
+              className="text-sm hover:text-[rgb(180,165,142)] transition-colors"
+            >
+              {language} / {language === 'ES' ? 'EN' : 'ES'}
+            </button>
           </div>
-          <Button className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] border border-[rgb(180,165,142)]">
-            Iniciar Consulta
+
+          {/* Mobile menu button */}
+          <div className="lg:hidden flex items-center space-x-2">
+            <button 
+              onClick={toggleLanguage}
+              className="text-sm hover:text-[rgb(180,165,142)] transition-colors px-2"
+            >
+              {language}
+            </button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-white hover:text-[rgb(180,165,142)]"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
+
+          {/* Desktop CTA */}
+          <Button className="hidden lg:block bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] border border-[rgb(180,165,142)] text-sm xl:text-base px-4 xl:px-6">
+            {t.nav.startConsultation}
           </Button>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-[rgb(14,14,14)] border-t border-gray-800">
+            <div className="container mx-auto px-4 py-4 space-y-4">
+              <a 
+                href="#colecciones" 
+                className="block py-2 hover:text-[rgb(180,165,142)] transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t.nav.collections}
+              </a>
+              <a 
+                href="#proyectos" 
+                className="block py-2 hover:text-[rgb(180,165,142)] transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t.nav.projects}
+              </a>
+              <a 
+                href="#proceso" 
+                className="block py-2 hover:text-[rgb(180,165,142)] transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t.nav.process}
+              </a>
+              <a 
+                href="#contacto" 
+                className="block py-2 hover:text-[rgb(180,165,142)] transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t.nav.contact}
+              </a>
+              <Button 
+                className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t.nav.startConsultation}
+              </Button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -103,45 +244,47 @@ const Index = () => {
             filter: 'brightness(0.3)'
           }}
         />
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            Mobiliario de Autor.<br />
-            <span className="text-[rgb(180,165,142)]">Diseñado para su historia.</span>
+        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            {t.hero.title}<br />
+            <span className="text-[rgb(180,165,142)]">{t.hero.subtitle}</span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Creamos piezas exclusivas y a medida que transforman espacios. 
-            Hecho a mano con pasión en nuestro taller de Madrid.
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed">
+            {t.hero.description}
           </p>
           <Button 
-            size="lg" 
-            className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-12 py-4 text-lg"
+            size={isMobile ? "default" : "lg"} 
+            className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg"
             onClick={scrollToCollections}
           >
-            Descubra las Posibilidades
+            {t.hero.cta}
           </Button>
         </div>
       </section>
 
       {/* Social Proof Bar */}
       <section className="py-12 border-y border-gray-800">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center">
-            <p className="text-gray-400 text-lg mb-8">
-              Colaboramos con los mejores arquitectos y diseñadores de interiores
+            <p className="text-gray-400 text-base sm:text-lg mb-8">
+              {language === 'ES' 
+                ? 'Colaboramos con los mejores arquitectos y diseñadores de interiores'
+                : 'We collaborate with the best architects and interior designers'
+              }
             </p>
-            <div className="flex justify-center items-center space-x-12 opacity-60">
-              <div className="text-2xl font-bold">ARQUITECTOS+</div>
-              <div className="text-2xl font-bold">DESIGN STUDIO</div>
-              <div className="text-2xl font-bold">LUXURY HOMES</div>
+            <div className="flex justify-center items-center space-x-8 sm:space-x-12 opacity-60">
+              <div className="text-lg sm:text-2xl font-bold">ARQUITECTOS+</div>
+              <div className="text-lg sm:text-2xl font-bold">DESIGN STUDIO</div>
+              <div className="text-lg sm:text-2xl font-bold">LUXURY HOMES</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Philosophy Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
+      <section className="py-16 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid md:grid-cols-2 gap-12 sm:gap-16 items-center">
             <div 
               className="aspect-square bg-cover bg-center rounded-lg"
               style={{
@@ -150,18 +293,15 @@ const Index = () => {
               }}
             />
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-8 leading-tight">
-                El Arte de Crear Espacios,<br />
-                <span className="text-[rgb(180,165,142)]">No Solo Muebles.</span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 leading-tight">
+                {t.philosophy.title}<br />
+                <span className="text-[rgb(180,165,142)]">{t.philosophy.subtitle}</span>
               </h2>
-              <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                En MADI, cada pieza nace de una conversación profunda sobre cómo vive, 
-                siente y sueña nuestro cliente. No fabricamos muebles; creamos extensiones 
-                de personalidades, espacios que cuentan historias y ambientes que inspiran 
-                cada día.
+              <p className="text-gray-300 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
+                {t.philosophy.description}
               </p>
-              <button className="text-[rgb(180,165,142)] text-lg hover:underline">
-                Conozca nuestra historia →
+              <button className="text-[rgb(180,165,142)] text-base sm:text-lg hover:underline">
+                {t.philosophy.cta}
               </button>
             </div>
           </div>
@@ -169,12 +309,12 @@ const Index = () => {
       </section>
 
       {/* Portfolio Section */}
-      <section id="proyectos" className="py-24">
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
-            Inspiración para su <span className="text-[rgb(180,165,142)]">Espacio</span>
+      <section id="proyectos" className="py-16 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-12 sm:mb-16">
+            {language === 'ES' ? 'Inspiración para su' : 'Inspiration for your'} <span className="text-[rgb(180,165,142)]">{language === 'ES' ? 'Espacio' : 'Space'}</span>
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {portfolioImages.map((image, index) => (
               <div 
                 key={index}
@@ -189,12 +329,12 @@ const Index = () => {
       </section>
 
       {/* Collections Section */}
-      <section id="colecciones" className="py-24 bg-[rgb(18,18,18)]">
+      <section id="colecciones" className="py-16 sm:py-24 bg-[rgb(18,18,18)]">
         <DynamicCollections />
       </section>
 
       {/* Process Section */}
-      <section id="proceso" className="py-24">
+      <section id="proceso" className="py-16 sm:py-24">
         <div className="container mx-auto px-6">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
             El Viaje <span className="text-[rgb(180,165,142)]">MADI</span>
@@ -219,7 +359,7 @@ const Index = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-[rgb(18,18,18)]">
+      <section className="py-16 sm:py-24 bg-[rgb(18,18,18)]">
         <div className="container mx-auto px-6">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
             Lo que Dicen Nuestros <span className="text-[rgb(180,165,142)]">Clientes</span>
@@ -270,36 +410,34 @@ const Index = () => {
       </section>
 
       {/* Contact Section */}
-      <section id="contacto" className="py-24">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16">
+      <section id="contacto" className="py-16 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid md:grid-cols-2 gap-12 sm:gap-16">
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-8">
-                Hagamos Realidad<br />
-                <span className="text-[rgb(180,165,142)]">su Visión</span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8">
+                {t.contact.title}<br />
+                <span className="text-[rgb(180,165,142)]">{t.contact.subtitle}</span>
               </h2>
-              <p className="text-gray-300 text-lg mb-12 leading-relaxed">
-                Cada proyecto comienza con una conversación. Cuéntenos sobre su espacio, 
-                sus sueños y su estilo de vida. Nuestro equipo de diseñadores estará 
-                encantado de transformar sus ideas en realidad.
+              <p className="text-gray-300 text-base sm:text-lg mb-8 sm:mb-12 leading-relaxed">
+                {t.contact.description}
               </p>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center space-x-4">
-                  <Phone className="w-6 h-6 text-[rgb(180,165,142)]" />
+                  <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-[rgb(180,165,142)]" />
                   <span className="text-gray-300">+34 643 550 964</span>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <Mail className="w-6 h-6 text-[rgb(180,165,142)]" />
+                  <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-[rgb(180,165,142)]" />
                   <span className="text-gray-300">info@madiluxe.com</span>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <MapPin className="w-6 h-6 text-[rgb(180,165,142)]" />
+                <div className="flex items-start space-x-4">
+                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-[rgb(180,165,142)] mt-1" />
                   <span className="text-gray-300">C. Bruselas, 17, 28232 Las Rozas de Madrid, Madrid, España</span>
                 </div>
               </div>
             </div>
             <div>
-              <ContactForm language="es" />
+              <ContactForm language={language.toLowerCase()} />
             </div>
           </div>
         </div>

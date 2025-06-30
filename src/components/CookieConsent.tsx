@@ -3,9 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { X, Cookie } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const CookieConsent = () => {
   const [showConsent, setShowConsent] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const isMobile = useIsMobile();
   const [preferences, setPreferences] = useState({
     necessary: true,
     analytics: true,
@@ -55,13 +58,13 @@ const CookieConsent = () => {
   if (!showConsent) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl">
-        <CardContent className="p-6">
+    <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50 p-2 md:p-4">
+      <Card className={`w-full ${isMobile ? 'max-w-sm' : 'max-w-2xl'}`}>
+        <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-2">
-              <Cookie className="w-6 h-6 text-[rgb(180,165,142)]" />
-              <h3 className="text-lg font-bold">Configuración de Cookies</h3>
+              <Cookie className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-[rgb(180,165,142)]`} />
+              <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-bold`}>Cookies</h3>
             </div>
             <Button 
               variant="ghost" 
@@ -72,92 +75,115 @@ const CookieConsent = () => {
             </Button>
           </div>
           
-          <p className="text-gray-600 mb-6">
-            Utilizamos cookies para mejorar su experiencia en nuestro sitio web. 
-            Por defecto, todas las cookies están activadas para brindarle la mejor experiencia posible.
-            Puede desactivar las que no desee a continuación.
+          <p className={`text-gray-600 mb-4 ${isMobile ? 'text-sm' : ''}`}>
+            Utilizamos cookies para mejorar su experiencia. 
+            {!isMobile && ' Por defecto, todas las cookies están activadas para brindarle la mejor experiencia posible.'}
           </p>
 
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div>
-                <div className="font-medium text-green-700">✓ Cookies Necesarias</div>
-                <div className="text-sm text-gray-500">
-                  Estas cookies son esenciales para el funcionamiento del sitio.
-                </div>
-              </div>
-              <input 
-                type="checkbox" 
-                checked={preferences.necessary} 
-                disabled 
-                className="w-4 h-4"
-              />
-            </div>
+          {!isMobile && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setShowDetails(!showDetails)}
+              className="mb-4 text-sm"
+            >
+              {showDetails ? 'Ocultar detalles' : 'Ver detalles'}
+            </Button>
+          )}
 
-            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-              <div>
-                <div className="font-medium">Cookies de Análisis</div>
-                <div className="text-sm text-gray-500">
-                  Nos ayudan a entender cómo los visitantes interactúan con el sitio.
+          {(showDetails || !isMobile) && (
+            <div className={`space-y-3 mb-4 ${isMobile ? 'text-sm' : ''}`}>
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                <div>
+                  <div className="font-medium text-green-700">✓ Necesarias</div>
+                  {!isMobile && (
+                    <div className="text-xs text-gray-500">
+                      Esenciales para el funcionamiento.
+                    </div>
+                  )}
                 </div>
+                <input 
+                  type="checkbox" 
+                  checked={preferences.necessary} 
+                  disabled 
+                  className="w-4 h-4"
+                />
               </div>
-              <input 
-                type="checkbox" 
-                checked={preferences.analytics}
-                onChange={(e) => setPreferences(prev => ({ ...prev, analytics: e.target.checked }))}
-                className="w-4 h-4 accent-[rgb(180,165,142)]"
-              />
-            </div>
 
-            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-              <div>
-                <div className="font-medium">Cookies de Marketing</div>
-                <div className="text-sm text-gray-500">
-                  Se utilizan para mostrar anuncios relevantes.
+              <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+                <div>
+                  <div className="font-medium">Análisis</div>
+                  {!isMobile && (
+                    <div className="text-xs text-gray-500">
+                      Para entender las interacciones.
+                    </div>
+                  )}
                 </div>
+                <input 
+                  type="checkbox" 
+                  checked={preferences.analytics}
+                  onChange={(e) => setPreferences(prev => ({ ...prev, analytics: e.target.checked }))}
+                  className="w-4 h-4 accent-[rgb(180,165,142)]"
+                />
               </div>
-              <input 
-                type="checkbox" 
-                checked={preferences.marketing}
-                onChange={(e) => setPreferences(prev => ({ ...prev, marketing: e.target.checked }))}
-                className="w-4 h-4 accent-[rgb(180,165,142)]"
-              />
-            </div>
 
-            <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-              <div>
-                <div className="font-medium">Cookies Funcionales</div>
-                <div className="text-sm text-gray-500">
-                  Permiten funcionalidades mejoradas y personalización.
+              <div className="flex items-center justify-between p-2 bg-purple-50 rounded-lg">
+                <div>
+                  <div className="font-medium">Marketing</div>
+                  {!isMobile && (
+                    <div className="text-xs text-gray-500">
+                      Para anuncios relevantes.
+                    </div>
+                  )}
                 </div>
+                <input 
+                  type="checkbox" 
+                  checked={preferences.marketing}
+                  onChange={(e) => setPreferences(prev => ({ ...prev, marketing: e.target.checked }))}
+                  className="w-4 h-4 accent-[rgb(180,165,142)]"
+                />
               </div>
-              <input 
-                type="checkbox" 
-                checked={preferences.functional}
-                onChange={(e) => setPreferences(prev => ({ ...prev, functional: e.target.checked }))}
-                className="w-4 h-4 accent-[rgb(180,165,142)]"
-              />
-            </div>
-          </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex items-center justify-between p-2 bg-orange-50 rounded-lg">
+                <div>
+                  <div className="font-medium">Funcionales</div>
+                  {!isMobile && (
+                    <div className="text-xs text-gray-500">
+                      Funcionalidades mejoradas.
+                    </div>
+                  )}
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={preferences.functional}
+                  onChange={(e) => setPreferences(prev => ({ ...prev, functional: e.target.checked }))}
+                  className="w-4 h-4 accent-[rgb(180,165,142)]"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-col sm:flex-row gap-3'}`}>
             <Button 
               onClick={handleAcceptAll}
-              className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] flex-1"
+              className={`bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] ${isMobile ? 'w-full text-sm' : 'flex-1'}`}
             >
-              Aceptar Todo (Recomendado)
+              Aceptar Todo
             </Button>
-            <Button 
-              onClick={handleSavePreferences}
-              variant="outline"
-              className="flex-1"
-            >
-              Guardar Selección
-            </Button>
+            {showDetails && (
+              <Button 
+                onClick={handleSavePreferences}
+                variant="outline"
+                className={`${isMobile ? 'w-full text-sm' : 'flex-1'}`}
+              >
+                Guardar
+              </Button>
+            )}
             <Button 
               onClick={handleRejectAll}
               variant="ghost"
               size="sm"
+              className={`${isMobile ? 'text-sm' : ''}`}
             >
               Solo Necesarias
             </Button>
