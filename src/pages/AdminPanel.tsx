@@ -31,7 +31,7 @@ const AdminPanel = () => {
       orders: 'Pedidos',
       customers: 'Clientes',
       integrations: 'Integraciones',
-      admins: 'Usuarios',
+      administrators: 'Administradores',
       storage: 'Storage',
       presence: 'Presencia',
       checking: 'Verificando autorización...'
@@ -44,7 +44,7 @@ const AdminPanel = () => {
       orders: 'Orders',
       customers: 'Customers',
       integrations: 'Integrations',
-      admins: 'Users',
+      administrators: 'Administrators',
       storage: 'Storage',
       presence: 'Presence',
       checking: 'Checking authorization...'
@@ -57,7 +57,7 @@ const AdminPanel = () => {
       orders: 'Заказы',
       customers: 'Клиенты',
       integrations: 'Интеграции',
-      admins: 'Пользователи',
+      administrators: 'Администраторы',
       storage: 'Хранилище',
       presence: 'Присутствие',
       checking: 'Проверка авторизации...'
@@ -165,7 +165,7 @@ const AdminPanel = () => {
                 <TabsTrigger value="customers" className="px-2 py-1 md:px-3 md:py-1.5">{t.customers}</TabsTrigger>
                 <TabsTrigger value="integrations" className="px-2 py-1 md:px-3 md:py-1.5">{t.integrations}</TabsTrigger>
                 {canAccessAdminManagement() && (
-                  <TabsTrigger value="users" className="px-2 py-1 md:px-3 md:py-1.5">{t.admins}</TabsTrigger>
+                  <TabsTrigger value="administrators" className="px-2 py-1 md:px-3 md:py-1.5">{t.administrators}</TabsTrigger>
                 )}
               </TabsList>
 
@@ -190,7 +190,7 @@ const AdminPanel = () => {
               </TabsContent>
 
               {canAccessAdminManagement() && (
-                <TabsContent value="users">
+                <TabsContent value="administrators">
                   <AdminManager language={language} />
                 </TabsContent>
               )}
