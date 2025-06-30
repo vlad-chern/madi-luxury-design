@@ -1,22 +1,22 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Check } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Phone, Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { supabase, Product } from '@/lib/supabase';
-import ConsultationForm from '@/components/ConsultationForm';
+import { useToast } from '@/hooks/use-toast';
 
 const ProductDetail = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (productId) {
-      fetchProduct();
-    }
+    fetchProduct();
   }, [productId]);
 
   const fetchProduct = async () => {
@@ -27,9 +27,7 @@ const ProductDetail = () => {
         .select(`
           *,
           categories (
-            id,
-            name,
-            slug
+            name
           )
         `)
         .eq('slug', productId)
@@ -37,6 +35,7 @@ const ProductDetail = () => {
         .single();
       
       if (error) throw error;
+      
       setProduct(data);
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -49,7 +48,7 @@ const ProductDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
-        <div>Cargando producto...</div>
+        <div>Загрузка товара...</div>
       </div>
     );
   }
@@ -57,10 +56,92 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
-        <div>Producto no encontrado</div>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Товар не найден</h1>
+          <Button onClick={() => navigate('/')} className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
+            Вернуться на главную
+          </Button>
+        </div>
       </div>
     );
   }
+
+  const handleQuickOrder = async () => {
+    if (phoneNumber.trim()) {
+      try {
+        const { error } = await supabase
+          .from('orders')
+          .insert([{
+            customer_name: 'Клиент (быстрый заказ)',
+            customer_email: 'quick-order@temp.com',
+            customer_phone: phoneNumber,
+            product_id: product.id,
+            message: `Быстрый заказ для товара: ${product.name}`
+          }]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Заявка отправлена",
+          description: "Мы свяжемся с вами в ближайшее время",
+        });
+        setPhoneNumber('');
+      } catch (error) {
+        console.error('Error creating order:', error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось отправить заявку",
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, введите номер телефона",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleConsultation = async () => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .insert([{
+          customer_name: 'Клиент (консультация)',
+          customer_email: 'consultation@temp.com',
+          product_id: product.id,
+          message: `Запрос консультации для товара: ${product.name}`
+        }]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Заявка на консультацию отправлена",
+        description: "Мы свяжемся с вами для уточнения деталей",
+      });
+    } catch (error) {
+      console.error('Error creating consultation:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось отправить заявку",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const formatPrice = () => {
+    if (product.price_type === 'fixed' && product.price_fixed) {
+      return `${product.price_fixed}€`;
+    } else if (product.price_type === 'from' && product.price_from) {
+      return `desde ${product.price_from}€`;
+    }
+    return 'Цена по запросу';
+  };
+
+  const mainImage = product.images && product.images.length > 0 
+    ? product.images[0] 
+    : 'photo-1586023492125-27b2c045efd7';
 
   return (
     <div className="min-h-screen bg-[rgb(14,14,14)] text-white">
@@ -70,7 +151,7 @@ const ProductDetail = () => {
           <div className="flex items-center space-x-4">
             <Button 
               variant="ghost" 
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/')}
               className="text-[rgb(180,165,142)] hover:bg-[rgb(180,165,142)]/10"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
@@ -78,120 +159,141 @@ const ProductDetail = () => {
             </Button>
             <div className="text-2xl font-bold text-[rgb(180,165,142)]">MADI</div>
           </div>
-          <Button className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
-            Consultar Precio
+          <Button 
+            onClick={handleConsultation}
+            className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
+          >
+            Solicitar Consulta
           </Button>
         </div>
       </nav>
 
-      {/* Product Header */}
-      <section className="pt-32 pb-16">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <img 
-                src={product.images[0] || "/lovable-uploads/12d2af38-c23d-4b9c-8feb-7bd0f637ecb5.png"}
-                alt={product.name}
-                className="w-full rounded-lg"
-              />
-            </div>
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                {product.name}
-              </h1>
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                {product.description}
-              </p>
-              <div className="text-3xl font-bold text-[rgb(180,165,142)] mb-8">
-                {product.price_type === 'from' && product.price_from
-                  ? `Desde ${product.price_from}€`
-                  : product.price_fixed
-                  ? `${product.price_fixed}€`
-                  : 'Precio a consultar'}
+      <div className="pt-20">
+        {/* Product Header */}
+        <section className="py-12">
+          <div className="container mx-auto px-6">
+            <div className="text-sm text-[rgb(180,165,142)] mb-4">{product.categories?.name}</div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">{product.name}</h1>
+            <div className="text-3xl font-bold text-[rgb(180,165,142)] mb-8">{formatPrice()}</div>
+          </div>
+        </section>
+
+        {/* Product Details */}
+        <section className="py-12">
+          <div className="container mx-auto px-6">
+            <div className="grid lg:grid-cols-2 gap-12">
+              {/* Product Image */}
+              <div className="space-y-6">
+                <div 
+                  className="aspect-square bg-cover bg-center rounded-lg"
+                  style={{
+                    backgroundImage: `url('${mainImage}')`
+                  }}
+                />
+                <div className="flex justify-center space-x-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="w-5 h-5 fill-[rgb(180,165,142)] text-[rgb(180,165,142)]" />
+                  ))}
+                  <span className="text-gray-400 ml-2">(5.0) - Calidad Premium</span>
+                </div>
               </div>
-              <Button 
-                size="lg"
-                className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] text-lg px-8 py-4"
-              >
-                Solicitar Consulta
-              </Button>
+
+              {/* Product Info */}
+              <div className="space-y-8">
+                <div>
+                  <h2 className="text-2xl font-bold mb-4 text-[rgb(180,165,142)]">Descripción</h2>
+                  <p className="text-gray-300 text-lg leading-relaxed">{product.description}</p>
+                </div>
+
+                {product.includes && product.includes.length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-bold mb-4 text-[rgb(180,165,142)]">Incluye</h3>
+                    <ul className="space-y-2 text-gray-300">
+                      {product.includes.map((item, index) => (
+                        <li key={index}>• {item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {product.specifications && Object.keys(product.specifications).length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-bold mb-4 text-[rgb(180,165,142)]">Especificaciones</h3>
+                    <ul className="space-y-2 text-gray-300">
+                      {Object.entries(product.specifications).map(([key, value]) => (
+                        <li key={key}>• {key}: {value}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Quick Order */}
+                <div className="bg-[rgb(22,22,22)] p-6 rounded-lg">
+                  <h3 className="text-xl font-bold mb-4 text-[rgb(180,165,142)]">Pedido Rápido</h3>
+                  <p className="text-gray-300 mb-4">Introduzca su número de teléfono para un contacto inmediato</p>
+                  <div className="flex gap-3">
+                    <Input 
+                      type="tel"
+                      placeholder="Su número de teléfono"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="bg-transparent border-gray-600 text-white placeholder-gray-400 flex-1"
+                    />
+                    <Button 
+                      onClick={handleQuickOrder}
+                      className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-6"
+                    >
+                      <Phone className="w-4 h-4 mr-2" />
+                      Llamar
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Main CTA */}
+                <Button 
+                  size="lg"
+                  onClick={handleConsultation}
+                  className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] py-4 text-lg"
+                >
+                  Solicitar Consulta Detallada
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Product Details */}
-      <section className="py-24 bg-[rgb(18,18,18)]">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            {/* Includes */}
-            <Card className="bg-[rgb(22,22,22)] border-gray-800">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold text-[rgb(180,165,142)]">
-                  Incluye
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-4">
-                  {product.includes.map((item, index) => (
-                    <li key={index} className="flex items-start space-x-3">
-                      <Check className="w-5 h-5 text-[rgb(180,165,142)] mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-300">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Specifications */}
-            <Card className="bg-[rgb(22,22,22)] border-gray-800">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold text-[rgb(180,165,142)]">
-                  Especificaciones
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <dl className="space-y-4">
-                  {Object.entries(product.specifications).map(([key, value]) => (
-                    <div key={key}>
-                      <dt className="text-[rgb(180,165,142)] font-semibold mb-1">
-                        {key}
-                      </dt>
-                      <dd className="text-gray-300">
-                        {value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              </CardContent>
-            </Card>
+        {/* Why Choose MADI */}
+        <section className="py-24 bg-[rgb(18,18,18)]">
+          <div className="container mx-auto px-6">
+            <h2 className="text-3xl font-bold text-center mb-16">
+              ¿Por qué elegir <span className="text-[rgb(180,165,142)]">MADI?</span>
+            </h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Star className="w-8 h-8 text-[rgb(14,14,14)]" />
+                </div>
+                <h3 className="text-xl font-bold mb-4 text-[rgb(180,165,142)]">Calidad Excepcional</h3>
+                <p className="text-gray-300">Materiales premium y acabados artesanales que perduran en el tiempo.</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Star className="w-8 h-8 text-[rgb(14,14,14)]" />
+                </div>
+                <h3 className="text-xl font-bold mb-4 text-[rgb(180,165,142)]">Diseño Personalizado</h3>
+                <p className="text-gray-300">Cada pieza se adapta perfectamente a su espacio y estilo de vida.</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Star className="w-8 h-8 text-[rgb(14,14,14)]" />
+                </div>
+                <h3 className="text-xl font-bold mb-4 text-[rgb(180,165,142)]">Servicio Integral</h3>
+                <p className="text-gray-300">Desde el diseño hasta la instalación, cuidamos cada detalle.</p>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
-
-      {/* Consultation Form */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-6">¿Te interesa este producto?</h2>
-            <p className="text-xl text-gray-400">
-              Solicita una consulta personalizada y te ayudaremos a adaptarlo a tu espacio
-            </p>
-          </div>
-          <div className="max-w-2xl mx-auto">
-            <ConsultationForm productId={product.id} productName={product.name} />
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-16 border-t border-gray-800">
-        <div className="container mx-auto px-6">
-          <p className="text-center text-gray-400">
-            &copy; 2024 MADI Muebles. Todos los derechos reservados.
-          </p>
-        </div>
-      </footer>
+        </section>
+      </div>
     </div>
   );
 };

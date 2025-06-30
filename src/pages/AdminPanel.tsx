@@ -8,7 +8,6 @@ import ProductManager from '@/components/admin/ProductManager';
 import CategoryManager from '@/components/admin/CategoryManager';
 import OrdersManager from '@/components/admin/OrdersManager';
 import CustomerManager from '@/components/admin/CustomerManager';
-import IntegrationsManager from '@/components/admin/IntegrationsManager';
 import { getCurrentUser, signOut } from '@/lib/supabase';
 
 const AdminPanel = () => {
@@ -63,12 +62,11 @@ const AdminPanel = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="categories" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="categories">Категории</TabsTrigger>
             <TabsTrigger value="products">Товары</TabsTrigger>
             <TabsTrigger value="orders">Заявки</TabsTrigger>
             <TabsTrigger value="customers">Клиенты</TabsTrigger>
-            <TabsTrigger value="integrations">Интеграции</TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories">
@@ -85,10 +83,6 @@ const AdminPanel = () => {
 
           <TabsContent value="customers">
             <CustomerManager />
-          </TabsContent>
-
-          <TabsContent value="integrations">
-            <IntegrationsManager />
           </TabsContent>
         </Tabs>
       </main>
