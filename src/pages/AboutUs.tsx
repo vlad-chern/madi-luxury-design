@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Phone, Mail, MapPin, Instagram } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, Instagram, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
@@ -123,6 +123,66 @@ const AboutUs = () => {
                   </div>
                   <h3 className="text-lg font-bold mb-2 text-[rgb(180,165,142)]">Exclusivo</h3>
                   <p className="text-gray-300 text-sm">Cada mueble es único, como tú y tu estilo</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Working Hours Section */}
+            <div className="bg-[rgb(18,18,18)] rounded-lg p-6 sm:p-8 lg:p-12 mb-16">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8 text-center">
+                Horario de <span className="text-[rgb(180,165,142)]">Atención</span>
+              </h2>
+              <div className="max-w-2xl mx-auto">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-700 pb-3">
+                    <div className="flex items-center space-x-3">
+                      <Clock className="w-5 h-5 text-[rgb(180,165,142)]" />
+                      <span className="text-lg font-semibold">Lunes</span>
+                    </div>
+                    <span className="text-gray-300">10:00 - 18:00</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-gray-700 pb-3">
+                    <div className="flex items-center space-x-3">
+                      <Clock className="w-5 h-5 text-[rgb(180,165,142)]" />
+                      <span className="text-lg font-semibold">Martes</span>
+                    </div>
+                    <span className="text-gray-300">10:00 - 18:00</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-gray-700 pb-3">
+                    <div className="flex items-center space-x-3">
+                      <Clock className="w-5 h-5 text-[rgb(180,165,142)]" />
+                      <span className="text-lg font-semibold">Miércoles</span>
+                    </div>
+                    <span className="text-gray-300">10:00 - 18:00</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-gray-700 pb-3">
+                    <div className="flex items-center space-x-3">
+                      <Clock className="w-5 h-5 text-[rgb(180,165,142)]" />
+                      <span className="text-lg font-semibold">Jueves</span>
+                    </div>
+                    <span className="text-gray-300">10:00 - 18:00</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-gray-700 pb-3">
+                    <div className="flex items-center space-x-3">
+                      <Clock className="w-5 h-5 text-[rgb(180,165,142)]" />
+                      <span className="text-lg font-semibold">Viernes</span>
+                    </div>
+                    <span className="text-gray-300">10:00 - 18:00</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-gray-700 pb-3">
+                    <div className="flex items-center space-x-3">
+                      <Clock className="w-5 h-5 text-[rgb(180,165,142)]" />
+                      <span className="text-lg font-semibold">Sábado</span>
+                    </div>
+                    <span className="text-gray-300">10:00 - 18:00</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Clock className="w-5 h-5 text-red-400" />
+                      <span className="text-lg font-semibold">Domingo</span>
+                    </div>
+                    <span className="text-red-400 font-semibold">Cerrado</span>
+                  </div>
                 </div>
               </div>
             </div>
