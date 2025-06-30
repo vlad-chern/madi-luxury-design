@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Globe, Menu } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { LogOut, Globe } from 'lucide-react';
 import ProductManager from '@/components/admin/ProductManager';
 import CategoryManager from '@/components/admin/CategoryManager';
 import OrdersManager from '@/components/admin/OrdersManager';
@@ -17,12 +17,10 @@ import { supabase } from '@/integrations/supabase/client';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [language, setLanguage] = useState<'es' | 'en' | 'ru'>('es');
   const [currentAdmin, setCurrentAdmin] = useState<any>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const translations = {
     es: {
@@ -129,134 +127,78 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              {isMobile && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="mr-2"
-                >
-                  <Menu className="w-4 h-4" />
-                </Button>
-              )}
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
-                {isMobile ? 'Admin' : t.title}
-              </h1>
-            </div>
-            <div className="flex items-center space-x-2 sm:space-x-4">
+            <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
+            <div className="flex items-center space-x-4">
               <Select value={language} onValueChange={(value: 'es' | 'en' | 'ru') => setLanguage(value)}>
-                <SelectTrigger className="w-20 sm:w-32">
-                  <Globe className="w-4 h-4 mr-1 sm:mr-2" />
+                <SelectTrigger className="w-32">
+                  <Globe className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="es">ES</SelectItem>
-                  <SelectItem value="en">EN</SelectItem>
-                  <SelectItem value="ru">RU</SelectItem>
+                  <SelectItem value="es">Español</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="ru">Русский</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={handleLogout} variant="outline" size={isMobile ? "sm" : "default"}>
-                <LogOut className="w-4 h-4 mr-1 sm:mr-2" />
-                {!isMobile && t.logout}
+              <Button onClick={handleLogout} variant="outline">
+                <LogOut className="w-4 h-4 mr-2" />
+                {t.logout}
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-full mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
-        {isMobile ? (
-          <div className="space-y-4">
-            <Tabs defaultValue="categories" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 h-auto">
-                <TabsTrigger value="categories" className="text-xs p-2">{t.categories}</TabsTrigger>
-                <TabsTrigger value="products" className="text-xs p-2">{t.products}</TabsTrigger>
-                <TabsTrigger value="orders" className="text-xs p-2">{t.orders}</TabsTrigger>
-              </TabsList>
-              <TabsList className="grid w-full grid-cols-3 h-auto mt-2">
-                <TabsTrigger value="customers" className="text-xs p-2">{t.customers}</TabsTrigger>
-                <TabsTrigger value="integrations" className="text-xs p-2">{t.integrations}</TabsTrigger>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+          <div className="lg:col-span-3">
+            <Tabs defaultValue="categories" className="space-y-6">
+              <TabsList className={`grid w-full ${canAccessAdminManagement() ? 'grid-cols-6' : 'grid-cols-5'}`}>
+                <TabsTrigger value="categories">{t.categories}</TabsTrigger>
+                <TabsTrigger value="products">{t.products}</TabsTrigger>
+                <TabsTrigger value="orders">{t.orders}</TabsTrigger>
+                <TabsTrigger value="customers">{t.customers}</TabsTrigger>
+                <TabsTrigger value="integrations">{t.integrations}</TabsTrigger>
                 {canAccessAdminManagement() && (
-                  <TabsTrigger value="admins" className="text-xs p-2">{t.admins}</TabsTrigger>
+                  <TabsTrigger value="admins">{t.admins}</TabsTrigger>
                 )}
               </TabsList>
 
-              <div className="mt-4">
-                <TabsContent value="categories">
-                  <CategoryManager language={language} />
+              <TabsContent value="categories">
+                <CategoryManager language={language} />
+              </TabsContent>
+
+              <TabsContent value="products">
+                <ProductManager language={language} />
+              </TabsContent>
+
+              <TabsContent value="orders">
+                <OrdersManager language={language} />
+              </TabsContent>
+
+              <TabsContent value="customers">
+                <CustomerManager language={language} />
+              </TabsContent>
+
+              <TabsContent value="integrations">
+                <ImprovedIntegrationsManager language={language} />
+              </TabsContent>
+
+              {canAccessAdminManagement() && (
+                <TabsContent value="admins">
+                  <AdminManager language={language} />
                 </TabsContent>
-                <TabsContent value="products">
-                  <ProductManager language={language} />
-                </TabsContent>
-                <TabsContent value="orders">
-                  <OrdersManager language={language} />
-                </TabsContent>
-                <TabsContent value="customers">
-                  <CustomerManager language={language} />
-                </TabsContent>
-                <TabsContent value="integrations">
-                  <ImprovedIntegrationsManager language={language} />
-                </TabsContent>
-                {canAccessAdminManagement() && (
-                  <TabsContent value="admins">
-                    <AdminManager language={language} />
-                  </TabsContent>
-                )}
-              </div>
+              )}
             </Tabs>
-
-            <div className="space-y-4">
-              <AdminPresence language={language} />
-              <StorageMonitor language={language} />
-            </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3">
-              <Tabs defaultValue="categories" className="space-y-6">
-                <TabsList className={`grid w-full ${canAccessAdminManagement() ? 'grid-cols-6' : 'grid-cols-5'}`}>
-                  <TabsTrigger value="categories">{t.categories}</TabsTrigger>
-                  <TabsTrigger value="products">{t.products}</TabsTrigger>
-                  <TabsTrigger value="orders">{t.orders}</TabsTrigger>
-                  <TabsTrigger value="customers">{t.customers}</TabsTrigger>
-                  <TabsTrigger value="integrations">{t.integrations}</TabsTrigger>
-                  {canAccessAdminManagement() && (
-                    <TabsTrigger value="admins">{t.admins}</TabsTrigger>
-                  )}
-                </TabsList>
-
-                <TabsContent value="categories">
-                  <CategoryManager language={language} />
-                </TabsContent>
-                <TabsContent value="products">
-                  <ProductManager language={language} />
-                </TabsContent>
-                <TabsContent value="orders">
-                  <OrdersManager language={language} />
-                </TabsContent>
-                <TabsContent value="customers">
-                  <CustomerManager language={language} />
-                </TabsContent>
-                <TabsContent value="integrations">
-                  <ImprovedIntegrationsManager language={language} />
-                </TabsContent>
-                {canAccessAdminManagement() && (
-                  <TabsContent value="admins">
-                    <AdminManager language={language} />
-                  </TabsContent>
-                )}
-              </Tabs>
-            </div>
-            
-            <div className="space-y-6">
-              <AdminPresence language={language} />
-              <StorageMonitor language={language} />
-            </div>
+          
+          <div className="space-y-6">
+            <AdminPresence language={language} />
+            <StorageMonitor language={language} />
           </div>
-        )}
+        </div>
       </main>
     </div>
   );
