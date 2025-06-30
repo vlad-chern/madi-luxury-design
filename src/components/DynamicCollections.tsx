@@ -79,24 +79,33 @@ const DynamicCollections = () => {
                 }}
                 onClick={() => handleCategoryClick(category.slug)}
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
+                {/* Gradient overlay for better text visibility */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+                
+                {/* Content container - centered */}
+                <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center">
-                      <span className="text-[rgb(14,14,14)] font-bold">
+                    <div className="w-12 h-12 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center shadow-lg">
+                      <span className="text-[rgb(14,14,14)] font-bold text-lg">
                         {String(index + 1).padStart(2, '0')}
                       </span>
                     </div>
-                    <h3 className="text-2xl font-bold text-white">
-                      {category.name}
-                    </h3>
                   </div>
-                  <p className="text-gray-200 mb-6">
+                  
+                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-3 drop-shadow-lg">
+                    {category.name}
+                  </h3>
+                  
+                  <p className="text-gray-100 mb-6 text-sm md:text-base max-w-xs drop-shadow-md">
                     {category.description || 'Diseño exclusivo y funcional para su hogar'}
                   </p>
+                  
                   <Button 
-                    className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] group-hover:scale-105 transition-all duration-300"
-                    onClick={() => handleCategoryClick(category.slug)}
+                    className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] group-hover:scale-105 transition-all duration-300 shadow-lg"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCategoryClick(category.slug);
+                    }}
                   >
                     Ver Más
                   </Button>
