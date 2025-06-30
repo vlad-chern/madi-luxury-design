@@ -1,24 +1,11 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Phone, Star } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { toast } from 'react-toastify';
-
-interface Product {
-  name: string;
-  images: string[];
-  mainImage: string;
-  price: string;
-  description: string;
-  category: string;
-  includes?: string[];
-  specifications?: Record<string, string>;
-  price_type?: 'fixed' | 'from';
-  price_fixed?: number;
-  price_from?: number;
-}
+import { supabase, Product } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -26,6 +13,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchProduct();
