@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,6 +10,8 @@ import CategoryManager from '@/components/admin/CategoryManager';
 import OrdersManager from '@/components/admin/OrdersManager';
 import CustomerManager from '@/components/admin/CustomerManager';
 import IntegrationsManager from '@/components/admin/IntegrationsManager';
+import StorageMonitor from '@/components/admin/StorageMonitor';
+import AdminPresence from '@/components/admin/AdminPresence';
 import { supabase } from '@/integrations/supabase/client';
 
 const AdminPanel = () => {
@@ -26,6 +29,8 @@ const AdminPanel = () => {
       orders: 'Pedidos',
       customers: 'Clientes',
       integrations: 'Integraciones',
+      storage: 'Storage',
+      presence: 'Presencia',
       checking: 'Verificando autorización...'
     },
     en: {
@@ -36,6 +41,8 @@ const AdminPanel = () => {
       orders: 'Orders',
       customers: 'Customers',
       integrations: 'Integrations',
+      storage: 'Storage',
+      presence: 'Presence',
       checking: 'Checking authorization...'
     },
     ru: {
@@ -46,6 +53,8 @@ const AdminPanel = () => {
       orders: 'Заказы',
       customers: 'Клиенты',
       integrations: 'Интеграции',
+      storage: 'Хранилище',
+      presence: 'Присутствие',
       checking: 'Проверка авторизации...'
     }
   };
@@ -133,35 +142,44 @@ const AdminPanel = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="categories" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="categories">{t.categories}</TabsTrigger>
-            <TabsTrigger value="products">{t.products}</TabsTrigger>
-            <TabsTrigger value="orders">{t.orders}</TabsTrigger>
-            <TabsTrigger value="customers">{t.customers}</TabsTrigger>
-            <TabsTrigger value="integrations">{t.integrations}</TabsTrigger>
-          </TabsList>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+          <div className="lg:col-span-3">
+            <Tabs defaultValue="categories" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="categories">{t.categories}</TabsTrigger>
+                <TabsTrigger value="products">{t.products}</TabsTrigger>
+                <TabsTrigger value="orders">{t.orders}</TabsTrigger>
+                <TabsTrigger value="customers">{t.customers}</TabsTrigger>
+                <TabsTrigger value="integrations">{t.integrations}</TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="categories">
-            <CategoryManager />
-          </TabsContent>
+              <TabsContent value="categories">
+                <CategoryManager />
+              </TabsContent>
 
-          <TabsContent value="products">
-            <ProductManager />
-          </TabsContent>
+              <TabsContent value="products">
+                <ProductManager />
+              </TabsContent>
 
-          <TabsContent value="orders">
-            <OrdersManager language={language} />
-          </TabsContent>
+              <TabsContent value="orders">
+                <OrdersManager language={language} />
+              </TabsContent>
 
-          <TabsContent value="customers">
-            <CustomerManager />
-          </TabsContent>
+              <TabsContent value="customers">
+                <CustomerManager />
+              </TabsContent>
 
-          <TabsContent value="integrations">
-            <IntegrationsManager />
-          </TabsContent>
-        </Tabs>
+              <TabsContent value="integrations">
+                <IntegrationsManager />
+              </TabsContent>
+            </Tabs>
+          </div>
+          
+          <div className="space-y-6">
+            <AdminPresence />
+            <StorageMonitor />
+          </div>
+        </div>
       </main>
     </div>
   );

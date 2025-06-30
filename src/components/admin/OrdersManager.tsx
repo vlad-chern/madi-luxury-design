@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -35,7 +34,8 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ language = 'es' }) => {
       statusUpdateSuccess: 'El estado del pedido se actualizó correctamente',
       error: 'Error',
       loadError: 'No se pudieron cargar los pedidos',
-      updateError: 'No se pudo actualizar el estado del pedido'
+      updateError: 'No se pudo actualizar el estado del pedido',
+      newOrder: 'Nuevo pedido recibido'
     },
     en: {
       title: 'Order Management',
@@ -56,7 +56,8 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ language = 'es' }) => {
       statusUpdateSuccess: 'Order status updated successfully',
       error: 'Error',
       loadError: 'Could not load orders',
-      updateError: 'Could not update order status'
+      updateError: 'Could not update order status',
+      newOrder: 'New order received'
     },
     ru: {
       title: 'Управление заказами',
@@ -77,7 +78,8 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ language = 'es' }) => {
       statusUpdateSuccess: 'Статус заказа успешно обновлен',
       error: 'Ошибка',
       loadError: 'Не удалось загрузить заказы',
-      updateError: 'Не удалось обновить статус заказа'
+      updateError: 'Не удалось обновить статус заказа',
+      newOrder: 'Получен новый заказ'
     }
   };
 
@@ -85,7 +87,37 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ language = 'es' }) => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+
+    // Real-time подписка на изменения заказов
+    const channel = supabase
+      .channel('order-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders'
+        },
+        (payload) => {
+          console.log('Order change detected:', payload);
+          
+          // Показываем уведомление о новом заказе
+          if (payload.eventType === 'INSERT') {
+            toast({
+              title: t.newOrder,
+              description: `${payload.new.customer_name} - ${payload.new.customer_email}`,
+            });
+          }
+          
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [language]);
 
   const fetchOrders = async () => {
     try {
