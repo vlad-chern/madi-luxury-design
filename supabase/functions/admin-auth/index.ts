@@ -29,6 +29,7 @@ serve(async (req) => {
       .maybeSingle()
 
     if (adminError || !admin) {
+      console.log('Admin not found:', email)
       return new Response(
         JSON.stringify({ error: 'Неверные учетные данные' }),
         { 
@@ -40,6 +41,7 @@ serve(async (req) => {
 
     // Проверяем пароль (простая проверка, в реальном проекте лучше использовать bcrypt)
     if (password !== '4gh378f') {
+      console.log('Invalid password for:', email)
       return new Response(
         JSON.stringify({ error: 'Неверные учетные данные' }),
         { 
@@ -64,8 +66,11 @@ serve(async (req) => {
       })
 
     if (sessionError) {
+      console.error('Session creation error:', sessionError)
       throw sessionError
     }
+
+    console.log('Admin authenticated successfully:', email)
 
     return new Response(
       JSON.stringify({ 
@@ -74,7 +79,8 @@ serve(async (req) => {
         admin: {
           id: admin.id,
           email: admin.email,
-          name: admin.name
+          name: admin.name,
+          role: admin.role
         }
       }),
       { 
@@ -84,6 +90,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    console.error('Admin auth error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

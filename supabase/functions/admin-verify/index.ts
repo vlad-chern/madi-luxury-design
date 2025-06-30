@@ -39,6 +39,7 @@ serve(async (req) => {
           id,
           email,
           name,
+          role,
           is_active
         )
       `)
@@ -47,6 +48,7 @@ serve(async (req) => {
       .maybeSingle()
 
     if (sessionError || !session || !session.admins?.is_active) {
+      console.log('Session verification failed:', sessionError || 'Invalid session or inactive admin')
       return new Response(
         JSON.stringify({ error: 'Недействительная сессия' }),
         { 
@@ -56,10 +58,17 @@ serve(async (req) => {
       )
     }
 
+    console.log('Admin verified successfully:', session.admins.email)
+
     return new Response(
       JSON.stringify({ 
         success: true,
-        admin: session.admins
+        admin: {
+          id: session.admins.id,
+          email: session.admins.email,
+          name: session.admins.name,
+          role: session.admins.role
+        }
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -68,6 +77,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    console.error('Admin verification error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
