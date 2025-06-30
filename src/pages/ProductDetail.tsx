@@ -15,7 +15,7 @@ import WhyChooseMadi from '@/components/product/WhyChooseMadi';
 import ProductNavigation from '@/components/product/ProductNavigation';
 
 const ProductDetail = () => {
-  const { productId } = useParams();
+  const { productSlug } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +23,7 @@ const ProductDetail = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    console.log('ProductDetail mounted, productId:', productId);
+    console.log('ProductDetail mounted, productSlug:', productSlug);
     fetchProduct();
 
     // Подписка на изменения в таблице products
@@ -39,7 +39,7 @@ const ProductDetail = () => {
         (payload) => {
           console.log('Product updated:', payload);
           // Обновляем только если это тот же товар
-          if (payload.new.slug === productId) {
+          if (payload.new.slug === productSlug) {
             fetchProduct();
           }
         }
@@ -49,11 +49,11 @@ const ProductDetail = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [productId]);
+  }, [productSlug]);
 
   const fetchProduct = async () => {
-    if (!productId) {
-      setError('Product ID not found');
+    if (!productSlug) {
+      setError('Product slug not found');
       setIsLoading(false);
       return;
     }
@@ -61,7 +61,7 @@ const ProductDetail = () => {
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Fetching product with slug:', productId);
+      console.log('Fetching product with slug:', productSlug);
       
       const { data, error } = await supabase
         .from('products')
@@ -71,7 +71,7 @@ const ProductDetail = () => {
             name
           )
         `)
-        .eq('slug', productId)
+        .eq('slug', productSlug)
         .eq('is_active', true)
         .single();
       
@@ -139,7 +139,7 @@ const ProductDetail = () => {
       <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Producto no encontrado</h1>
-          <p className="text-gray-400 mb-4">El producto con ID "{productId}" no existe o no está activo.</p>
+          <p className="text-gray-400 mb-4">El producto con slug "{productSlug}" no existe o no está activo.</p>
           <Button onClick={() => navigate('/')} className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
             Volver a inicio
           </Button>
