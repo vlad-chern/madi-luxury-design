@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +8,7 @@ import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import SEOHead from '@/components/SEOHead';
 import CookieConsent from '@/components/CookieConsent';
+import ContactForm from '@/components/ContactForm';
 
 const Index = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -54,6 +54,13 @@ const Index = () => {
     navigate(`/category/${category}`);
   };
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[rgb(14,14,14)] text-white">
       <SEOHead 
@@ -82,7 +89,10 @@ const Index = () => {
               </button>
             </div>
           </div>
-          <Button className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] border border-[rgb(180,165,142)]">
+          <Button 
+            className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] border border-[rgb(180,165,142)]"
+            onClick={() => scrollToSection('contacto')}
+          >
             Iniciar Consulta
           </Button>
         </div>
@@ -106,7 +116,11 @@ const Index = () => {
             Creamos piezas exclusivas y a medida que transforman espacios. 
             Hecho a mano con pasión en nuestro taller de Madrid.
           </p>
-          <Button size="lg" className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-12 py-4 text-lg">
+          <Button 
+            size="lg" 
+            className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-12 py-4 text-lg"
+            onClick={() => scrollToSection('colecciones')}
+          >
             Descubra las Posibilidades
           </Button>
         </div>
@@ -368,36 +382,7 @@ const Index = () => {
               </div>
             </div>
             <div className="bg-[rgb(22,22,22)] p-8 rounded-lg">
-              <form className="space-y-6">
-                <div>
-                  <Input 
-                    placeholder="Su nombre"
-                    className="bg-transparent border-gray-600 text-white placeholder-gray-400"
-                  />
-                </div>
-                <div>
-                  <Input 
-                    type="email"
-                    placeholder="Su email"
-                    className="bg-transparent border-gray-600 text-white placeholder-gray-400"
-                  />
-                </div>
-                <div>
-                  <Input 
-                    placeholder="Teléfono"
-                    className="bg-transparent border-gray-600 text-white placeholder-gray-400"
-                  />
-                </div>
-                <div>
-                  <Textarea 
-                    placeholder="Cuéntenos sobre su proyecto..."
-                    className="bg-transparent border-gray-600 text-white placeholder-gray-400 min-h-32"
-                  />
-                </div>
-                <Button className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] py-3">
-                  Enviar Solicitud de Consulta
-                </Button>
-              </form>
+              <ContactForm language="es" />
             </div>
           </div>
         </div>
