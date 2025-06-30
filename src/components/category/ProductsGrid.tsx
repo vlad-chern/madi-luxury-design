@@ -93,7 +93,21 @@ const ProductsGrid = ({ products }: ProductsGridProps) => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {sortedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard 
+              key={product.id}
+              id={product.id}
+              name={product.name}
+              description={product.description || ''}
+              price_type={product.price_type as 'fixed' | 'from' | 'consultation'}
+              price_fixed={product.price_fixed ? Number(product.price_fixed) : undefined}
+              price_from={product.price_from ? Number(product.price_from) : undefined}
+              main_image={product.images?.[0] || '/placeholder.svg'}
+              slug={product.slug}
+              category={{
+                name: product.categories?.name || '',
+                slug: product.categories?.slug || ''
+              }}
+            />
           ))}
         </div>
       </div>
