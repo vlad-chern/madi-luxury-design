@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +31,7 @@ const AdminManager = ({ language }: AdminManagerProps) => {
   const [formData, setFormData] = useState({
     email: '',
     name: '',
-    role: 'content_manager' as const,
+    role: 'content_manager' as 'admin' | 'content_manager' | 'sales',
     password: ''
   });
   const { toast } = useToast();
@@ -340,7 +339,7 @@ const AdminManager = ({ language }: AdminManagerProps) => {
               </div>
               <div>
                 <Label htmlFor="role">{t.role}</Label>
-                <Select value={formData.role} onValueChange={(value: any) => setFormData({ ...formData, role: value })}>
+                <Select value={formData.role} onValueChange={(value: 'admin' | 'content_manager' | 'sales') => setFormData({ ...formData, role: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

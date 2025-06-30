@@ -12,7 +12,8 @@ import {
   Rss,
   Settings,
   Check,
-  X
+  X,
+  ArrowLeft
 } from 'lucide-react';
 import TelegramIntegration from './integrations/TelegramIntegration';
 import FacebookIntegration from './integrations/FacebookIntegration';
@@ -53,7 +54,8 @@ const ImprovedIntegrationsManager = ({ language }: ImprovedIntegrationsManagerPr
       inactive: 'Inactivo',
       configure: 'Configurar',
       loading: 'Cargando...',
-      error: 'Error'
+      error: 'Error',
+      backToIntegrations: 'Volver a Integraciones'
     },
     en: {
       title: 'Integrations',
@@ -69,7 +71,8 @@ const ImprovedIntegrationsManager = ({ language }: ImprovedIntegrationsManagerPr
       inactive: 'Inactive',
       configure: 'Configure',
       loading: 'Loading...',
-      error: 'Error'
+      error: 'Error',
+      backToIntegrations: 'Back to Integrations'
     },
     ru: {
       title: 'Интеграции',
@@ -85,7 +88,8 @@ const ImprovedIntegrationsManager = ({ language }: ImprovedIntegrationsManagerPr
       inactive: 'Неактивно',
       configure: 'Настроить',
       loading: 'Загрузка...',
-      error: 'Ошибка'
+      error: 'Ошибка',
+      backToIntegrations: 'Назад к интеграциям'
     }
   };
 
@@ -178,7 +182,8 @@ const ImprovedIntegrationsManager = ({ language }: ImprovedIntegrationsManagerPr
     return (
       <div className="space-y-6">
         <Button variant="outline" onClick={() => setSelectedIntegration(null)}>
-          ← Назад к интеграциям
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          {t.backToIntegrations}
         </Button>
         {renderIntegrationDetails()}
       </div>
@@ -197,7 +202,7 @@ const ImprovedIntegrationsManager = ({ language }: ImprovedIntegrationsManagerPr
         {isLoading ? (
           <div className="text-center py-4">{t.loading}</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {integrationConfigs.map((config) => {
               const integration = getIntegrationByName(config.name);
               const IconComponent = config.icon;
