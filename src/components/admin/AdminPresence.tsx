@@ -14,15 +14,56 @@ interface AdminUser {
   status: 'online' | 'away' | 'offline';
 }
 
-const AdminPresence = () => {
+interface AdminPresenceProps {
+  language?: 'es' | 'en' | 'ru';
+}
+
+const AdminPresence: React.FC<AdminPresenceProps> = ({ language = 'es' }) => {
   const [activeAdmins, setActiveAdmins] = useState<AdminUser[]>([]);
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(null);
 
+  const translations = {
+    es: {
+      title: 'Administradores Activos',
+      noActiveAdmins: 'No hay administradores activos',
+      online: 'En línea',
+      away: 'Ausente',
+      offline: 'Desconectado',
+      unknown: 'Desconocido',
+      nowOnline: 'En línea ahora',
+      lastSeen: 'Visto por última vez',
+      administrator: 'Administrador'
+    },
+    en: {
+      title: 'Active Administrators',
+      noActiveAdmins: 'No active administrators',
+      online: 'Online',
+      away: 'Away',
+      offline: 'Offline',
+      unknown: 'Unknown',
+      nowOnline: 'Online now',
+      lastSeen: 'Last seen',
+      administrator: 'Administrator'
+    },
+    ru: {
+      title: 'Активные администраторы',
+      noActiveAdmins: 'Нет активных администраторов',
+      online: 'В сети',
+      away: 'Отошел',
+      offline: 'Не в сети',
+      unknown: 'Неизвестно',
+      nowOnline: 'Сейчас в сети',
+      lastSeen: 'Был в сети',
+      administrator: 'Администратор'
+    }
+  };
+
+  const t = translations[language];
+
   useEffect(() => {
-    // Инициализируем presence для текущего пользователя
     const adminData = {
-      id: 'admin-1', // В реальном приложении это будет получаться из сессии
-      name: 'Администратор',
+      id: 'admin-1',
+      name: t.administrator,
       email: 'admin@madiluxe.com',
       online_at: new Date().toISOString(),
       status: 'online' as const
@@ -30,7 +71,6 @@ const AdminPresence = () => {
 
     setCurrentUser(adminData);
 
-    // Создаем channel для присутствия администраторов
     const adminPresenceChannel = supabase
       .channel('admin_presence')
       .on('presence', { event: 'sync' }, () => {
@@ -55,12 +95,10 @@ const AdminPresence = () => {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          // Отправляем информацию о присутствии текущего пользователя
           await adminPresenceChannel.track(adminData);
         }
       });
 
-    // Обновляем статус присутствия каждые 30 секунд
     const heartbeat = setInterval(async () => {
       if (adminPresenceChannel) {
         await adminPresenceChannel.track({
@@ -70,12 +108,11 @@ const AdminPresence = () => {
       }
     }, 30000);
 
-    // Cleanup при размонтировании
     return () => {
       clearInterval(heartbeat);
       supabase.removeChannel(adminPresenceChannel);
     };
-  }, []);
+  }, [language]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -88,10 +125,10 @@ const AdminPresence = () => {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'online': return 'В сети';
-      case 'away': return 'Отошел';
-      case 'offline': return 'Не в сети';
-      default: return 'Неизвестно';
+      case 'online': return t.online;
+      case 'away': return t.away;
+      case 'offline': return t.offline;
+      default: return t.unknown;
     }
   };
 
@@ -103,7 +140,7 @@ const AdminPresence = () => {
     const lastSeen = new Date(onlineAt);
     const now = new Date();
     const diffMinutes = (now.getTime() - lastSeen.getTime()) / (1000 * 60);
-    return diffMinutes < 5; // Считаем активным если был в сети менее 5 минут назад
+    return diffMinutes < 5;
   };
 
   return (
@@ -111,7 +148,7 @@ const AdminPresence = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="w-5 h-5" />
-          Активные администраторы
+          {t.title}
           <Badge variant="secondary">{activeAdmins.length}</Badge>
         </CardTitle>
       </CardHeader>
@@ -120,7 +157,7 @@ const AdminPresence = () => {
           {activeAdmins.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Нет активных администраторов</p>
+              <p>{t.noActiveAdmins}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -146,8 +183,8 @@ const AdminPresence = () => {
                     </Badge>
                     <span className="text-xs text-gray-500">
                       {isRecentlyActive(admin.online_at) 
-                        ? 'Сейчас в сети' 
-                        : `Был в сети: ${new Date(admin.online_at).toLocaleTimeString()}`
+                        ? t.nowOnline
+                        : `${t.lastSeen}: ${new Date(admin.online_at).toLocaleTimeString()}`
                       }
                     </span>
                   </div>

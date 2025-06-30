@@ -16,10 +16,49 @@ interface StorageEvent {
   created_at: string;
 }
 
-const StorageMonitor = () => {
+interface StorageMonitorProps {
+  language?: 'es' | 'en' | 'ru';
+}
+
+const StorageMonitor: React.FC<StorageMonitorProps> = ({ language = 'es' }) => {
   const [storageEvents, setStorageEvents] = useState<StorageEvent[]>([]);
   const [isMonitoring, setIsMonitoring] = useState(false);
   const { toast } = useToast();
+
+  const translations = {
+    es: {
+      title: 'Monitor de Almacenamiento',
+      active: 'Activo',
+      inactive: 'Inactivo',
+      noEvents: 'No hay eventos de almacenamiento para mostrar',
+      eventsWillAppear: 'Los eventos aparecerán al subir o eliminar archivos',
+      uploaded: 'Subido',
+      deleted: 'Eliminado',
+      fileUploaded: 'Archivo subido'
+    },
+    en: {
+      title: 'Storage Monitor',
+      active: 'Active',
+      inactive: 'Inactive',
+      noEvents: 'No storage events to display',
+      eventsWillAppear: 'Events will appear when uploading or deleting files',
+      uploaded: 'Uploaded',
+      deleted: 'Deleted',
+      fileUploaded: 'File uploaded'
+    },
+    ru: {
+      title: 'Мониторинг Storage',
+      active: 'Активен',
+      inactive: 'Неактивен',
+      noEvents: 'Нет событий Storage для отображения',
+      eventsWillAppear: 'События появятся при загрузке или удалении файлов',
+      uploaded: 'Загружен',
+      deleted: 'Удален',
+      fileUploaded: 'Файл загружен'
+    }
+  };
+
+  const t = translations[language];
 
   useEffect(() => {
     startStorageMonitoring();
@@ -29,16 +68,13 @@ const StorageMonitor = () => {
   const startStorageMonitoring = () => {
     setIsMonitoring(true);
     
-    // Симуляция мониторинга Storage (в реальном проекте это может быть WebSocket или polling)
     const interval = setInterval(async () => {
       try {
-        // Здесь можно добавить логику для получения последних событий Storage
-        // Пока что это демонстрационная версия
         console.log('Monitoring storage events...');
       } catch (error) {
         console.error('Storage monitoring error:', error);
       }
-    }, 10000); // Проверяем каждые 10 секунд
+    }, 10000);
 
     return () => {
       clearInterval(interval);
@@ -75,10 +111,10 @@ const StorageMonitor = () => {
       created_at: new Date().toISOString()
     };
 
-    setStorageEvents(prev => [newEvent, ...prev.slice(0, 49)]); // Держим только последние 50 событий
+    setStorageEvents(prev => [newEvent, ...prev.slice(0, 49)]);
     
     toast({
-      title: "Файл загружен",
+      title: t.fileUploaded,
       description: `${fileName} (${formatFileSize(fileSize)})`,
     });
   };
@@ -89,10 +125,10 @@ const StorageMonitor = () => {
         <div className="flex justify-between items-center">
           <CardTitle className="flex items-center gap-2">
             <Upload className="w-5 h-5" />
-            Мониторинг Storage
+            {t.title}
           </CardTitle>
           <Badge variant={isMonitoring ? "default" : "secondary"}>
-            {isMonitoring ? "Активен" : "Неактивен"}
+            {isMonitoring ? t.active : t.inactive}
           </Badge>
         </div>
       </CardHeader>
@@ -101,8 +137,8 @@ const StorageMonitor = () => {
           {storageEvents.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               <Upload className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Нет событий Storage для отображения</p>
-              <p className="text-sm">События появятся при загрузке или удалении файлов</p>
+              <p>{t.noEvents}</p>
+              <p className="text-sm">{t.eventsWillAppear}</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -119,7 +155,7 @@ const StorageMonitor = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={event.event_type === 'upload' ? 'default' : 'destructive'}>
-                      {event.event_type === 'upload' ? 'Загружен' : 'Удален'}
+                      {event.event_type === 'upload' ? t.uploaded : t.deleted}
                     </Badge>
                     <span className="text-xs text-gray-500">
                       {new Date(event.created_at).toLocaleTimeString()}

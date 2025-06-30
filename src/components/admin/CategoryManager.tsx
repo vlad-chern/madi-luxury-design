@@ -9,7 +9,11 @@ import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase, Category } from '@/lib/supabase';
 
-const CategoryManager = () => {
+interface CategoryManagerProps {
+  language?: 'es' | 'en' | 'ru';
+}
+
+const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -23,10 +27,89 @@ const CategoryManager = () => {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
+  const translations = {
+    es: {
+      title: 'Gestión de Categorías',
+      addCategory: 'Agregar Categoría',
+      editCategory: 'Editar Categoría',
+      name: 'Nombre',
+      description: 'Descripción',
+      slug: 'Slug (URL)',
+      image: 'Imagen de la categoría',
+      actions: 'Acciones',
+      update: 'Actualizar',
+      add: 'Agregar',
+      uploading: 'Subiendo...',
+      noPhoto: 'Sin foto',
+      categoryUpdated: 'Categoría actualizada',
+      categoryUpdateSuccess: 'La categoría se actualizó exitosamente',
+      categoryAdded: 'Categoría agregada',
+      categoryAddSuccess: 'La categoría se agregó exitosamente',
+      categoryDeleted: 'Categoría eliminada',
+      categoryDeleteSuccess: 'La categoría se eliminó exitosamente',
+      error: 'Error',
+      loadError: 'No se pudieron cargar las categorías',
+      saveError: 'No se pudo guardar la categoría',
+      deleteError: 'No se pudo eliminar la categoría',
+      uploadError: 'No se pudo subir la imagen'
+    },
+    en: {
+      title: 'Category Management',
+      addCategory: 'Add Category',
+      editCategory: 'Edit Category',
+      name: 'Name',
+      description: 'Description',
+      slug: 'Slug (URL)',
+      image: 'Category image',
+      actions: 'Actions',
+      update: 'Update',
+      add: 'Add',
+      uploading: 'Uploading...',
+      noPhoto: 'No photo',
+      categoryUpdated: 'Category updated',
+      categoryUpdateSuccess: 'Category updated successfully',
+      categoryAdded: 'Category added',
+      categoryAddSuccess: 'Category added successfully',
+      categoryDeleted: 'Category deleted',
+      categoryDeleteSuccess: 'Category deleted successfully',
+      error: 'Error',
+      loadError: 'Could not load categories',
+      saveError: 'Could not save category',
+      deleteError: 'Could not delete category',
+      uploadError: 'Could not upload image'
+    },
+    ru: {
+      title: 'Управление категориями',
+      addCategory: 'Добавить категорию',
+      editCategory: 'Редактировать категорию',
+      name: 'Название',
+      description: 'Описание',
+      slug: 'Слаг (URL)',
+      image: 'Изображение категории',
+      actions: 'Действия',
+      update: 'Обновить',
+      add: 'Добавить',
+      uploading: 'Загрузка...',
+      noPhoto: 'Нет фото',
+      categoryUpdated: 'Категория обновлена',
+      categoryUpdateSuccess: 'Категория успешно обновлена',
+      categoryAdded: 'Категория добавлена',
+      categoryAddSuccess: 'Категория успешно добавлена',
+      categoryDeleted: 'Категория удалена',
+      categoryDeleteSuccess: 'Категория успешно удалена',
+      error: 'Ошибка',
+      loadError: 'Не удалось загрузить категории',
+      saveError: 'Не удалось сохранить категорию',
+      deleteError: 'Не удалось удалить категорию',
+      uploadError: 'Не удалось загрузить изображение'
+    }
+  };
+
+  const t = translations[language];
+
   useEffect(() => {
     fetchCategories();
 
-    // Real-time подписка на изменения категорий
     const channel = supabase
       .channel('category-changes')
       .on(
@@ -60,8 +143,8 @@ const CategoryManager = () => {
     } catch (error) {
       console.error('Error fetching categories:', error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить категории",
+        title: t.error,
+        description: t.loadError,
         variant: "destructive",
       });
     }
@@ -88,8 +171,8 @@ const CategoryManager = () => {
     } catch (error) {
       console.error('Error uploading image:', error);
       toast({
-        title: "Ошибка загрузки",
-        description: "Не удалось загрузить изображение",
+        title: t.error,
+        description: t.uploadError,
         variant: "destructive",
       });
       return null;
@@ -102,7 +185,6 @@ const CategoryManager = () => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      // Show preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setFormData(prev => ({ ...prev, image_url: e.target?.result as string }));
@@ -117,7 +199,6 @@ const CategoryManager = () => {
     try {
       let imageUrl = formData.image_url;
 
-      // Upload new image if selected
       if (imageFile) {
         const uploadedUrl = await uploadImage(imageFile);
         if (uploadedUrl) {
@@ -139,8 +220,8 @@ const CategoryManager = () => {
         if (error) throw error;
 
         toast({
-          title: "Категория обновлена",
-          description: `Категория "${formData.name}" успешно обновлена`,
+          title: t.categoryUpdated,
+          description: t.categoryUpdateSuccess,
         });
       } else {
         const { error } = await supabase
@@ -150,8 +231,8 @@ const CategoryManager = () => {
         if (error) throw error;
 
         toast({
-          title: "Категория добавлена",
-          description: `Категория "${formData.name}" успешно добавлена`,
+          title: t.categoryAdded,
+          description: t.categoryAddSuccess,
         });
       }
 
@@ -163,8 +244,8 @@ const CategoryManager = () => {
     } catch (error) {
       console.error('Error saving category:', error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось сохранить категорию",
+        title: t.error,
+        description: t.saveError,
         variant: "destructive",
       });
     }
@@ -192,15 +273,15 @@ const CategoryManager = () => {
       if (error) throw error;
 
       toast({
-        title: "Категория удалена",
-        description: "Категория успешно удалена",
+        title: t.categoryDeleted,
+        description: t.categoryDeleteSuccess,
       });
       fetchCategories();
     } catch (error) {
       console.error('Error deleting category:', error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось удалить категорию",
+        title: t.error,
+        description: t.deleteError,
         variant: "destructive",
       });
     }
@@ -222,23 +303,23 @@ const CategoryManager = () => {
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Управление категориями</CardTitle>
+          <CardTitle>{t.title}</CardTitle>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={openAddDialog}>
                 <Plus className="w-4 h-4 mr-2" />
-                Добавить категорию
+                {t.addCategory}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>
-                  {editingCategory ? 'Редактировать категорию' : 'Добавить категорию'}
+                  {editingCategory ? t.editCategory : t.addCategory}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Название</Label>
+                  <Label htmlFor="name">{t.name}</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -247,7 +328,7 @@ const CategoryManager = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="description">Описание</Label>
+                  <Label htmlFor="description">{t.description}</Label>
                   <Input
                     id="description"
                     value={formData.description}
@@ -256,7 +337,7 @@ const CategoryManager = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="slug">Слаг (URL)</Label>
+                  <Label htmlFor="slug">{t.slug}</Label>
                   <Input
                     id="slug"
                     value={formData.slug}
@@ -265,7 +346,7 @@ const CategoryManager = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="image">Изображение категории</Label>
+                  <Label htmlFor="image">{t.image}</Label>
                   <div className="space-y-2">
                     <Input
                       id="image"
@@ -297,10 +378,10 @@ const CategoryManager = () => {
                   {isUploading ? (
                     <>
                       <Upload className="w-4 h-4 mr-2 animate-spin" />
-                      Загрузка...
+                      {t.uploading}
                     </>
                   ) : (
-                    editingCategory ? 'Обновить' : 'Добавить'
+                    editingCategory ? t.update : t.add
                   )}
                 </Button>
               </form>
@@ -312,11 +393,11 @@ const CategoryManager = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Изображение</TableHead>
-              <TableHead>Название</TableHead>
-              <TableHead>Описание</TableHead>
-              <TableHead>Слаг</TableHead>
-              <TableHead>Действия</TableHead>
+              <TableHead>{t.image}</TableHead>
+              <TableHead>{t.name}</TableHead>
+              <TableHead>{t.description}</TableHead>
+              <TableHead>{t.slug}</TableHead>
+              <TableHead>{t.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -331,7 +412,7 @@ const CategoryManager = () => {
                     />
                   ) : (
                     <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">Нет фото</span>
+                      <span className="text-gray-400 text-xs">{t.noPhoto}</span>
                     </div>
                   )}
                 </TableCell>

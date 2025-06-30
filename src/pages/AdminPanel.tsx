@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -154,7 +153,7 @@ const AdminPanel = () => {
               </TabsList>
 
               <TabsContent value="categories">
-                <CategoryManager />
+                <CategoryManager language={language} />
               </TabsContent>
 
               <TabsContent value="products">
@@ -176,8 +175,8 @@ const AdminPanel = () => {
           </div>
           
           <div className="space-y-6">
-            <AdminPresence />
-            <StorageMonitor />
+            <AdminPresence language={language} />
+            <StorageMonitor language={language} />
           </div>
         </div>
       </main>
