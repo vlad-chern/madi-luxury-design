@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect } from 'react';
 import { supabase, Product, Category } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +11,7 @@ export const useCategoryData = (categorySlug: string | undefined) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('useCategoryData hook categorySlug:', categorySlug);
     if (categorySlug) {
       fetchCategoryAndProducts();
     } else {
@@ -106,4 +106,3 @@ export const useCategoryData = (categorySlug: string | undefined) => {
     refetch: fetchCategoryAndProducts
   };
 };
-

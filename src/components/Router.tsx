@@ -1,3 +1,4 @@
+
 import { Routes, Route } from 'react-router-dom';
 import Index from '@/pages/Index';
 import AboutUs from '@/pages/AboutUs';
@@ -14,7 +15,7 @@ const Router = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/about" element={<AboutUs />} />
-      <Route path="/category/:slug" element={<CategoryPage />} />
+      <Route path="/category/:categorySlug" element={<CategoryPage />} />
       <Route path="/product/:categorySlug/:productSlug" element={<ProductDetail />} />
       <Route path="/admin" element={<AdminLogin />} />
       <Route path="/admin/panel" element={<AdminPanel />} />

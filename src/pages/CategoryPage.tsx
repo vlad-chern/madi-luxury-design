@@ -1,5 +1,4 @@
 
-
 import { useParams } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
@@ -17,6 +16,8 @@ import { RefreshCw } from 'lucide-react';
 const CategoryPage = () => {
   const { categorySlug } = useParams();
   const { products, categoryData, isLoading, error, refetch } = useCategoryData(categorySlug);
+
+  console.log('CategoryPage categorySlug:', categorySlug);
 
   if (isLoading) {
     return <CategoryLoading />;
@@ -81,4 +82,3 @@ const CategoryPage = () => {
 };
 
 export default CategoryPage;
-
