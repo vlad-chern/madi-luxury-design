@@ -155,7 +155,7 @@ const AdminPanel = () => {
           {/* Main content area */}
           <div className="flex-1 lg:flex-none lg:w-3/4">
             <Tabs defaultValue="categories" className="space-y-4 md:space-y-6">
-              <TabsList className={`grid w-full text-xs md:text-sm overflow-x-auto ${canAccessAdminManagement() ? 'grid-cols-3 sm:grid-cols-6' : 'grid-cols-3 sm:grid-cols-5'}`}>
+              <TabsList className={`grid w-full text-xs md:text-sm overflow-x-auto ${canAccessAdminManagement() ? 'grid-cols-6' : 'grid-cols-5'}`}>
                 <TabsTrigger value="categories" className="px-2 py-1 md:px-3 md:py-1.5">{t.categories}</TabsTrigger>
                 <TabsTrigger value="products" className="px-2 py-1 md:px-3 md:py-1.5">{t.products}</TabsTrigger>
                 <TabsTrigger value="orders" className="px-2 py-1 md:px-3 md:py-1.5">{t.orders}</TabsTrigger>
