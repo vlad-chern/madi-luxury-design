@@ -8,13 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  slug: string;
-}
+import { supabase, Category } from '@/lib/supabase';
 
 const CategoryManager = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -28,45 +22,69 @@ const CategoryManager = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Загружаем существующие категории
-    const defaultCategories: Category[] = [
-      { id: '1', name: 'Cocinas', description: 'Современные кухни', slug: 'cocinas' },
-      { id: '2', name: 'Vestidores', description: 'Гардеробные комнаты', slug: 'vestidores' },
-      { id: '3', name: 'Armarios y Zonas de Entrada', description: 'Шкафы и прихожие', slug: 'armarios' }
-    ];
-    setCategories(defaultCategories);
+    fetchCategories();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (editingCategory) {
-      // Редактирование существующей категории
-      setCategories(prev => prev.map(cat => 
-        cat.id === editingCategory.id 
-          ? { ...cat, ...formData }
-          : cat
-      ));
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
       toast({
-        title: "Категория обновлена",
-        description: `Категория "${formData.name}" успешно обновлена`,
-      });
-    } else {
-      // Добавление новой категории
-      const newCategory: Category = {
-        id: Date.now().toString(),
-        ...formData
-      };
-      setCategories(prev => [...prev, newCategory]);
-      toast({
-        title: "Категория добавлена",
-        description: `Категория "${formData.name}" успешно добавлена`,
+        title: "Ошибка",
+        description: "Не удалось загрузить категории",
+        variant: "destructive",
       });
     }
+  };
 
-    setFormData({ name: '', description: '', slug: '' });
-    setEditingCategory(null);
-    setIsDialogOpen(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (editingCategory) {
+        const { error } = await supabase
+          .from('categories')
+          .update(formData)
+          .eq('id', editingCategory.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Категория обновлена",
+          description: `Категория "${formData.name}" успешно обновлена`,
+        });
+      } else {
+        const { error } = await supabase
+          .from('categories')
+          .insert([formData]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Категория добавлена",
+          description: `Категория "${formData.name}" успешно добавлена`,
+        });
+      }
+
+      setFormData({ name: '', description: '', slug: '' });
+      setEditingCategory(null);
+      setIsDialogOpen(false);
+      fetchCategories();
+    } catch (error) {
+      console.error('Error saving category:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось сохранить категорию",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEdit = (category: Category) => {
@@ -79,12 +97,28 @@ const CategoryManager = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setCategories(prev => prev.filter(cat => cat.id !== id));
-    toast({
-      title: "Категория удалена",
-      description: "Категория успешно удалена",
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Категория удалена",
+        description: "Категория успешно удалена",
+      });
+      fetchCategories();
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить категорию",
+        variant: "destructive",
+      });
+    }
   };
 
   const openAddDialog = () => {

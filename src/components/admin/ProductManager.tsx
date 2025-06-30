@@ -8,131 +8,223 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Trash2, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  images: string[];
-  videos: string[];
-}
+import { supabase, Product, Category } from '@/lib/supabase';
 
 const ProductManager = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
     name: '',
+    slug: '',
     description: '',
-    price: '',
-    category: '',
+    price_from: '',
+    price_fixed: '',
+    price_type: 'from' as 'from' | 'fixed',
+    category_id: '',
     images: [] as string[],
-    videos: [] as string[]
+    videos: [] as string[],
+    includes: [] as string[],
+    specifications: {} as Record<string, any>,
+    is_active: true
   });
+  const [includesList, setIncludesList] = useState('');
+  const [specificationsList, setSpecificationsList] = useState('');
   const { toast } = useToast();
 
-  const categories = ['cocinas', 'vestidores', 'armarios'];
-
   useEffect(() => {
-    // Загружаем существующие товары (пример данных)
-    const sampleProducts: Product[] = [
-      {
-        id: '1',
-        name: 'Geometría Gourmet',
-        description: 'Современная кухня с геометрическими формами',
-        price: 2500,
-        category: 'cocinas',
-        images: ['/lovable-uploads/65ef1dab-4ca5-4dd6-8188-1774fef552af.png'],
-        videos: []
-      },
-      {
-        id: '2',
-        name: 'Orden Natural',
-        description: 'Естественный порядок в гардеробной',
-        price: 1800,
-        category: 'vestidores',
-        images: [],
-        videos: []
-      }
-    ];
-    setProducts(sampleProducts);
+    fetchProducts();
+    fetchCategories();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (editingProduct) {
-      setProducts(prev => prev.map(product => 
-        product.id === editingProduct.id 
-          ? { ...product, ...formData, price: parseFloat(formData.price) }
-          : product
-      ));
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories (
+            id,
+            name,
+            slug
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
       toast({
-        title: "Товар обновлен",
-        description: `Товар "${formData.name}" успешно обновлен`,
-      });
-    } else {
-      const newProduct: Product = {
-        id: Date.now().toString(),
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        category: formData.category,
-        images: formData.images,
-        videos: formData.videos
-      };
-      setProducts(prev => [...prev, newProduct]);
-      toast({
-        title: "Товар добавлен",
-        description: `Товар "${formData.name}" успешно добавлен`,
+        title: "Ошибка",
+        description: "Не удалось загрузить товары",
+        variant: "destructive",
       });
     }
+  };
 
-    setFormData({ name: '', description: '', price: '', category: '', images: [], videos: [] });
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const includes = includesList.split('\n').filter(item => item.trim() !== '');
+      const specifications = specificationsList.split('\n').reduce((acc, line) => {
+        const [key, value] = line.split(':').map(s => s.trim());
+        if (key && value) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as Record<string, any>);
+
+      const productData = {
+        ...formData,
+        price_from: formData.price_type === 'from' && formData.price_from ? parseFloat(formData.price_from) : null,
+        price_fixed: formData.price_type === 'fixed' && formData.price_fixed ? parseFloat(formData.price_fixed) : null,
+        includes,
+        specifications
+      };
+
+      if (editingProduct) {
+        const { error } = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', editingProduct.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Товар обновлен",
+          description: `Товар "${formData.name}" успешно обновлен`,
+        });
+      } else {
+        const { error } = await supabase
+          .from('products')
+          .insert([productData]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Товар добавлен",
+          description: `Товар "${formData.name}" успешно добавлен`,
+        });
+      }
+
+      resetForm();
+      setIsDialogOpen(false);
+      fetchProducts();
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось сохранить товар",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      slug: '',
+      description: '',
+      price_from: '',
+      price_fixed: '',
+      price_type: 'from',
+      category_id: '',
+      images: [],
+      videos: [],
+      includes: [],
+      specifications: {},
+      is_active: true
+    });
+    setIncludesList('');
+    setSpecificationsList('');
     setEditingProduct(null);
-    setIsDialogOpen(false);
   };
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
     setFormData({
       name: product.name,
+      slug: product.slug,
       description: product.description,
-      price: product.price.toString(),
-      category: product.category,
+      price_from: product.price_from?.toString() || '',
+      price_fixed: product.price_fixed?.toString() || '',
+      price_type: product.price_type,
+      category_id: product.category_id,
       images: product.images,
-      videos: product.videos
+      videos: product.videos,
+      includes: product.includes,
+      specifications: product.specifications,
+      is_active: product.is_active
     });
+    setIncludesList(product.includes.join('\n'));
+    setSpecificationsList(Object.entries(product.specifications).map(([key, value]) => `${key}: ${value}`).join('\n'));
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setProducts(prev => prev.filter(product => product.id !== id));
-    toast({
-      title: "Товар удален",
-      description: "Товар успешно удален",
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Товар удален",
+        description: "Товар успешно удален",
+      });
+      fetchProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить товар",
+        variant: "destructive",
+      });
+    }
   };
 
   const openAddDialog = () => {
-    setEditingProduct(null);
-    setFormData({ name: '', description: '', price: '', category: '', images: [], videos: [] });
+    resetForm();
     setIsDialogOpen(true);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      // Здесь будет логика загрузки файлов
-      toast({
-        title: "Функция в разработке",
-        description: "Загрузка изображений будет реализована с Supabase Storage",
-      });
-    }
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
+  const handleNameChange = (name: string) => {
+    setFormData(prev => ({
+      ...prev,
+      name,
+      slug: generateSlug(name)
+    }));
   };
 
   return (
@@ -147,22 +239,34 @@ const ProductManager = () => {
                 Добавить товар
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingProduct ? 'Редактировать товар' : 'Добавить товар'}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Название</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Название</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => handleNameChange(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="slug">Слаг (URL)</Label>
+                    <Input
+                      id="slug"
+                      value={formData.slug}
+                      onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                      required
+                    />
+                  </div>
                 </div>
+
                 <div>
                   <Label htmlFor="description">Описание</Label>
                   <Textarea
@@ -172,51 +276,93 @@ const ProductManager = () => {
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="price">Цена (EUR)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                    required
-                  />
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="price_type">Тип цены</Label>
+                    <Select value={formData.price_type} onValueChange={(value: 'from' | 'fixed') => setFormData(prev => ({ ...prev, price_type: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="from">От (цены)</SelectItem>
+                        <SelectItem value="fixed">Фиксированная</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="price_from">Цена "от" (EUR)</Label>
+                    <Input
+                      id="price_from"
+                      type="number"
+                      step="0.01"
+                      value={formData.price_from}
+                      onChange={(e) => setFormData(prev => ({ ...prev, price_from: e.target.value }))}
+                      disabled={formData.price_type !== 'from'}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="price_fixed">Фиксированная цена (EUR)</Label>
+                    <Input
+                      id="price_fixed"
+                      type="number"
+                      step="0.01"
+                      value={formData.price_fixed}
+                      onChange={(e) => setFormData(prev => ({ ...prev, price_fixed: e.target.value }))}
+                      disabled={formData.price_type !== 'fixed'}
+                    />
+                  </div>
                 </div>
+
                 <div>
                   <Label htmlFor="category">Категория</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                  <Select value={formData.category_id} onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите категорию" />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map(category => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div>
-                  <Label htmlFor="images">Изображения</Label>
-                  <Input
-                    id="images"
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
+                  <Label htmlFor="includes">Что включено (каждый пункт с новой строки)</Label>
+                  <Textarea
+                    id="includes"
+                    value={includesList}
+                    onChange={(e) => setIncludesList(e.target.value)}
+                    placeholder="Дизайн персонализированный и asesoramiento profesional&#10;Fabricación artesanal con materiales premium"
+                    rows={5}
                   />
                 </div>
+
                 <div>
-                  <Label htmlFor="videos">Видео</Label>
-                  <Input
-                    id="videos"
-                    type="file"
-                    multiple
-                    accept="video/*"
-                    onChange={handleImageUpload}
+                  <Label htmlFor="specifications">Характеристики (формат: Ключ: Значение)</Label>
+                  <Textarea
+                    id="specifications"
+                    value={specificationsList}
+                    onChange={(e) => setSpecificationsList(e.target.value)}
+                    placeholder="Tiempo de entrega: 6-8 semanas&#10;Materiales: Madera noble, mármol natural"
+                    rows={5}
                   />
                 </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_active"
+                      checked={formData.is_active}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                    />
+                    <Label htmlFor="is_active">Активный товар</Label>
+                  </div>
+                </div>
+
                 <Button type="submit" className="w-full">
                   {editingProduct ? 'Обновить' : 'Добавить'}
                 </Button>
@@ -232,6 +378,7 @@ const ProductManager = () => {
               <TableHead>Название</TableHead>
               <TableHead>Категория</TableHead>
               <TableHead>Цена</TableHead>
+              <TableHead>Статус</TableHead>
               <TableHead>Действия</TableHead>
             </TableRow>
           </TableHeader>
@@ -239,8 +386,15 @@ const ProductManager = () => {
             {products.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>{product.name}</TableCell>
-                <TableCell>{product.category}</TableCell>
-                <TableCell>от {product.price}€</TableCell>
+                <TableCell>{product.categories?.name}</TableCell>
+                <TableCell>
+                  {product.price_type === 'from' && product.price_from
+                    ? `от ${product.price_from}€`
+                    : product.price_fixed
+                    ? `${product.price_fixed}€`
+                    : 'Не указана'}
+                </TableCell>
+                <TableCell>{product.is_active ? 'Активен' : 'Неактивен'}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(product)}>

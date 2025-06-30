@@ -1,40 +1,59 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { signInWithEmail, getCurrentUser } from '@/lib/supabase';
 
 const AdminLogin = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        navigate('/admin');
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Проверка учетных данных
-    if (username === 'Madiluxe' && password === '4gh378f') {
-      localStorage.setItem('admin_logged_in', 'true');
+    try {
+      const { data, error } = await signInWithEmail(email, password);
+      
+      if (error) {
+        toast({
+          title: "Ошибка входа",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else if (data.user) {
+        toast({
+          title: "Успешный вход",
+          description: "Добро пожаловать в админ-панель",
+        });
+        navigate('/admin');
+      }
+    } catch (error) {
       toast({
-        title: "Успешный вход",
-        description: "Добро пожаловать в админ-панель",
-      });
-      navigate('/admin');
-    } else {
-      toast({
-        title: "Ошибка входа",
-        description: "Неверные учетные данные",
+        title: "Ошибка",
+        description: "Произошла ошибка при входе",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   return (
@@ -46,12 +65,12 @@ const AdminLogin = () => {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <Label htmlFor="username">Логин</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
