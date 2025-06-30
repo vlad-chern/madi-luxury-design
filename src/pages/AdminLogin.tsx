@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,8 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { signInWithEmail, getCurrentUser } from '@/lib/supabase';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('info@madiluxe.com');
+  const [password, setPassword] = useState('4gh378f');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
