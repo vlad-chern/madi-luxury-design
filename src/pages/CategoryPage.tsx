@@ -1,4 +1,5 @@
 
+
 import { useParams } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
@@ -29,10 +30,10 @@ const CategoryPage = () => {
         <div className="pt-20 flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4 text-red-400">
-              {error || 'Категория не найдена'}
+              {error || 'Categoría no encontrada'}
             </h1>
             <p className="text-gray-400 mb-6">
-              Возможно, проблема с подключением к серверу или категория была удалена
+              Posiblemente hay un problema con la conexión al servidor o la categoría fue eliminada
             </p>
             <div className="flex gap-4 justify-center">
               <Button 
@@ -40,14 +41,14 @@ const CategoryPage = () => {
                 className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Попробовать снова
+                Intentar de nuevo
               </Button>
               <Button 
                 onClick={() => window.location.href = '/'}
                 variant="outline"
                 className="border-[rgb(180,165,142)] text-[rgb(180,165,142)] hover:bg-[rgb(180,165,142)] hover:text-[rgb(14,14,14)]"
               >
-                На главную
+                Ir a inicio
               </Button>
             </div>
           </div>
@@ -80,3 +81,4 @@ const CategoryPage = () => {
 };
 
 export default CategoryPage;
+

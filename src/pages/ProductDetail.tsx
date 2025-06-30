@@ -1,4 +1,5 @@
 
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import Footer from '@/components/Footer';
@@ -8,10 +9,12 @@ import ProductSEO from '@/components/product/ProductSEO';
 import ProductContent from '@/components/product/ProductContent';
 import { ProductLoading, ProductError, ProductNotFound } from '@/components/product/ProductStates';
 import { useProductDetail } from '@/hooks/useProductDetail';
+import { useAppNavigation } from '@/hooks/useAppNavigation';
 
 const ProductDetail = () => {
   const { productSlug } = useParams();
   const navigate = useNavigate();
+  const { goBack } = useAppNavigation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const { product, isLoading, error } = useProductDetail(productSlug);
@@ -27,7 +30,15 @@ const ProductDetail = () => {
     return 'Precio bajo consulta';
   };
 
-  const handleBack = () => navigate('/');
+  const handleBack = () => {
+    // Проверяем, можем ли мы вернуться назад в истории
+    if (window.history.length > 1) {
+      goBack();
+    } else {
+      // Если истории нет, идем на главную
+      navigate('/');
+    }
+  };
 
   if (isLoading) {
     return <ProductLoading />;
@@ -62,3 +73,4 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
+

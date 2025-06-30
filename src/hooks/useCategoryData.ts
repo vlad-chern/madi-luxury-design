@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from 'react';
 import { supabase, Product, Category } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -15,7 +16,7 @@ export const useCategoryData = (categorySlug: string | undefined) => {
       fetchCategoryAndProducts();
     } else {
       setIsLoading(false);
-      setError('Slug категории не найден');
+      setError('Slug de categoría no encontrado');
     }
   }, [categorySlug]);
 
@@ -36,18 +37,18 @@ export const useCategoryData = (categorySlug: string | undefined) => {
       const categoryResult = await Promise.race([
         categoryPromise,
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Category request timeout')), 10000)
+          setTimeout(() => reject(new Error('Tiempo de espera agotado para la categoría')), 10000)
         )
       ]) as any;
       
       if (categoryResult.error) {
         console.error('Category fetch error:', categoryResult.error);
-        throw new Error(`Ошибка загрузки категории: ${categoryResult.error.message}`);
+        throw new Error(`Error al cargar la categoría: ${categoryResult.error.message}`);
       }
       
       if (!categoryResult.data) {
         console.error('Category not found for slug:', categorySlug);
-        throw new Error('Категория не найдена');
+        throw new Error('Categoría no encontrada');
       }
       
       console.log('Category data loaded:', categoryResult.data);
@@ -70,13 +71,13 @@ export const useCategoryData = (categorySlug: string | undefined) => {
       const productsResult = await Promise.race([
         productsPromise,
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Products request timeout')), 10000)
+          setTimeout(() => reject(new Error('Tiempo de espera agotado para los productos')), 10000)
         )
       ]) as any;
       
       if (productsResult.error) {
         console.error('Products fetch error:', productsResult.error);
-        throw new Error(`Ошибка загрузки товаров: ${productsResult.error.message}`);
+        throw new Error(`Error al cargar los productos: ${productsResult.error.message}`);
       }
       
       console.log('Products loaded:', productsResult.data?.length || 0);
@@ -84,11 +85,11 @@ export const useCategoryData = (categorySlug: string | undefined) => {
       
     } catch (error: any) {
       console.error('Error fetching category data:', error);
-      const errorMessage = error.message || 'Неизвестная ошибка при загрузке данных';
+      const errorMessage = error.message || 'Error desconocido al cargar los datos';
       setError(errorMessage);
       
       toast({
-        title: "Ошибка загрузки",
+        title: "Error de carga",
         description: errorMessage,
         variant: "destructive",
       });
@@ -105,3 +106,4 @@ export const useCategoryData = (categorySlug: string | undefined) => {
     refetch: fetchCategoryAndProducts
   };
 };
+

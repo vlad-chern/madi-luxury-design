@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Phone, Mail, MapPin, Instagram, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +7,26 @@ import SEOHead from '@/components/SEOHead';
 
 const AboutUs = () => {
   const navigate = useNavigate();
+
+  const handleScrollToContact = () => {
+    navigate('/');
+    setTimeout(() => {
+      const contactSection = document.getElementById('contacto');
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
+  const handleScrollToCollections = () => {
+    navigate('/');
+    setTimeout(() => {
+      const collectionsSection = document.getElementById('colecciones');
+      if (collectionsSection) {
+        collectionsSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
 
   return (
     <div className="min-h-screen bg-[rgb(14,14,14)] text-white">
@@ -202,7 +221,7 @@ const AboutUs = () => {
                 <Button 
                   size="lg" 
                   className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-8 py-4"
-                  onClick={() => navigate('/#contacto')}
+                  onClick={handleScrollToContact}
                 >
                   Empezar mi proyecto
                 </Button>
@@ -210,7 +229,7 @@ const AboutUs = () => {
                   variant="outline" 
                   size="lg" 
                   className="border-[rgb(180,165,142)] text-[rgb(180,165,142)] hover:bg-[rgb(180,165,142)] hover:text-[rgb(14,14,14)] px-8 py-4"
-                  onClick={() => navigate('/#colecciones')}
+                  onClick={handleScrollToCollections}
                 >
                   Ver nuestro trabajo
                 </Button>
