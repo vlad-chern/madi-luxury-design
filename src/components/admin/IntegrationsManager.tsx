@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Send, Facebook, BarChart3, Tag } from 'lucide-react';
 
 interface Integration {
   id: string;
@@ -37,11 +38,23 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
     is_active: false
   });
 
+  const [gtmConfig, setGtmConfig] = useState({
+    container_id: '',
+    is_active: false
+  });
+
+  const [gaConfig, setGaConfig] = useState({
+    measurement_id: '',
+    is_active: false
+  });
+
   const translations = {
     es: {
       title: 'Gestión de Integraciones',
       telegram: 'Telegram',
       facebook: 'Facebook CAPI',
+      gtm: 'Google Tag Manager',
+      ga: 'Google Analytics',
       loading: 'Cargando integraciones...',
       activateTelegram: 'Activar notificaciones de Telegram',
       botToken: 'Bot Token',
@@ -51,6 +64,12 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       accessToken: 'Access Token',
       pixelId: 'Pixel ID',
       saveFacebook: 'Guardar Configuración de Facebook',
+      activateGtm: 'Activar Google Tag Manager',
+      containerId: 'Container ID',
+      saveGtm: 'Guardar Configuración de GTM',
+      activateGa: 'Activar Google Analytics',
+      measurementId: 'Measurement ID',
+      saveGa: 'Guardar Configuración de GA',
       success: 'Éxito',
       integrationUpdated: 'Integración actualizada correctamente',
       error: 'Error',
@@ -59,12 +78,16 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       botTokenDesc: 'Token del bot de Telegram (obtenido de @BotFather)',
       chatIdDesc: 'ID del chat o grupo donde enviar las notificaciones',
       accessTokenDesc: 'Token de acceso de Facebook para la API de conversiones',
-      pixelIdDesc: 'ID del pixel de Facebook'
+      pixelIdDesc: 'ID del pixel de Facebook',
+      containerIdDesc: 'ID del contenedor de Google Tag Manager (GTM-XXXXXXX)',
+      measurementIdDesc: 'ID de medición de Google Analytics (G-XXXXXXXXXX)'
     },
     en: {
       title: 'Integrations Management',
       telegram: 'Telegram',
       facebook: 'Facebook CAPI',
+      gtm: 'Google Tag Manager',
+      ga: 'Google Analytics',
       loading: 'Loading integrations...',
       activateTelegram: 'Activate Telegram notifications',
       botToken: 'Bot Token',
@@ -74,6 +97,12 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       accessToken: 'Access Token',
       pixelId: 'Pixel ID',
       saveFacebook: 'Save Facebook Configuration',
+      activateGtm: 'Activate Google Tag Manager',
+      containerId: 'Container ID',
+      saveGtm: 'Save GTM Configuration',
+      activateGa: 'Activate Google Analytics',
+      measurementId: 'Measurement ID',
+      saveGa: 'Save GA Configuration',
       success: 'Success',
       integrationUpdated: 'Integration updated successfully',
       error: 'Error',
@@ -82,12 +111,16 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       botTokenDesc: 'Telegram bot token (obtained from @BotFather)',
       chatIdDesc: 'Chat or group ID to send notifications to',
       accessTokenDesc: 'Facebook access token for conversions API',
-      pixelIdDesc: 'Facebook pixel ID'
+      pixelIdDesc: 'Facebook pixel ID',
+      containerIdDesc: 'Google Tag Manager container ID (GTM-XXXXXXX)',
+      measurementIdDesc: 'Google Analytics measurement ID (G-XXXXXXXXXX)'
     },
     ru: {
       title: 'Управление интеграциями',
       telegram: 'Telegram',
       facebook: 'Facebook CAPI',
+      gtm: 'Google Tag Manager',
+      ga: 'Google Analytics',
       loading: 'Загрузка интеграций...',
       activateTelegram: 'Активировать уведомления Telegram',
       botToken: 'Токен бота',
@@ -97,6 +130,12 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       accessToken: 'Токен доступа',
       pixelId: 'ID пикселя',
       saveFacebook: 'Сохранить настройки Facebook',
+      activateGtm: 'Активировать Google Tag Manager',
+      containerId: 'ID контейнера',
+      saveGtm: 'Сохранить настройки GTM',
+      activateGa: 'Активировать Google Analytics',
+      measurementId: 'ID измерения',
+      saveGa: 'Сохранить настройки GA',
       success: 'Успех',
       integrationUpdated: 'Интеграция успешно обновлена',
       error: 'Ошибка',
@@ -105,7 +144,9 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       botTokenDesc: 'Токен бота Telegram (получен от @BotFather)',
       chatIdDesc: 'ID чата или группы для отправки уведомлений',
       accessTokenDesc: 'Токен доступа Facebook для API конверсий',
-      pixelIdDesc: 'ID пикселя Facebook'
+      pixelIdDesc: 'ID пикселя Facebook',
+      containerIdDesc: 'ID контейнера Google Tag Manager (GTM-XXXXXXX)',
+      measurementIdDesc: 'ID измерения Google Analytics (G-XXXXXXXXXX)'
     }
   };
 
@@ -128,6 +169,8 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       // Установка конфигураций
       const telegram = data?.find(i => i.name === 'telegram');
       const facebook = data?.find(i => i.name === 'facebook_capi');
+      const gtm = data?.find(i => i.name === 'google_tag_manager');
+      const ga = data?.find(i => i.name === 'google_analytics');
 
       if (telegram) {
         setTelegramConfig({
@@ -142,6 +185,20 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
           access_token: facebook.config.access_token || '',
           pixel_id: facebook.config.pixel_id || '',
           is_active: facebook.is_active
+        });
+      }
+
+      if (gtm) {
+        setGtmConfig({
+          container_id: gtm.config.container_id || '',
+          is_active: gtm.is_active
+        });
+      }
+
+      if (ga) {
+        setGaConfig({
+          measurement_id: ga.config.measurement_id || '',
+          is_active: ga.is_active
         });
       }
     } catch (error) {
@@ -160,11 +217,13 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
     try {
       const { error } = await supabase
         .from('integrations')
-        .update({
+        .upsert({
+          name,
           config,
           is_active,
-        })
-        .eq('name', name);
+        }, {
+          onConflict: 'name'
+        });
 
       if (error) throw error;
 
@@ -198,6 +257,18 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
     }, facebookConfig.is_active);
   };
 
+  const handleGtmSave = () => {
+    updateIntegration('google_tag_manager', {
+      container_id: gtmConfig.container_id
+    }, gtmConfig.is_active);
+  };
+
+  const handleGaSave = () => {
+    updateIntegration('google_analytics', {
+      measurement_id: gaConfig.measurement_id
+    }, gaConfig.is_active);
+  };
+
   if (loading) {
     return <div>{t.loading}</div>;
   }
@@ -210,9 +281,23 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="telegram" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="telegram">{t.telegram}</TabsTrigger>
-              <TabsTrigger value="facebook">{t.facebook}</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="telegram" className="flex items-center space-x-1">
+                <Send className="w-4 h-4" />
+                <span>{t.telegram}</span>
+              </TabsTrigger>
+              <TabsTrigger value="facebook" className="flex items-center space-x-1">
+                <Facebook className="w-4 h-4" />
+                <span>{t.facebook}</span>
+              </TabsTrigger>
+              <TabsTrigger value="gtm" className="flex items-center space-x-1">
+                <Tag className="w-4 h-4" />
+                <span>{t.gtm}</span>
+              </TabsTrigger>
+              <TabsTrigger value="ga" className="flex items-center space-x-1">
+                <BarChart3 className="w-4 h-4" />
+                <span>{t.ga}</span>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="telegram" className="space-y-4">
@@ -313,6 +398,76 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
 
                 <Button onClick={handleFacebookSave} className="w-full">
                   {t.saveFacebook}
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="gtm" className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={gtmConfig.is_active}
+                    onCheckedChange={(checked) => 
+                      setGtmConfig(prev => ({ ...prev, is_active: checked }))
+                    }
+                  />
+                  <Label>{t.activateGtm}</Label>
+                </div>
+
+                <div className="grid gap-4">
+                  <div>
+                    <Label htmlFor="gtm-container">{t.containerId}</Label>
+                    <Input
+                      id="gtm-container"
+                      placeholder="GTM-XXXXXXX"
+                      value={gtmConfig.container_id}
+                      onChange={(e) => 
+                        setGtmConfig(prev => ({ ...prev, container_id: e.target.value }))
+                      }
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      {t.containerIdDesc}
+                    </p>
+                  </div>
+                </div>
+
+                <Button onClick={handleGtmSave} className="w-full">
+                  {t.saveGtm}
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="ga" className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={gaConfig.is_active}
+                    onCheckedChange={(checked) => 
+                      setGaConfig(prev => ({ ...prev, is_active: checked }))
+                    }
+                  />
+                  <Label>{t.activateGa}</Label>
+                </div>
+
+                <div className="grid gap-4">
+                  <div>
+                    <Label htmlFor="ga-measurement">{t.measurementId}</Label>
+                    <Input
+                      id="ga-measurement"
+                      placeholder="G-XXXXXXXXXX"
+                      value={gaConfig.measurement_id}
+                      onChange={(e) => 
+                        setGaConfig(prev => ({ ...prev, measurement_id: e.target.value }))
+                      }
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      {t.measurementIdDesc}
+                    </p>
+                  </div>
+                </div>
+
+                <Button onClick={handleGaSave} className="w-full">
+                  {t.saveGa}
                 </Button>
               </div>
             </TabsContent>

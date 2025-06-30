@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import SEOHead from '@/components/SEOHead';
+import CookieConsent from '@/components/CookieConsent';
 
 const Index = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -404,6 +406,7 @@ const Index = () => {
       {/* Footer */}
       <Footer />
       <WhatsAppWidget />
+      <CookieConsent />
     </div>
   );
 };

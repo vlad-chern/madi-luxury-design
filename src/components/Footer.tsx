@@ -1,5 +1,6 @@
 
 import { Phone, Mail, MapPin } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -25,10 +26,10 @@ const Footer = () => {
           <div>
             <h4 className="font-bold mb-4 text-[rgb(180,165,142)]">Servicios</h4>
             <div className="space-y-2">
-              <div className="text-gray-400">Cocinas a medida</div>
-              <div className="text-gray-400">Vestidores</div>
-              <div className="text-gray-400">Armarios</div>
-              <div className="text-gray-400">Mobiliario integral</div>
+              <Link to="/category/cocinas" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Cocinas a medida</Link>
+              <Link to="/category/vestidores" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Vestidores</Link>
+              <Link to="/category/armarios" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Armarios</Link>
+              <a href="/#contacto" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Mobiliario integral</a>
             </div>
           </div>
           <div>
@@ -50,7 +51,26 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 MADI Muebles. Todos los derechos reservados.</p>
+          <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+            <p>&copy; 2024 MADI Muebles. Todos los derechos reservados.</p>
+            <div className="flex space-x-6">
+              <Link to="/privacy-policy" className="hover:text-[rgb(180,165,142)] transition-colors">
+                Política de Privacidad
+              </Link>
+              <Link to="/terms-of-service" className="hover:text-[rgb(180,165,142)] transition-colors">
+                Términos de Servicio
+              </Link>
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('cookie_consent');
+                  window.location.reload();
+                }}
+                className="hover:text-[rgb(180,165,142)] transition-colors"
+              >
+                Configurar Cookies
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
