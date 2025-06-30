@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -16,6 +15,7 @@ export interface Category {
   name: string;
   description: string;
   slug: string;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
 }

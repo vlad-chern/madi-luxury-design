@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase, Category } from '@/lib/supabase';
 
@@ -17,8 +17,11 @@ const CategoryManager = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    slug: ''
+    slug: '',
+    image_url: ''
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -44,14 +47,73 @@ const CategoryManager = () => {
     }
   };
 
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      setIsUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `categories/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('madiluxe')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('madiluxe')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Ошибка загрузки",
+        description: "Не удалось загрузить изображение",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFormData(prev => ({ ...prev, image_url: e.target?.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      let imageUrl = formData.image_url;
+
+      // Upload new image if selected
+      if (imageFile) {
+        const uploadedUrl = await uploadImage(imageFile);
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        }
+      }
+
+      const categoryData = {
+        ...formData,
+        image_url: imageUrl
+      };
+
       if (editingCategory) {
         const { error } = await supabase
           .from('categories')
-          .update(formData)
+          .update(categoryData)
           .eq('id', editingCategory.id);
 
         if (error) throw error;
@@ -63,7 +125,7 @@ const CategoryManager = () => {
       } else {
         const { error } = await supabase
           .from('categories')
-          .insert([formData]);
+          .insert([categoryData]);
 
         if (error) throw error;
 
@@ -73,7 +135,8 @@ const CategoryManager = () => {
         });
       }
 
-      setFormData({ name: '', description: '', slug: '' });
+      setFormData({ name: '', description: '', slug: '', image_url: '' });
+      setImageFile(null);
       setEditingCategory(null);
       setIsDialogOpen(false);
       fetchCategories();
@@ -92,8 +155,10 @@ const CategoryManager = () => {
     setFormData({
       name: category.name,
       description: category.description,
-      slug: category.slug
+      slug: category.slug,
+      image_url: category.image_url || ''
     });
+    setImageFile(null);
     setIsDialogOpen(true);
   };
 
@@ -123,8 +188,14 @@ const CategoryManager = () => {
 
   const openAddDialog = () => {
     setEditingCategory(null);
-    setFormData({ name: '', description: '', slug: '' });
+    setFormData({ name: '', description: '', slug: '', image_url: '' });
+    setImageFile(null);
     setIsDialogOpen(true);
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({ ...prev, image_url: '' }));
+    setImageFile(null);
   };
 
   return (
@@ -139,7 +210,7 @@ const CategoryManager = () => {
                 Добавить категорию
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>
                   {editingCategory ? 'Редактировать категорию' : 'Добавить категорию'}
@@ -173,8 +244,44 @@ const CategoryManager = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full">
-                  {editingCategory ? 'Обновить' : 'Добавить'}
+                <div>
+                  <Label htmlFor="image">Изображение категории</Label>
+                  <div className="space-y-2">
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                    {formData.image_url && (
+                      <div className="relative inline-block">
+                        <img 
+                          src={formData.image_url} 
+                          alt="Preview" 
+                          className="w-20 h-20 object-cover rounded-md border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0"
+                          onClick={removeImage}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={isUploading}>
+                  {isUploading ? (
+                    <>
+                      <Upload className="w-4 h-4 mr-2 animate-spin" />
+                      Загрузка...
+                    </>
+                  ) : (
+                    editingCategory ? 'Обновить' : 'Добавить'
+                  )}
                 </Button>
               </form>
             </DialogContent>
@@ -185,6 +292,7 @@ const CategoryManager = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Изображение</TableHead>
               <TableHead>Название</TableHead>
               <TableHead>Описание</TableHead>
               <TableHead>Слаг</TableHead>
@@ -194,6 +302,19 @@ const CategoryManager = () => {
           <TableBody>
             {categories.map((category) => (
               <TableRow key={category.id}>
+                <TableCell>
+                  {category.image_url ? (
+                    <img 
+                      src={category.image_url} 
+                      alt={category.name}
+                      className="w-12 h-12 object-cover rounded-md"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                      <span className="text-gray-400 text-xs">Нет фото</span>
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell>{category.name}</TableCell>
                 <TableCell>{category.description}</TableCell>
                 <TableCell>{category.slug}</TableCell>
