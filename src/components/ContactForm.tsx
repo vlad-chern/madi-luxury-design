@@ -32,15 +32,15 @@ const ContactForm: React.FC<ContactFormProps> = ({
   const translations = {
     es: {
       title: productName ? `Consulta sobre ${productName}` : 'Contacta con nosotros',
-      nameLabel: 'Nombre completo',
-      namePlaceholder: 'Tu nombre y apellidos',
-      emailLabel: 'Email',
-      emailPlaceholder: 'tu@email.com',
-      phoneLabel: 'Teléfono (opcional)',
-      phonePlaceholder: '+34 xxx xxx xxx',
-      messageLabel: 'Mensaje',
-      messagePlaceholder: 'Cuéntanos más sobre tu proyecto...',
-      submitButton: 'Enviar Consulta',
+      nameLabel: 'Su nombre',
+      namePlaceholder: 'Su nombre',
+      emailLabel: 'Su email',
+      emailPlaceholder: 'Su email',
+      phoneLabel: 'Teléfono',
+      phonePlaceholder: 'Teléfono',
+      messageLabel: 'Cuéntenos sobre su proyecto...',
+      messagePlaceholder: 'Cuéntenos sobre su proyecto...',
+      submitButton: 'Enviar Solicitud de Consulta',
       submittingButton: 'Enviando...',
       successTitle: '¡Consulta enviada!',
       successMessage: 'Hemos recibido tu consulta. Nos pondremos en contacto contigo muy pronto.',
@@ -132,15 +132,18 @@ const ContactForm: React.FC<ContactFormProps> = ({
 
   if (isSubmitted) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-        <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-green-800 mb-2">
+      <div className="bg-[rgb(22,22,22)] p-8 rounded-lg border border-green-500/20">
+        <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-green-400 mb-2 text-center">
           {t.successTitle}
         </h3>
-        <p className="text-green-700 mb-4">
+        <p className="text-gray-300 mb-4 text-center">
           {t.successMessage}
         </p>
-        <Button onClick={resetForm} variant="outline">
+        <Button 
+          onClick={resetForm} 
+          className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
+        >
           {t.newConsultation}
         </Button>
       </div>
@@ -148,67 +151,62 @@ const ContactForm: React.FC<ContactFormProps> = ({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-xl font-semibold mb-6">{t.title}</h3>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="bg-[rgb(22,22,22)] p-8 rounded-lg">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <Label htmlFor="name">{t.nameLabel} *</Label>
           <Input
-            id="name"
             type="text"
             placeholder={t.namePlaceholder}
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            className="bg-transparent border-gray-600 text-white placeholder-gray-400"
             required
           />
         </div>
 
         <div>
-          <Label htmlFor="email">{t.emailLabel} *</Label>
           <Input
-            id="email"
             type="email"
             placeholder={t.emailPlaceholder}
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+            className="bg-transparent border-gray-600 text-white placeholder-gray-400"
             required
           />
         </div>
 
         <div>
-          <Label htmlFor="phone">{t.phoneLabel}</Label>
           <Input
-            id="phone"
             type="tel"
             placeholder={t.phonePlaceholder}
             value={formData.phone}
             onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+            className="bg-transparent border-gray-600 text-white placeholder-gray-400"
           />
         </div>
 
         <div>
-          <Label htmlFor="message">{t.messageLabel}</Label>
           <Textarea
-            id="message"
             placeholder={t.messagePlaceholder}
             rows={4}
             value={formData.message}
             onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+            className="bg-transparent border-gray-600 text-white placeholder-gray-400 min-h-32"
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button 
+          type="submit" 
+          className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] py-3" 
+          disabled={isSubmitting}
+        >
           {isSubmitting ? (
             <>
               <Send className="w-4 h-4 mr-2 animate-spin" />
               {t.submittingButton}
             </>
           ) : (
-            <>
-              <Send className="w-4 h-4 mr-2" />
-              {t.submitButton}
-            </>
+            t.submitButton
           )}
         </Button>
       </form>
