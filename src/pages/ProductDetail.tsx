@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import SEOHead from '@/components/SEOHead';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import ContactForm from '@/components/ContactForm';
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -15,6 +18,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -96,7 +100,7 @@ const ProductDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
-        <div>Загрузка товара...</div>
+        <div>Cargando producto...</div>
       </div>
     );
   }
@@ -105,7 +109,7 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Товар не найден</h1>
+          <h1 className="text-2xl font-bold mb-4">Producto no encontrado</h1>
           <Button onClick={() => navigate('/')} className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
             Volver a inicio
           </Button>
@@ -120,59 +124,32 @@ const ProductDetail = () => {
         const { error } = await supabase
           .from('orders')
           .insert([{
-            customer_name: 'Клиент (быстрый заказ)',
+            customer_name: 'Cliente (pedido rápido)',
             customer_email: 'quick-order@temp.com',
             customer_phone: phoneNumber,
             product_id: product.id,
-            message: `Быстрый заказ для товара: ${product.name}`
+            message: `Pedido rápido para producto: ${product.name}`
           }]);
 
         if (error) throw error;
 
         toast({
-          title: "Заявка отправлена",
-          description: "Мы свяжемся с вами в ближайшее время",
+          title: "Consulta enviada",
+          description: "Nos pondremos en contacto contigo muy pronto",
         });
         setPhoneNumber('');
       } catch (error) {
         console.error('Error creating order:', error);
         toast({
-          title: "Ошибка",
-          description: "Не удалось отправить заявку",
+          title: "Error",
+          description: "No se pudo enviar la consulta",
           variant: "destructive",
         });
       }
     } else {
       toast({
-        title: "Ошибка",
-        description: "Пожалуйста, введите номер телефона",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleConsultation = async () => {
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .insert([{
-          customer_name: 'Клиент (консультация)',
-          customer_email: 'consultation@temp.com',
-          product_id: product.id,
-          message: `Запрос консультации для товара: ${product.name}`
-        }]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Заявка на консультацию отправлена",
-        description: "Мы свяжемся с вами для уточнения деталей",
-      });
-    } catch (error) {
-      console.error('Error creating consultation:', error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось отправить заявку",
+        title: "Error",
+        description: "Por favor, introduce tu número de teléfono",
         variant: "destructive",
       });
     }
@@ -184,7 +161,7 @@ const ProductDetail = () => {
     } else if (product.price_type === 'from' && product.price_from) {
       return `desde ${product.price_from}€`;
     }
-    return 'Цена по запросу';
+    return 'Precio bajo consulta';
   };
 
   const mainImage = product.images && product.images.length > 0 
@@ -209,12 +186,23 @@ const ProductDetail = () => {
             </Button>
             <div className="text-2xl font-bold text-[rgb(180,165,142)]">MADI</div>
           </div>
-          <Button 
-            onClick={handleConsultation}
-            className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
-          >
-            Solicitar Consulta
-          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
+                Solicitar Consulta
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Consulta sobre {product.name}</DialogTitle>
+              </DialogHeader>
+              <ContactForm 
+                productId={product.id}
+                productName={product.name}
+                language="es"
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       </nav>
 
@@ -280,11 +268,11 @@ const ProductDetail = () => {
                 {/* Quick Order */}
                 <div className="bg-[rgb(22,22,22)] p-6 rounded-lg">
                   <h3 className="text-xl font-bold mb-4 text-[rgb(180,165,142)]">Pedido Rápido</h3>
-                  <p className="text-gray-300 mb-4">Introduzca su número de teléfono para un contacto inmediato</p>
+                  <p className="text-gray-300 mb-4">Introduce tu número de teléfono para contacto inmediato</p>
                   <div className="flex gap-3">
                     <Input 
                       type="tel"
-                      placeholder="Su número de teléfono"
+                      placeholder="Tu número de teléfono"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       className="bg-transparent border-gray-600 text-white placeholder-gray-400 flex-1"
@@ -300,13 +288,26 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Main CTA */}
-                <Button 
-                  size="lg"
-                  onClick={handleConsultation}
-                  className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] py-4 text-lg"
-                >
-                  Solicitar Consulta Detallada
-                </Button>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      size="lg"
+                      className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] py-4 text-lg"
+                    >
+                      Solicitar Consulta Detallada
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Consulta sobre {product.name}</DialogTitle>
+                    </DialogHeader>
+                    <ContactForm 
+                      productId={product.id}
+                      productName={product.name}
+                      language="es"
+                    />
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </div>
@@ -331,7 +332,7 @@ const ProductDetail = () => {
                   <Star className="w-8 h-8 text-[rgb(14,14,14)]" />
                 </div>
                 <h3 className="text-xl font-bold mb-4 text-[rgb(180,165,142)]">Diseño Personalizado</h3>
-                <p className="text-gray-300">Cada pieza se adapta perfectamente a su espacio y estilo de vida.</p>
+                <p className="text-gray-300">Cada pieza se adapta perfectamente a tu espacio y estilo de vida.</p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center mx-auto mb-6">
