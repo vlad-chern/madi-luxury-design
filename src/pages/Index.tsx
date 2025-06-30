@@ -43,6 +43,31 @@ const Index = () => {
         title: 'Hagamos Realidad',
         subtitle: 'su Visión',
         description: 'Cada proyecto comienza con una conversación. Cuéntenos sobre su espacio, sus sueños y su estilo de vida. Nuestro equipo de diseñadores estará encantado de transformar sus ideas en realidad.'
+      },
+      social: {
+        collaborate: 'Colaboramos con los mejores arquitectos y diseñadores de interiores'
+      },
+      portfolio: {
+        title: 'Inspiración para su',
+        subtitle: 'Espacio'
+      },
+      collections: {
+        title: 'Nuestras',
+        subtitle: 'Colecciones'
+      },
+      process: {
+        title: 'El Viaje',
+        subtitle: 'MADI',
+        steps: [
+          { step: "01", title: "Consulta y Visión", desc: "Escuchamos sus sueños y analizamos el espacio" },
+          { step: "02", title: "Diseño y Visualización 3D", desc: "Creamos renders fotorrealistas de su proyecto" },
+          { step: "03", title: "Artesanía y Fabricación", desc: "Nuestros maestros artesanos dan vida al diseño" },
+          { step: "04", title: "Entrega e Instalación", desc: "Instalación perfecta en su hogar" }
+        ]
+      },
+      testimonials: {
+        title: 'Lo que Dicen Nuestros',
+        subtitle: 'Clientes'
       }
     },
     EN: {
@@ -69,6 +94,31 @@ const Index = () => {
         title: 'Let\'s Make Your',
         subtitle: 'Vision Reality',
         description: 'Every project begins with a conversation. Tell us about your space, your dreams, and your lifestyle. Our design team will be delighted to transform your ideas into reality.'
+      },
+      social: {
+        collaborate: 'We collaborate with the best architects and interior designers'
+      },
+      portfolio: {
+        title: 'Inspiration for your',
+        subtitle: 'Space'
+      },
+      collections: {
+        title: 'Our',
+        subtitle: 'Collections'
+      },
+      process: {
+        title: 'The MADI',
+        subtitle: 'Journey',
+        steps: [
+          { step: "01", title: "Consultation & Vision", desc: "We listen to your dreams and analyze the space" },
+          { step: "02", title: "Design & 3D Visualization", desc: "We create photorealistic renders of your project" },
+          { step: "03", title: "Craftsmanship & Manufacturing", desc: "Our master craftsmen bring the design to life" },
+          { step: "04", title: "Delivery & Installation", desc: "Perfect installation in your home" }
+        ]
+      },
+      testimonials: {
+        title: 'What Our',
+        subtitle: 'Clients Say'
       }
     }
   };
@@ -267,10 +317,7 @@ const Index = () => {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center">
             <p className="text-gray-400 text-base sm:text-lg mb-8">
-              {language === 'ES' 
-                ? 'Colaboramos con los mejores arquitectos y diseñadores de interiores'
-                : 'We collaborate with the best architects and interior designers'
-              }
+              {t.social.collaborate}
             </p>
             <div className="flex justify-center items-center space-x-8 sm:space-x-12 opacity-60">
               <div className="text-lg sm:text-2xl font-bold">ARQUITECTOS+</div>
@@ -312,7 +359,7 @@ const Index = () => {
       <section id="proyectos" className="py-16 sm:py-24">
         <div className="container mx-auto px-4 sm:px-6">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-12 sm:mb-16">
-            {language === 'ES' ? 'Inspiración para su' : 'Inspiration for your'} <span className="text-[rgb(180,165,142)]">{language === 'ES' ? 'Espacio' : 'Space'}</span>
+            {t.portfolio.title} <span className="text-[rgb(180,165,142)]">{t.portfolio.subtitle}</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {portfolioImages.map((image, index) => (
@@ -337,15 +384,10 @@ const Index = () => {
       <section id="proceso" className="py-16 sm:py-24">
         <div className="container mx-auto px-6">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
-            El Viaje <span className="text-[rgb(180,165,142)]">MADI</span>
+            {t.process.title} <span className="text-[rgb(180,165,142)]">{t.process.subtitle}</span>
           </h2>
           <div className="grid md:grid-cols-4 gap-8">
-            {[
-              { step: "01", title: "Consulta y Visión", desc: "Escuchamos sus sueños y analizamos el espacio" },
-              { step: "02", title: "Diseño y Visualización 3D", desc: "Creamos renders fotorrealistas de su proyecto" },
-              { step: "03", title: "Artesanía y Fabricación", desc: "Nuestros maestros artesanos dan vida al diseño" },
-              { step: "04", title: "Entrega e Instalación", desc: "Instalación perfecta en su hogar" }
-            ].map((item, index) => (
+            {t.process.steps.map((item, index) => (
               <div key={index} className="text-center">
                 <div className="w-16 h-16 bg-[rgb(180,165,142)] rounded-full flex items-center justify-center text-[rgb(14,14,14)] font-bold text-xl mx-auto mb-6">
                   {item.step}
@@ -362,7 +404,7 @@ const Index = () => {
       <section className="py-16 sm:py-24 bg-[rgb(18,18,18)]">
         <div className="container mx-auto px-6">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
-            Lo que Dicen Nuestros <span className="text-[rgb(180,165,142)]">Clientes</span>
+            {t.testimonials.title} <span className="text-[rgb(180,165,142)]">{t.testimonials.subtitle}</span>
           </h2>
           <div className="max-w-4xl mx-auto">
             <div className="bg-[rgb(22,22,22)] rounded-lg p-12 text-center">

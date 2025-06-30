@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase, Category } from '@/lib/supabase';
@@ -21,7 +22,9 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) =>
     name: '',
     description: '',
     slug: '',
-    image_url: ''
+    image_url: '',
+    name_en: '',
+    description_en: ''
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -51,7 +54,11 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) =>
       loadError: 'No se pudieron cargar las categorías',
       saveError: 'No se pudo guardar la categoría',
       deleteError: 'No se pudo eliminar la categoría',
-      uploadError: 'No se pudo subir la imagen'
+      uploadError: 'No se pudo subir la imagen',
+      spanish: 'Español',
+      english: 'Inglés',
+      nameEn: 'Nombre (Inglés)',
+      descriptionEn: 'Descripción (Inglés)'
     },
     en: {
       title: 'Category Management',
@@ -76,7 +83,11 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) =>
       loadError: 'Could not load categories',
       saveError: 'Could not save category',
       deleteError: 'Could not delete category',
-      uploadError: 'Could not upload image'
+      uploadError: 'Could not upload image',
+      spanish: 'Spanish',
+      english: 'English',
+      nameEn: 'Name (English)',
+      descriptionEn: 'Description (English)'
     },
     ru: {
       title: 'Управление категориями',
@@ -101,7 +112,11 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) =>
       loadError: 'Не удалось загрузить категории',
       saveError: 'Не удалось сохранить категорию',
       deleteError: 'Не удалось удалить категорию',
-      uploadError: 'Не удалось загрузить изображение'
+      uploadError: 'Не удалось загрузить изображение',
+      spanish: 'Испанский',
+      english: 'Английский',
+      nameEn: 'Название (Английский)',
+      descriptionEn: 'Описание (Английский)'
     }
   };
 
@@ -236,7 +251,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) =>
         });
       }
 
-      setFormData({ name: '', description: '', slug: '', image_url: '' });
+      setFormData({ name: '', description: '', slug: '', image_url: '', name_en: '', description_en: '' });
       setImageFile(null);
       setEditingCategory(null);
       setIsDialogOpen(false);
@@ -257,7 +272,9 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) =>
       name: category.name,
       description: category.description,
       slug: category.slug,
-      image_url: category.image_url || ''
+      image_url: category.image_url || '',
+      name_en: category.name_en || '',
+      description_en: category.description_en || ''
     });
     setImageFile(null);
     setIsDialogOpen(true);
@@ -289,7 +306,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) =>
 
   const openAddDialog = () => {
     setEditingCategory(null);
-    setFormData({ name: '', description: '', slug: '', image_url: '' });
+    setFormData({ name: '', description: '', slug: '', image_url: '', name_en: '', description_en: '' });
     setImageFile(null);
     setIsDialogOpen(true);
   };
@@ -311,31 +328,60 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) =>
                 {t.addCategory}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingCategory ? t.editCategory : t.addCategory}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">{t.name}</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">{t.description}</Label>
-                  <Input
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    required
-                  />
-                </div>
+                <Tabs defaultValue="spanish" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="spanish">{t.spanish}</TabsTrigger>
+                    <TabsTrigger value="english">{t.english}</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="spanish" className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">{t.name}</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="description">{t.description}</Label>
+                      <Input
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                        required
+                      />
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="english" className="space-y-4">
+                    <div>
+                      <Label htmlFor="name_en">{t.nameEn}</Label>
+                      <Input
+                        id="name_en"
+                        value={formData.name_en}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name_en: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="description_en">{t.descriptionEn}</Label>
+                      <Input
+                        id="description_en"
+                        value={formData.description_en}
+                        onChange={(e) => setFormData(prev => ({ ...prev, description_en: e.target.value }))}
+                      />
+                    </div>
+                  </TabsContent>
+                </Tabs>
+
                 <div>
                   <Label htmlFor="slug">{t.slug}</Label>
                   <Input
@@ -345,6 +391,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) =>
                     required
                   />
                 </div>
+                
                 <div>
                   <Label htmlFor="image">{t.image}</Label>
                   <div className="space-y-2">
@@ -374,6 +421,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) =>
                     )}
                   </div>
                 </div>
+                
                 <Button type="submit" className="w-full" disabled={isUploading}>
                   {isUploading ? (
                     <>
@@ -416,8 +464,22 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ language = 'es' }) =>
                     </div>
                   )}
                 </TableCell>
-                <TableCell>{category.name}</TableCell>
-                <TableCell>{category.description}</TableCell>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">{category.name}</div>
+                    {category.name_en && (
+                      <div className="text-sm text-gray-500">{category.name_en}</div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div>
+                    <div className="max-w-xs truncate">{category.description}</div>
+                    {category.description_en && (
+                      <div className="text-sm text-gray-500 max-w-xs truncate">{category.description_en}</div>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell>{category.slug}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">

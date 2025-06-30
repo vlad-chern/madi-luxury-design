@@ -17,6 +17,8 @@ export interface Category {
   description: string;
   slug: string;
   image_url: string | null;
+  name_en: string | null;
+  description_en: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -34,6 +36,10 @@ export interface Product {
   videos: string[];
   includes: string[];
   specifications: Record<string, any>;
+  name_en: string | null;
+  description_en: string | null;
+  includes_en: string[] | null;
+  specifications_en: Record<string, any> | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

@@ -78,27 +78,33 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          description_en: string | null
           id: string
           image_url: string | null
           name: string
+          name_en: string | null
           slug: string
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           description?: string | null
+          description_en?: string | null
           id?: string
           image_url?: string | null
           name: string
+          name_en?: string | null
           slug: string
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           description?: string | null
+          description_en?: string | null
           id?: string
           image_url?: string | null
           name?: string
+          name_en?: string | null
           slug?: string
           updated_at?: string | null
         }
@@ -213,16 +219,20 @@ export type Database = {
           category_id: string | null
           created_at: string | null
           description: string | null
+          description_en: string | null
           id: string
           images: string[] | null
           includes: string[] | null
+          includes_en: string[] | null
           is_active: boolean | null
           name: string
+          name_en: string | null
           price_fixed: number | null
           price_from: number | null
           price_type: string | null
           slug: string
           specifications: Json | null
+          specifications_en: Json | null
           updated_at: string | null
           videos: string[] | null
         }
@@ -230,16 +240,20 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          description_en?: string | null
           id?: string
           images?: string[] | null
           includes?: string[] | null
+          includes_en?: string[] | null
           is_active?: boolean | null
           name: string
+          name_en?: string | null
           price_fixed?: number | null
           price_from?: number | null
           price_type?: string | null
           slug: string
           specifications?: Json | null
+          specifications_en?: Json | null
           updated_at?: string | null
           videos?: string[] | null
         }
@@ -247,16 +261,20 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          description_en?: string | null
           id?: string
           images?: string[] | null
           includes?: string[] | null
+          includes_en?: string[] | null
           is_active?: boolean | null
           name?: string
+          name_en?: string | null
           price_fixed?: number | null
           price_from?: number | null
           price_type?: string | null
           slug?: string
           specifications?: Json | null
+          specifications_en?: Json | null
           updated_at?: string | null
           videos?: string[] | null
         }
