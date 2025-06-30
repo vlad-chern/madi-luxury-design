@@ -20,9 +20,11 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
+    console.log('ProductDetail mounted, productId:', productId);
     fetchProduct();
 
     // Подписка на изменения в таблице products
@@ -51,8 +53,17 @@ const ProductDetail = () => {
   }, [productId]);
 
   const fetchProduct = async () => {
+    if (!productId) {
+      setError('Product ID not found');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
+      setError(null);
+      console.log('Fetching product with slug:', productId);
+      
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -65,12 +76,16 @@ const ProductDetail = () => {
         .eq('is_active', true)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
       
       console.log('Fetched product:', data);
       setProduct(data);
     } catch (error) {
       console.error('Error fetching product:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
       setProduct(null);
     } finally {
       setIsLoading(false);
@@ -106,11 +121,26 @@ const ProductDetail = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Error al cargar el producto</h1>
+          <p className="text-gray-400 mb-4">{error}</p>
+          <Button onClick={() => navigate('/')} className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
+            Volver a inicio
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!product) {
     return (
       <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Producto no encontrado</h1>
+          <p className="text-gray-400 mb-4">El producto con ID "{productId}" no existe o no está activo.</p>
           <Button onClick={() => navigate('/')} className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
             Volver a inicio
           </Button>
