@@ -16,7 +16,7 @@ const AdminPanel = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [language, setLanguage] = useState('es');
+  const [language, setLanguage] = useState<'es' | 'en' | 'ru'>('es');
 
   const translations = {
     es: {
@@ -51,7 +51,7 @@ const AdminPanel = () => {
     }
   };
 
-  const t = translations[language as keyof typeof translations];
+  const t = translations[language];
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -91,7 +91,7 @@ const AdminPanel = () => {
           <div className="flex justify-between items-center py-4">
             <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
             <div className="flex items-center space-x-4">
-              <Select value={language} onValueChange={setLanguage}>
+              <Select value={language} onValueChange={(value: 'es' | 'en' | 'ru') => setLanguage(value)}>
                 <SelectTrigger className="w-32">
                   <Globe className="w-4 h-4 mr-2" />
                   <SelectValue />
@@ -122,11 +122,11 @@ const AdminPanel = () => {
           </TabsList>
 
           <TabsContent value="categories">
-            <CategoryManager language={language} />
+            <CategoryManager />
           </TabsContent>
 
           <TabsContent value="products">
-            <ProductManager language={language} />
+            <ProductManager />
           </TabsContent>
 
           <TabsContent value="orders">
@@ -134,7 +134,7 @@ const AdminPanel = () => {
           </TabsContent>
 
           <TabsContent value="customers">
-            <CustomerManager language={language} />
+            <CustomerManager />
           </TabsContent>
 
           <TabsContent value="integrations">
