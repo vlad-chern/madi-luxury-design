@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin, Menu, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin, Menu, X, Instagram } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
@@ -8,6 +8,7 @@ import SEOHead from '@/components/SEOHead';
 import CookieConsent from '@/components/CookieConsent';
 import ContactForm from '@/components/ContactForm';
 import DynamicCollections from '@/components/DynamicCollections';
+import MobilePortfolioCarousel from '@/components/MobilePortfolioCarousel';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
@@ -194,7 +195,13 @@ const Index = () => {
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[rgb(14,14,14)]/90 backdrop-blur-sm border-b border-gray-800">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
-          <div className="text-xl sm:text-2xl font-bold text-[rgb(180,165,142)]">MADI</div>
+          <div className="flex items-center">
+            <img 
+              src="/lovable-uploads/2ff321c4-11f7-489a-860b-fadf6b38b375.png" 
+              alt="MADI Logo" 
+              className="h-6 sm:h-8 w-auto"
+            />
+          </div>
           
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
@@ -290,7 +297,7 @@ const Index = () => {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png')`,
+            backgroundImage: `url('/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png?w=1920&q=75')`,
             filter: 'brightness(0.3)'
           }}
         />
@@ -335,7 +342,7 @@ const Index = () => {
             <div 
               className="aspect-square bg-cover bg-center rounded-lg"
               style={{
-                backgroundImage: `url('/lovable-uploads/75fee044-f881-4fda-91c4-f03dbec16e0c.png')`,
+                backgroundImage: `url('/lovable-uploads/75fee044-f881-4fda-91c4-f03dbec16e0c.png?w=800&q=75')`,
                 filter: 'grayscale(100%)'
               }}
             />
@@ -358,20 +365,11 @@ const Index = () => {
       {/* Portfolio Section */}
       <section id="proyectos" className="py-12 sm:py-16 lg:py-24">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 sm:mb-12 lg:mb-16 px-2">
-            {t.portfolio.title} <span className="text-[rgb(180,165,142)]">{t.portfolio.subtitle}</span>
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            {portfolioImages.map((image, index) => (
-              <div 
-                key={index}
-                className="aspect-square bg-cover bg-center rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
-                style={{
-                  backgroundImage: `url('${image}')`
-                }}
-              />
-            ))}
-          </div>
+          <MobilePortfolioCarousel 
+            images={portfolioImages}
+            title={t.portfolio.title}
+            subtitle={t.portfolio.subtitle}
+          />
         </div>
       </section>
 
@@ -464,18 +462,38 @@ const Index = () => {
                 {t.contact.description}
               </p>
               <div className="space-y-3 sm:space-y-4 lg:space-y-6">
-                <div className="flex items-center space-x-3 sm:space-x-4">
+                <a 
+                  href="tel:+34643550964"
+                  className="flex items-center space-x-3 sm:space-x-4 hover:text-[rgb(180,165,142)] transition-colors cursor-pointer"
+                >
                   <Phone className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-[rgb(180,165,142)] flex-shrink-0" />
                   <span className="text-gray-300 text-sm sm:text-base">+34 643 550 964</span>
-                </div>
-                <div className="flex items-center space-x-3 sm:space-x-4">
+                </a>
+                <a 
+                  href="mailto:info@madiluxe.com"
+                  className="flex items-center space-x-3 sm:space-x-4 hover:text-[rgb(180,165,142)] transition-colors cursor-pointer"
+                >
                   <Mail className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-[rgb(180,165,142)] flex-shrink-0" />
                   <span className="text-gray-300 text-sm sm:text-base">info@madiluxe.com</span>
-                </div>
-                <div className="flex items-start space-x-3 sm:space-x-4">
+                </a>
+                <a 
+                  href="https://maps.app.goo.gl/6beX8T3kfirNZwky5"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start space-x-3 sm:space-x-4 hover:text-[rgb(180,165,142)] transition-colors cursor-pointer"
+                >
                   <MapPin className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-[rgb(180,165,142)] flex-shrink-0 mt-1" />
                   <span className="text-gray-300 text-sm sm:text-base">C. Bruselas, 17, 28232 Las Rozas de Madrid, Madrid, España</span>
-                </div>
+                </a>
+                <a 
+                  href="https://instagram.com/madi.luxury.design"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-3 sm:space-x-4 hover:text-[rgb(180,165,142)] transition-colors cursor-pointer"
+                >
+                  <Instagram className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-[rgb(180,165,142)] flex-shrink-0" />
+                  <span className="text-gray-300 text-sm sm:text-base">@madi.luxury.design</span>
+                </a>
               </div>
             </div>
             <div className="px-2">
