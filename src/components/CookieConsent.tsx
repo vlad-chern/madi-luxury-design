@@ -8,9 +8,9 @@ const CookieConsent = () => {
   const [showConsent, setShowConsent] = useState(false);
   const [preferences, setPreferences] = useState({
     necessary: true,
-    analytics: false,
-    marketing: false,
-    functional: false
+    analytics: true,
+    marketing: true,
+    functional: true
   });
 
   useEffect(() => {
@@ -74,13 +74,14 @@ const CookieConsent = () => {
           
           <p className="text-gray-600 mb-6">
             Utilizamos cookies para mejorar su experiencia en nuestro sitio web. 
-            Puede configurar sus preferencias a continuación.
+            Por defecto, todas las cookies están activadas para brindarle la mejor experiencia posible.
+            Puede desactivar las que no desee a continuación.
           </p>
 
           <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div>
-                <div className="font-medium">Cookies Necesarias</div>
+                <div className="font-medium text-green-700">✓ Cookies Necesarias</div>
                 <div className="text-sm text-gray-500">
                   Estas cookies son esenciales para el funcionamiento del sitio.
                 </div>
@@ -93,7 +94,7 @@ const CookieConsent = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
               <div>
                 <div className="font-medium">Cookies de Análisis</div>
                 <div className="text-sm text-gray-500">
@@ -104,11 +105,11 @@ const CookieConsent = () => {
                 type="checkbox" 
                 checked={preferences.analytics}
                 onChange={(e) => setPreferences(prev => ({ ...prev, analytics: e.target.checked }))}
-                className="w-4 h-4"
+                className="w-4 h-4 accent-[rgb(180,165,142)]"
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
               <div>
                 <div className="font-medium">Cookies de Marketing</div>
                 <div className="text-sm text-gray-500">
@@ -119,11 +120,11 @@ const CookieConsent = () => {
                 type="checkbox" 
                 checked={preferences.marketing}
                 onChange={(e) => setPreferences(prev => ({ ...prev, marketing: e.target.checked }))}
-                className="w-4 h-4"
+                className="w-4 h-4 accent-[rgb(180,165,142)]"
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
               <div>
                 <div className="font-medium">Cookies Funcionales</div>
                 <div className="text-sm text-gray-500">
@@ -134,7 +135,7 @@ const CookieConsent = () => {
                 type="checkbox" 
                 checked={preferences.functional}
                 onChange={(e) => setPreferences(prev => ({ ...prev, functional: e.target.checked }))}
-                className="w-4 h-4"
+                className="w-4 h-4 accent-[rgb(180,165,142)]"
               />
             </div>
           </div>
@@ -142,21 +143,23 @@ const CookieConsent = () => {
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
               onClick={handleAcceptAll}
-              className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
+              className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] flex-1"
             >
-              Aceptar Todas
+              Aceptar Todo (Recomendado)
             </Button>
             <Button 
               onClick={handleSavePreferences}
               variant="outline"
+              className="flex-1"
             >
-              Guardar Preferencias
+              Guardar Selección
             </Button>
             <Button 
               onClick={handleRejectAll}
               variant="ghost"
+              size="sm"
             >
-              Rechazar Todas
+              Solo Necesarias
             </Button>
           </div>
         </CardContent>

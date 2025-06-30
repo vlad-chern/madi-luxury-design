@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { useCategories } from '@/hooks/useCategories';
 import { useNavigate } from 'react-router-dom';
@@ -90,11 +89,10 @@ const DynamicCollections = () => {
                         {String(index + 1).padStart(2, '0')}
                       </span>
                     </div>
+                    <h3 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">
+                      {category.name}
+                    </h3>
                   </div>
-                  
-                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-3 drop-shadow-lg">
-                    {category.name}
-                  </h3>
                   
                   <p className="text-gray-100 mb-6 text-sm md:text-base max-w-xs drop-shadow-md">
                     {category.description || 'Diseño exclusivo y funcional para su hogar'}

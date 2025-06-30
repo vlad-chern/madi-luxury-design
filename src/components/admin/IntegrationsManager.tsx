@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Send, Facebook, BarChart3, Tag } from 'lucide-react';
+import { Send, Facebook, BarChart3, Tag, ShoppingCart, Package } from 'lucide-react';
 
 interface Integration {
   id: string;
@@ -48,6 +47,18 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
     is_active: false
   });
 
+  const [facebookCatalogConfig, setFacebookCatalogConfig] = useState({
+    catalog_id: '',
+    access_token: '',
+    is_active: false
+  });
+
+  const [googleMerchantConfig, setGoogleMerchantConfig] = useState({
+    merchant_id: '',
+    feed_url: '',
+    is_active: false
+  });
+
   const translations = {
     es: {
       title: 'Gestión de Integraciones',
@@ -80,7 +91,22 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       accessTokenDesc: 'Token de acceso de Facebook para la API de conversiones',
       pixelIdDesc: 'ID del pixel de Facebook',
       containerIdDesc: 'ID del contenedor de Google Tag Manager (GTM-XXXXXXX)',
-      measurementIdDesc: 'ID de medición de Google Analytics (G-XXXXXXXXXX)'
+      measurementIdDesc: 'ID de medición de Google Analytics (G-XXXXXXXXXX)',
+      facebookCatalog: 'Facebook Catalog',
+      googleMerchant: 'Google Merchant',
+      activateFacebookCatalog: 'Activar Facebook Catalog',
+      catalogId: 'Catalog ID',
+      activateGoogleMerchant: 'Activar Google Merchant Center',
+      merchantId: 'Merchant ID',
+      feedUrl: 'Feed URL',
+      saveFacebookCatalog: 'Guardar Configuración de Catalog',
+      saveGoogleMerchant: 'Guardar Configuración de Merchant',
+      catalogIdDesc: 'ID del catálogo de Facebook',
+      merchantIdDesc: 'ID de Google Merchant Center',
+      feedUrlDesc: 'URL del feed de productos (se generará automáticamente)',
+      generateProductFeed: 'Generar Feed de Productos',
+      feedGenerated: 'Feed generado exitosamente',
+      feedError: 'Error al generar el feed'
     },
     en: {
       title: 'Integrations Management',
@@ -113,7 +139,22 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       accessTokenDesc: 'Facebook access token for conversions API',
       pixelIdDesc: 'Facebook pixel ID',
       containerIdDesc: 'Google Tag Manager container ID (GTM-XXXXXXX)',
-      measurementIdDesc: 'Google Analytics measurement ID (G-XXXXXXXXXX)'
+      measurementIdDesc: 'Google Analytics measurement ID (G-XXXXXXXXXX)',
+      facebookCatalog: 'Facebook Catalog',
+      googleMerchant: 'Google Merchant',
+      activateFacebookCatalog: 'Activate Facebook Catalog',
+      catalogId: 'Catalog ID',
+      activateGoogleMerchant: 'Activate Google Merchant Center',
+      merchantId: 'Merchant ID',
+      feedUrl: 'Feed URL',
+      saveFacebookCatalog: 'Save Catalog Configuration',
+      saveGoogleMerchant: 'Save Merchant Configuration',
+      catalogIdDesc: 'Facebook catalog ID',
+      merchantIdDesc: 'Google Merchant Center ID',
+      feedUrlDesc: 'Product feed URL (will be generated automatically)',
+      generateProductFeed: 'Generate Product Feed',
+      feedGenerated: 'Feed generated successfully',
+      feedError: 'Error generating feed'
     },
     ru: {
       title: 'Управление интеграциями',
@@ -145,8 +186,23 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       chatIdDesc: 'ID чата или группы для отправки уведомлений',
       accessTokenDesc: 'Токен доступа Facebook для API конверсий',
       pixelIdDesc: 'ID пикселя Facebook',
-      containerIdDesc: 'ID контейнера Google Tag Manager (GTM-XXXXXXX)',
-      measurementIdDesc: 'ID измерения Google Analytics (G-XXXXXXXXXX)'
+      containerIdDesc: 'Google Tag Manager контейнер ID (GTM-XXXXXXX)',
+      measurementIdDesc: 'ID измерения Google Analytics (G-XXXXXXXXXX)',
+      facebookCatalog: 'Facebook Catalog',
+      googleMerchant: 'Google Merchant',
+      activateFacebookCatalog: 'Активировать Facebook Catalog',
+      catalogId: 'ID каталога',
+      activateGoogleMerchant: 'Активировать Google Merchant Center',
+      merchantId: 'ID магазина',
+      feedUrl: 'URL фида',
+      saveFacebookCatalog: 'Сохранить настройки каталога',
+      saveGoogleMerchant: 'Сохранить настройки магазина',
+      catalogIdDesc: 'ID каталога Facebook',
+      merchantIdDesc: 'ID Google Merchant Center',
+      feedUrlDesc: 'URL фида товаров (будет сгенерирован автоматически)',
+      generateProductFeed: 'Генерировать фид товаров',
+      feedGenerated: 'Фид успешно сгенерирован',
+      feedError: 'Ошибка генерации фида'
     }
   };
 
@@ -171,6 +227,8 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
       const facebook = data?.find(i => i.name === 'facebook_capi');
       const gtm = data?.find(i => i.name === 'google_tag_manager');
       const ga = data?.find(i => i.name === 'google_analytics');
+      const facebookCatalog = data?.find(i => i.name === 'facebook_catalog');
+      const googleMerchant = data?.find(i => i.name === 'google_merchant');
 
       if (telegram) {
         setTelegramConfig({
@@ -199,6 +257,22 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
         setGaConfig({
           measurement_id: ga.config.measurement_id || '',
           is_active: ga.is_active
+        });
+      }
+
+      if (facebookCatalog) {
+        setFacebookCatalogConfig({
+          catalog_id: facebookCatalog.config.catalog_id || '',
+          access_token: facebookCatalog.config.access_token || '',
+          is_active: facebookCatalog.is_active
+        });
+      }
+
+      if (googleMerchant) {
+        setGoogleMerchantConfig({
+          merchant_id: googleMerchant.config.merchant_id || '',
+          feed_url: googleMerchant.config.feed_url || '',
+          is_active: googleMerchant.is_active
         });
       }
     } catch (error) {
@@ -269,6 +343,47 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
     }, gaConfig.is_active);
   };
 
+  const handleFacebookCatalogSave = () => {
+    updateIntegration('facebook_catalog', {
+      catalog_id: facebookCatalogConfig.catalog_id,
+      access_token: facebookCatalogConfig.access_token
+    }, facebookCatalogConfig.is_active);
+  };
+
+  const handleGoogleMerchantSave = () => {
+    updateIntegration('google_merchant', {
+      merchant_id: googleMerchantConfig.merchant_id,
+      feed_url: googleMerchantConfig.feed_url
+    }, googleMerchantConfig.is_active);
+  };
+
+  const generateProductFeed = async () => {
+    try {
+      const { data: response, error } = await supabase.functions.invoke('generate-product-feed');
+      
+      if (error) throw error;
+      
+      toast({
+        title: t.success,
+        description: t.feedGenerated,
+      });
+      
+      // Update feed URL in Google Merchant config
+      setGoogleMerchantConfig(prev => ({
+        ...prev,
+        feed_url: response?.feed_url || prev.feed_url
+      }));
+      
+    } catch (error) {
+      console.error('Error generating feed:', error);
+      toast({
+        title: t.error,
+        description: t.feedError,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div>{t.loading}</div>;
   }
@@ -281,7 +396,7 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="telegram" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="telegram" className="flex items-center space-x-1">
                 <Send className="w-4 h-4" />
                 <span>{t.telegram}</span>
@@ -289,6 +404,14 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
               <TabsTrigger value="facebook" className="flex items-center space-x-1">
                 <Facebook className="w-4 h-4" />
                 <span>{t.facebook}</span>
+              </TabsTrigger>
+              <TabsTrigger value="facebook-catalog" className="flex items-center space-x-1">
+                <ShoppingCart className="w-4 h-4" />
+                <span>{t.facebookCatalog}</span>
+              </TabsTrigger>
+              <TabsTrigger value="google-merchant" className="flex items-center space-x-1">
+                <Package className="w-4 h-4" />
+                <span>{t.googleMerchant}</span>
               </TabsTrigger>
               <TabsTrigger value="gtm" className="flex items-center space-x-1">
                 <Tag className="w-4 h-4" />
@@ -398,6 +521,113 @@ const IntegrationsManager: React.FC<IntegrationsManagerProps> = ({ language }) =
 
                 <Button onClick={handleFacebookSave} className="w-full">
                   {t.saveFacebook}
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="facebook-catalog" className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={facebookCatalogConfig.is_active}
+                    onCheckedChange={(checked) => 
+                      setFacebookCatalogConfig(prev => ({ ...prev, is_active: checked }))
+                    }
+                  />
+                  <Label>{t.activateFacebookCatalog}</Label>
+                </div>
+
+                <div className="grid gap-4">
+                  <div>
+                    <Label htmlFor="facebook-catalog-token">{t.accessToken}</Label>
+                    <Input
+                      id="facebook-catalog-token"
+                      type="password"
+                      placeholder="EAABwzLixnjY..."
+                      value={facebookCatalogConfig.access_token}
+                      onChange={(e) => 
+                        setFacebookCatalogConfig(prev => ({ ...prev, access_token: e.target.value }))
+                      }
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      {t.accessTokenDesc}
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="facebook-catalog-id">{t.catalogId}</Label>
+                    <Input
+                      id="facebook-catalog-id"
+                      placeholder="1234567890123456"
+                      value={facebookCatalogConfig.catalog_id}
+                      onChange={(e) => 
+                        setFacebookCatalogConfig(prev => ({ ...prev, catalog_id: e.target.value }))
+                      }
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      {t.catalogIdDesc}
+                    </p>
+                  </div>
+                </div>
+
+                <Button onClick={handleFacebookCatalogSave} className="w-full">
+                  {t.saveFacebookCatalog}
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="google-merchant" className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={googleMerchantConfig.is_active}
+                    onCheckedChange={(checked) => 
+                      setGoogleMerchantConfig(prev => ({ ...prev, is_active: checked }))
+                    }
+                  />
+                  <Label>{t.activateGoogleMerchant}</Label>
+                </div>
+
+                <div className="grid gap-4">
+                  <div>
+                    <Label htmlFor="google-merchant-id">{t.merchantId}</Label>
+                    <Input
+                      id="google-merchant-id"
+                      placeholder="1234567890"
+                      value={googleMerchantConfig.merchant_id}
+                      onChange={(e) => 
+                        setGoogleMerchantConfig(prev => ({ ...prev, merchant_id: e.target.value }))
+                      }
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      {t.merchantIdDesc}
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="google-feed-url">{t.feedUrl}</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="google-feed-url"
+                        placeholder="https://madiluxe.com/feeds/products.xml"
+                        value={googleMerchantConfig.feed_url}
+                        onChange={(e) => 
+                          setGoogleMerchantConfig(prev => ({ ...prev, feed_url: e.target.value }))
+                        }
+                        className="flex-1"
+                      />
+                      <Button onClick={generateProductFeed} variant="outline">
+                        {t.generateProductFeed}
+                      </Button>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {t.feedUrlDesc}
+                    </p>
+                  </div>
+                </div>
+
+                <Button onClick={handleGoogleMerchantSave} className="w-full">
+                  {t.saveGoogleMerchant}
                 </Button>
               </div>
             </TabsContent>
