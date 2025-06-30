@@ -80,6 +80,50 @@ serve(async (req) => {
           
           if (error) throw error
           result = { success: true, data: customers }
+        } else if (query === 'categories') {
+          const { data: categories, error } = await supabaseAdmin
+            .from('categories')
+            .select('*')
+            .order('created_at', { ascending: false })
+          
+          if (error) throw error
+          result = { success: true, data: categories }
+        } else if (query === 'products') {
+          const { data: products, error } = await supabaseAdmin
+            .from('products')
+            .select(`
+              *,
+              categories (
+                name,
+                slug
+              )
+            `)
+            .order('created_at', { ascending: false })
+          
+          if (error) throw error
+          result = { success: true, data: products }
+        } else if (query === 'orders') {
+          const { data: orders, error } = await supabaseAdmin
+            .from('orders')
+            .select(`
+              *,
+              products (
+                name,
+                slug
+              )
+            `)
+            .order('created_at', { ascending: false })
+          
+          if (error) throw error
+          result = { success: true, data: orders }
+        } else if (query === 'integrations') {
+          const { data: integrations, error } = await supabaseAdmin
+            .from('integrations')
+            .select('*')
+            .order('created_at', { ascending: false })
+          
+          if (error) throw error
+          result = { success: true, data: integrations }
         }
         break
 
@@ -93,6 +137,42 @@ serve(async (req) => {
           
           if (error) throw error
           result = { success: true, data: customer }
+        } else if (query === 'categories') {
+          const { data: category, error } = await supabaseAdmin
+            .from('categories')
+            .insert([data])
+            .select()
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: category }
+        } else if (query === 'products') {
+          const { data: product, error } = await supabaseAdmin
+            .from('products')
+            .insert([data])
+            .select()
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: product }
+        } else if (query === 'orders') {
+          const { data: order, error } = await supabaseAdmin
+            .from('orders')
+            .insert([data])
+            .select()
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: order }
+        } else if (query === 'integrations') {
+          const { data: integration, error } = await supabaseAdmin
+            .from('integrations')
+            .insert([data])
+            .select()
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: integration }
         }
         break
 
@@ -107,6 +187,46 @@ serve(async (req) => {
           
           if (error) throw error
           result = { success: true, data: customer }
+        } else if (query === 'categories') {
+          const { data: category, error } = await supabaseAdmin
+            .from('categories')
+            .update(data)
+            .eq('id', id)
+            .select()
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: category }
+        } else if (query === 'products') {
+          const { data: product, error } = await supabaseAdmin
+            .from('products')
+            .update(data)
+            .eq('id', id)
+            .select()
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: product }
+        } else if (query === 'orders') {
+          const { data: order, error } = await supabaseAdmin
+            .from('orders')
+            .update(data)
+            .eq('id', id)
+            .select()
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: order }
+        } else if (query === 'integrations') {
+          const { data: integration, error } = await supabaseAdmin
+            .from('integrations')
+            .update(data)
+            .eq('id', id)
+            .select()
+            .single()
+          
+          if (error) throw error
+          result = { success: true, data: integration }
         }
         break
 
@@ -114,6 +234,38 @@ serve(async (req) => {
         if (query === 'customers') {
           const { error } = await supabaseAdmin
             .from('customers')
+            .delete()
+            .eq('id', id)
+          
+          if (error) throw error
+          result = { success: true }
+        } else if (query === 'categories') {
+          const { error } = await supabaseAdmin
+            .from('categories')
+            .delete()
+            .eq('id', id)
+          
+          if (error) throw error
+          result = { success: true }
+        } else if (query === 'products') {
+          const { error } = await supabaseAdmin
+            .from('products')
+            .delete()
+            .eq('id', id)
+          
+          if (error) throw error
+          result = { success: true }
+        } else if (query === 'orders') {
+          const { error } = await supabaseAdmin
+            .from('orders')
+            .delete()
+            .eq('id', id)
+          
+          if (error) throw error
+          result = { success: true }
+        } else if (query === 'integrations') {
+          const { error } = await supabaseAdmin
+            .from('integrations')
             .delete()
             .eq('id', id)
           

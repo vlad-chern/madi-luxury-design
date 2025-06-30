@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -157,7 +158,7 @@ const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="products">
-                <ProductManager />
+                <ProductManager language={language} />
               </TabsContent>
 
               <TabsContent value="orders">
@@ -165,11 +166,11 @@ const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="customers">
-                <CustomerManager />
+                <CustomerManager language={language} />
               </TabsContent>
 
               <TabsContent value="integrations">
-                <IntegrationsManager />
+                <IntegrationsManager language={language} />
               </TabsContent>
             </Tabs>
           </div>
