@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin } from 'lucide-react';
@@ -10,6 +11,8 @@ import ContactForm from '@/components/ContactForm';
 import DynamicCollections from '@/components/DynamicCollections';
 
 const Index = () => {
+  console.log('Index page rendering...');
+  
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [language, setLanguage] = useState('ES');
   const navigate = useNavigate();
@@ -59,6 +62,8 @@ const Index = () => {
       collectionsSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  console.log('Index page about to render JSX...');
 
   return (
     <div className="min-h-screen bg-[rgb(14,14,14)] text-white">

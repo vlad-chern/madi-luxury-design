@@ -11,6 +11,7 @@ import TermsOfService from '@/pages/TermsOfService';
 import NotFound from '@/pages/NotFound';
 
 const Router = () => {
+  console.log('Router component rendering...');
   useScrollToTop();
 
   return (
