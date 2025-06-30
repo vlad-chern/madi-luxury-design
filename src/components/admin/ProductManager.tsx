@@ -100,7 +100,11 @@ const ProductManager = () => {
           categories (
             id,
             name,
-            slug
+            slug,
+            description,
+            image_url,
+            created_at,
+            updated_at
           )
         `)
         .order('created_at', { ascending: false });
@@ -122,7 +126,14 @@ const ProductManager = () => {
         includes: product.includes || [],
         specifications: (product.specifications as Record<string, any>) || {},
         created_at: product.created_at || '',
-        updated_at: product.updated_at || ''
+        updated_at: product.updated_at || '',
+        categories: product.categories ? {
+          ...product.categories,
+          description: product.categories.description || '',
+          image_url: product.categories.image_url || null,
+          created_at: product.categories.created_at || '',
+          updated_at: product.categories.updated_at || ''
+        } : undefined
       })) || [];
       setProducts(typedProducts);
     } catch (error) {
