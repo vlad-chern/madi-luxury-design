@@ -27,11 +27,11 @@ const StorageMonitor: React.FC<StorageMonitorProps> = ({ language }) => {
 
   const translations = {
     es: {
-      title: 'Monitor de Almacenamiento',
+      title: 'Monitor Storage',
       active: 'Activo',
       inactive: 'Inactivo',
-      noEvents: 'No hay eventos de almacenamiento para mostrar',
-      eventsWillAppear: 'Los eventos aparecerán al subir o eliminar archivos',
+      noEvents: 'No hay eventos',
+      eventsWillAppear: 'Los eventos aparecerán al subir archivos',
       uploaded: 'Subido',
       deleted: 'Eliminado',
       fileUploaded: 'Archivo subido'
@@ -40,8 +40,8 @@ const StorageMonitor: React.FC<StorageMonitorProps> = ({ language }) => {
       title: 'Storage Monitor',
       active: 'Active',
       inactive: 'Inactive',
-      noEvents: 'No storage events to display',
-      eventsWillAppear: 'Events will appear when uploading or deleting files',
+      noEvents: 'No events',
+      eventsWillAppear: 'Events will appear when uploading files',
       uploaded: 'Uploaded',
       deleted: 'Deleted',
       fileUploaded: 'File uploaded'
@@ -50,8 +50,8 @@ const StorageMonitor: React.FC<StorageMonitorProps> = ({ language }) => {
       title: 'Мониторинг Storage',
       active: 'Активен',
       inactive: 'Неактивен',
-      noEvents: 'Нет событий Storage для отображения',
-      eventsWillAppear: 'События появятся при загрузке или удалении файлов',
+      noEvents: 'Нет событий',
+      eventsWillAppear: 'События появятся при загрузке файлов',
       uploaded: 'Загружен',
       deleted: 'Удален',
       fileUploaded: 'Файл загружен'
@@ -87,17 +87,17 @@ const StorageMonitor: React.FC<StorageMonitorProps> = ({ language }) => {
   };
 
   const getFileIcon = (fileType: string) => {
-    if (fileType.startsWith('image/')) return <Image className="w-4 h-4" />;
-    if (fileType.startsWith('video/')) return <Video className="w-4 h-4" />;
-    return <FileText className="w-4 h-4" />;
+    if (fileType.startsWith('image/')) return <Image className="w-3 h-3 md:w-4 md:h-4" />;
+    if (fileType.startsWith('video/')) return <Video className="w-3 h-3 md:w-4 md:h-4" />;
+    return <FileText className="w-3 h-3 md:w-4 md:h-4" />;
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return '0 B';
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
   const handleFileUpload = (fileName: string, fileType: string, fileSize: number) => {
@@ -121,9 +121,9 @@ const StorageMonitor: React.FC<StorageMonitorProps> = ({ language }) => {
 
   return (
     <Card className="h-fit">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center gap-2 text-sm">
+          <CardTitle className="flex items-center gap-2 text-sm md:text-base">
             <Upload className="w-4 h-4" />
             <span className="truncate">{t.title}</span>
           </CardTitle>
@@ -132,16 +132,16 @@ const StorageMonitor: React.FC<StorageMonitorProps> = ({ language }) => {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="p-4">
+      <CardContent className="p-3 md:p-4">
         <div className="space-y-3">
           {storageEvents.length === 0 ? (
             <div className="text-center text-gray-500 py-4">
-              <Upload className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-xs">{t.noEvents}</p>
+              <Upload className="w-6 h-6 md:w-8 md:h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-xs md:text-sm">{t.noEvents}</p>
               <p className="text-xs">{t.eventsWillAppear}</p>
             </div>
           ) : (
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+            <div className="space-y-2 max-h-48 md:max-h-64 overflow-y-auto">
               {storageEvents.map((event) => (
                 <div key={event.id} className="flex items-center justify-between p-2 border rounded-lg">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -153,7 +153,7 @@ const StorageMonitor: React.FC<StorageMonitorProps> = ({ language }) => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="flex flex-col items-end gap-1">
                     <Badge variant={event.event_type === 'upload' ? 'default' : 'destructive'} className="text-xs">
                       {event.event_type === 'upload' ? t.uploaded : t.deleted}
                     </Badge>

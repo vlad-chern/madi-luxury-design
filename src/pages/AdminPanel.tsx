@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -129,40 +128,41 @@ const AdminPanel = () => {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
-            <div className="flex items-center space-x-4">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">{t.title}</h1>
+            <div className="flex items-center space-x-2 md:space-x-4">
               <Select value={language} onValueChange={(value: 'es' | 'en' | 'ru') => setLanguage(value)}>
-                <SelectTrigger className="w-32">
-                  <Globe className="w-4 h-4 mr-2" />
+                <SelectTrigger className="w-24 md:w-32">
+                  <Globe className="w-4 h-4 mr-1 md:mr-2" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="es">Español</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="ru">Русский</SelectItem>
+                  <SelectItem value="es">ES</SelectItem>
+                  <SelectItem value="en">EN</SelectItem>
+                  <SelectItem value="ru">RU</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={handleLogout} variant="outline">
-                <LogOut className="w-4 h-4 mr-2" />
-                {t.logout}
+              <Button onClick={handleLogout} variant="outline" size="sm" className="text-xs md:text-sm">
+                <LogOut className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">{t.logout}</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-          <div className="lg:col-span-3">
-            <Tabs defaultValue="categories" className="space-y-6">
-              <TabsList className={`grid w-full ${canAccessAdminManagement() ? 'grid-cols-6' : 'grid-cols-5'}`}>
-                <TabsTrigger value="categories">{t.categories}</TabsTrigger>
-                <TabsTrigger value="products">{t.products}</TabsTrigger>
-                <TabsTrigger value="orders">{t.orders}</TabsTrigger>
-                <TabsTrigger value="customers">{t.customers}</TabsTrigger>
-                <TabsTrigger value="integrations">{t.integrations}</TabsTrigger>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+        <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
+          {/* Main content area */}
+          <div className="flex-1 lg:flex-none lg:w-3/4">
+            <Tabs defaultValue="categories" className="space-y-4 md:space-y-6">
+              <TabsList className={`grid w-full text-xs md:text-sm overflow-x-auto ${canAccessAdminManagement() ? 'grid-cols-3 sm:grid-cols-6' : 'grid-cols-3 sm:grid-cols-5'}`}>
+                <TabsTrigger value="categories" className="px-2 py-1 md:px-3 md:py-1.5">{t.categories}</TabsTrigger>
+                <TabsTrigger value="products" className="px-2 py-1 md:px-3 md:py-1.5">{t.products}</TabsTrigger>
+                <TabsTrigger value="orders" className="px-2 py-1 md:px-3 md:py-1.5">{t.orders}</TabsTrigger>
+                <TabsTrigger value="customers" className="px-2 py-1 md:px-3 md:py-1.5">{t.customers}</TabsTrigger>
+                <TabsTrigger value="integrations" className="px-2 py-1 md:px-3 md:py-1.5">{t.integrations}</TabsTrigger>
                 {canAccessAdminManagement() && (
-                  <TabsTrigger value="admins">{t.admins}</TabsTrigger>
+                  <TabsTrigger value="admins" className="px-2 py-1 md:px-3 md:py-1.5">{t.admins}</TabsTrigger>
                 )}
               </TabsList>
 
@@ -194,7 +194,8 @@ const AdminPanel = () => {
             </Tabs>
           </div>
           
-          <div className="space-y-6">
+          {/* Sidebar with monitoring components */}
+          <div className="lg:w-1/4 space-y-4 md:space-y-6">
             <AdminPresence language={language} />
             <StorageMonitor language={language} />
           </div>
