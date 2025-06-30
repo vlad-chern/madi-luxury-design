@@ -111,7 +111,12 @@ const ProductManager = () => {
       }
       
       console.log('Fetched products:', data);
-      setProducts(data || []);
+      // Properly cast the price_type to match our interface
+      const typedProducts = data?.map(product => ({
+        ...product,
+        price_type: (product.price_type as 'from' | 'fixed') || 'from'
+      })) || [];
+      setProducts(typedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
