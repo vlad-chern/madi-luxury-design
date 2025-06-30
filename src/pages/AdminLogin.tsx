@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -5,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithEmail, getCurrentUser } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('info@madiluxe.com');
@@ -16,9 +17,21 @@ const AdminLogin = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const user = await getCurrentUser();
-      if (user) {
-        navigate('/admin');
+      const sessionToken = localStorage.getItem('admin_session_token');
+      if (sessionToken) {
+        try {
+          const { data } = await supabase.functions.invoke('admin-verify', {
+            body: { session_token: sessionToken }
+          });
+          
+          if (data?.success) {
+            navigate('/admin');
+          } else {
+            localStorage.removeItem('admin_session_token');
+          }
+        } catch (error) {
+          localStorage.removeItem('admin_session_token');
+        }
       }
     };
     checkAuth();
@@ -29,15 +42,18 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await signInWithEmail(email, password);
+      const { data, error } = await supabase.functions.invoke('admin-auth', {
+        body: { email, password }
+      });
       
-      if (error) {
+      if (error || !data?.success) {
         toast({
           title: "Ошибка входа",
-          description: error.message,
+          description: data?.error || "Произошла ошибка при входе",
           variant: "destructive",
         });
-      } else if (data.user) {
+      } else {
+        localStorage.setItem('admin_session_token', data.session_token);
         toast({
           title: "Успешный вход",
           description: "Добро пожаловать в админ-панель",

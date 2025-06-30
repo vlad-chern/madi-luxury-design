@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,7 +9,7 @@ import CategoryManager from '@/components/admin/CategoryManager';
 import OrdersManager from '@/components/admin/OrdersManager';
 import CustomerManager from '@/components/admin/CustomerManager';
 import IntegrationsManager from '@/components/admin/IntegrationsManager';
-import { getCurrentUser, signOut } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -56,13 +55,23 @@ const AdminPanel = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const user = await getCurrentUser();
-        if (user) {
-          setIsAuthenticated(true);
+        const sessionToken = localStorage.getItem('admin_session_token');
+        if (sessionToken) {
+          const { data } = await supabase.functions.invoke('admin-verify', {
+            body: { session_token: sessionToken }
+          });
+          
+          if (data?.success) {
+            setIsAuthenticated(true);
+          } else {
+            localStorage.removeItem('admin_session_token');
+            navigate('/admin/login');
+          }
         } else {
           navigate('/admin/login');
         }
       } catch (error) {
+        localStorage.removeItem('admin_session_token');
         navigate('/admin/login');
       } finally {
         setIsLoading(false);
@@ -72,7 +81,19 @@ const AdminPanel = () => {
   }, [navigate]);
 
   const handleLogout = async () => {
-    await signOut();
+    const sessionToken = localStorage.getItem('admin_session_token');
+    
+    if (sessionToken) {
+      try {
+        await supabase.functions.invoke('admin-logout', {
+          body: { session_token: sessionToken }
+        });
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    }
+    
+    localStorage.removeItem('admin_session_token');
     navigate('/admin/login');
   };
 
