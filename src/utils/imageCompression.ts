@@ -1,0 +1,66 @@
+
+export const compressImage = (file: File, maxWidth: number = 800, maxHeight: number = 600, quality: number = 0.8): Promise<File> => {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      // Calculate new dimensions
+      let { width, height } = img;
+      
+      if (width > height) {
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height;
+          height = maxHeight;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Draw and compress
+      ctx?.drawImage(img, 0, 0, width, height);
+      
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          } else {
+            resolve(file);
+          }
+        },
+        'image/jpeg',
+        quality
+      );
+    };
+    
+    img.src = URL.createObjectURL(file);
+  });
+};
+
+export const uploadImageToSupabase = async (file: File): Promise<string> => {
+  // Compress the image before uploading
+  const compressedFile = await compressImage(file);
+  
+  // Generate a unique filename
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
+  
+  // For now, we'll return a placeholder URL since Supabase storage isn't set up
+  // When Supabase storage is configured, this would upload to the bucket
+  // const { data, error } = await supabase.storage
+  //   .from('product-images')
+  //   .upload(fileName, compressedFile);
+  
+  // Return a placeholder URL for now
+  return `/lovable-uploads/${fileName}`;
+};

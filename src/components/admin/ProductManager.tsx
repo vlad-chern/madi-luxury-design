@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { compressImage, uploadImageToSupabase } from '@/utils/imageCompression';
 
 // Define types locally to avoid conflicts
 interface Category {
@@ -68,6 +69,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   const [includesList, setIncludesList] = useState('');
   const [specificationsList, setSpecificationsList] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
   const translations = {
@@ -109,7 +111,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       productDeletedDesc: 'Producto eliminado exitosamente',
       error: 'Error',
       saveError: 'No se pudo guardar el producto',
-      deleteError: 'No se pudo eliminar el producto'
+      deleteError: 'No se pudo eliminar el producto',
+      uploadImage: 'Subir Imagen',
+      uploadingImage: 'Subiendo imagen...',
+      imageUploadError: 'Error al subir imagen',
+      selectImage: 'Seleccionar imagen',
+      dragDropImage: 'Arrastra una imagen aquí o haz clic para seleccionar'
     },
     en: {
       title: 'Product Management',
@@ -149,7 +156,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       productDeletedDesc: 'Product successfully deleted',
       error: 'Error',
       saveError: 'Could not save product',
-      deleteError: 'Could not delete product'
+      deleteError: 'Could not delete product',
+      uploadImage: 'Upload Image',
+      uploadingImage: 'Uploading image...',
+      imageUploadError: 'Error uploading image',
+      selectImage: 'Select image',
+      dragDropImage: 'Drag an image here or click to select'
     },
     ru: {
       title: 'Управление товарами',
@@ -189,7 +201,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       productDeletedDesc: 'Товар успешно удален',
       error: 'Ошибка',
       saveError: 'Не удалось сохранить товар',
-      deleteError: 'Не удалось удалить товар'
+      deleteError: 'Не удалось удалить товар',
+      uploadImage: 'Загрузить изображение',
+      uploadingImage: 'Загрузка изображения...',
+      imageUploadError: 'Ошибка загрузки изображения',
+      selectImage: 'Выбрать изображение',
+      dragDropImage: 'Перетащите изображение сюда или нажмите для выбора'
     }
   };
 
@@ -505,6 +522,98 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     return `https://images.unsplash.com/${imagePath}`;
   };
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check if it's an image
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: t.error,
+        description: 'Por favor selecciona un archivo de imagen válido',
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    
+    try {
+      // Compress and upload the image
+      const compressedFile = await compressImage(file);
+      
+      // For now, create a local URL since Supabase storage isn't configured
+      const imageUrl = URL.createObjectURL(compressedFile);
+      
+      // Add the image to the form data
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, imageUrl]
+      }));
+
+      toast({
+        title: 'Imagen añadida',
+        description: 'La imagen ha sido comprimida y añadida exitosamente',
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: t.error,
+        description: t.imageUploadError,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      // Reset the input
+      event.target.value = '';
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: t.error,
+        description: 'Por favor selecciona un archivo de imagen válido',
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    
+    try {
+      const compressedFile = await compressImage(file);
+      const imageUrl = URL.createObjectURL(compressedFile);
+      
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, imageUrl]
+      }));
+
+      toast({
+        title: 'Imagen añadida',
+        description: 'La imagen ha sido comprimida y añadida exitosamente',
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: t.error,
+        description: t.imageUploadError,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const renderImageSlots = (images: string[]) => {
     const slots = [];
     const maxSlots = 10;
@@ -653,6 +762,38 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                 <div>
                   <Label>{t.images}</Label>
                   <div className="space-y-4">
+                    {/* File Upload Area */}
+                    <div 
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                    >
+                      <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                      <p className="text-sm text-gray-600 mb-2">{t.dragDropImage}</p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={isUploading}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label htmlFor="image-upload">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          disabled={isUploading}
+                          className="cursor-pointer"
+                          asChild
+                        >
+                          <span>
+                            {isUploading ? t.uploadingImage : t.selectImage}
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+
+                    {/* Manual URL Input */}
                     <div className="flex gap-2">
                       <Input
                         placeholder={t.imageUrl}
@@ -663,6 +804,8 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                         {t.addImage}
                       </Button>
                     </div>
+
+                    {/* Image Slots Grid */}
                     <div className="grid grid-cols-5 gap-3">
                       {renderImageSlots(formData.images)}
                     </div>
