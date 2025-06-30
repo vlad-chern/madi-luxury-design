@@ -48,19 +48,20 @@ export const compressImage = (file: File, maxWidth: number = 800, maxHeight: num
   });
 };
 
-export const uploadImageToSupabase = async (file: File): Promise<string> => {
+export const uploadImageToSupabase = async (file: File, folder: string = 'products'): Promise<string> => {
   // Compress the image before uploading
   const compressedFile = await compressImage(file);
   
-  // Generate a unique filename
+  // Generate a unique filename with folder structure
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
+  const fullPath = `content/${folder}/${fileName}`;
   
   // For now, we'll return a placeholder URL since Supabase storage isn't set up
   // When Supabase storage is configured, this would upload to the bucket
   // const { data, error } = await supabase.storage
-  //   .from('product-images')
-  //   .upload(fileName, compressedFile);
+  //   .from('madiluxe')
+  //   .upload(fullPath, compressedFile);
   
-  // Return a placeholder URL for now
-  return `/lovable-uploads/${fileName}`;
+  // Return a placeholder URL with the new structure
+  return `/content/${folder}/${fileName}`;
 };

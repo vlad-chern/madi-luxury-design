@@ -9,14 +9,25 @@ export const useAppNavigation = () => {
     // Убираем лишние слеши и нормализуем путь
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
     navigate(normalizedPath, options);
+    
+    // Принудительная прокрутка вверх после навигации
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 0);
   }, [navigate]);
 
   const goBack = useCallback(() => {
     navigate(-1);
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 0);
   }, [navigate]);
 
   const goHome = useCallback(() => {
     navigate('/');
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 0);
   }, [navigate]);
 
   return {

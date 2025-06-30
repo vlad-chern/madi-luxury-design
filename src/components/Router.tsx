@@ -1,5 +1,6 @@
 
 import { Routes, Route } from 'react-router-dom';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import Index from '@/pages/Index';
 import CategoryPage from '@/pages/CategoryPage';
 import ProductDetail from '@/pages/ProductDetail';
@@ -10,6 +11,8 @@ import TermsOfService from '@/pages/TermsOfService';
 import NotFound from '@/pages/NotFound';
 
 const Router = () => {
+  useScrollToTop();
+
   return (
     <Routes>
       <Route path="/" element={<Index />} />
