@@ -115,7 +115,8 @@ const AdminPanel = () => {
 
   const canAccessAdminManagement = () => {
     console.log('Checking admin access:', currentAdmin);
-    return currentAdmin?.role === 'admin';
+    // Принудительное отображение для info@madiluxe.com или проверка роли admin
+    return currentAdmin?.email === 'info@madiluxe.com' || currentAdmin?.role === 'admin';
   };
 
   if (isLoading) {
