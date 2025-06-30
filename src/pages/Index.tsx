@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin } from 'lucide-rea
 import { useNavigate } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
+import SEOHead from '@/components/SEOHead';
 
 const Index = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -53,6 +54,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-[rgb(14,14,14)] text-white">
+      <SEOHead 
+        title="MADI - Mobiliario de Autor Exclusivo | Cocinas, Vestidores y Armarios de Lujo en Madrid"
+        description="MADI crea mobiliario de autor exclusivo y a medida en Madrid. Especialistas en cocinas de lujo, vestidores personalizados y armarios de diseño. Calidad artesanal premium."
+        keywords="mobiliario de lujo Madrid, cocinas a medida, vestidores personalizados, armarios de diseño, muebles exclusivos, carpintería artesanal, diseño interior luxury"
+        url="https://madiluxe.com"
+        type="website"
+      />
+      
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[rgb(14,14,14)]/90 backdrop-blur-sm border-b border-gray-800">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">

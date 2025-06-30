@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -7,6 +6,7 @@ import { supabase, Product, Category } from '@/lib/supabase';
 import ProductCard from '@/components/ProductCard';
 import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
+import SEOHead from '@/components/SEOHead';
 
 const CategoryPage = () => {
   const { category } = useParams();
@@ -55,10 +55,22 @@ const CategoryPage = () => {
     }
   };
 
+  const getCategorySEOData = () => {
+    if (!categoryData) return {};
+    
+    return {
+      title: `${categoryData.name} de Lujo a Medida | MADI - Mobiliario Exclusivo Madrid`,
+      description: `Descubre nuestra colección de ${categoryData.name.toLowerCase()} de lujo personalizados. ${categoryData.description || ''} Diseño exclusivo y calidad artesanal premium en Madrid.`,
+      keywords: `${categoryData.name} de lujo, ${categoryData.name} a medida Madrid, ${categoryData.name} personalizados, mobiliario exclusivo, MADI luxury design`,
+      url: `https://madiluxe.com/category/${categoryData.slug}`,
+      type: 'website' as const
+    };
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
-        <div>Загрузка категории...</div>
+        <div>Cargando categoría...</div>
       </div>
     );
   }
@@ -67,17 +79,21 @@ const CategoryPage = () => {
     return (
       <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Категория не найдена</h1>
+          <h1 className="text-2xl font-bold mb-4">Categoría no encontrada</h1>
           <Button onClick={() => navigate('/')} className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
-            Вернуться на главную
+            Volver a inicio
           </Button>
         </div>
       </div>
     );
   }
 
+  const seoData = getCategorySEOData();
+
   return (
     <div className="min-h-screen bg-[rgb(14,14,14)] text-white">
+      <SEOHead {...seoData} />
+      
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[rgb(14,14,14)]/90 backdrop-blur-sm border-b border-gray-800">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">

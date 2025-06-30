@@ -7,6 +7,7 @@ import { supabase, Product } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import Footer from '@/components/Footer';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
+import SEOHead from '@/components/SEOHead';
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -71,6 +72,27 @@ const ProductDetail = () => {
     }
   };
 
+  const getProductSEOData = () => {
+    if (!product) return {};
+    
+    const price = formatPrice().replace('desde ', '').replace('€', '');
+    const mainImage = product.images && product.images.length > 0 
+      ? product.images[0] 
+      : '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+    
+    return {
+      title: `${product.name} - ${product.categories?.name} de Lujo | MADI`,
+      description: `${product.description} Mobiliario exclusivo de MADI. ${formatPrice()}. Diseño personalizado y calidad artesanal premium en Madrid.`,
+      keywords: `${product.name}, ${product.categories?.name}, mobiliario de lujo, muebles a medida Madrid, ${product.categories?.name} personalizados, MADI luxury`,
+      image: mainImage,
+      url: `https://madiluxe.com/product/${product.slug}`,
+      type: 'product' as const,
+      price: formatPrice(),
+      availability: 'in stock' as const,
+      category: product.categories?.name || 'Mobiliario'
+    };
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[rgb(14,14,14)] text-white flex items-center justify-center">
@@ -85,7 +107,7 @@ const ProductDetail = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Товар не найден</h1>
           <Button onClick={() => navigate('/')} className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]">
-            Вернуться на главную
+            Volver a inicio
           </Button>
         </div>
       </div>
@@ -171,6 +193,8 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-[rgb(14,14,14)] text-white">
+      <SEOHead {...getProductSEOData()} />
+      
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[rgb(14,14,14)]/90 backdrop-blur-sm border-b border-gray-800">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
