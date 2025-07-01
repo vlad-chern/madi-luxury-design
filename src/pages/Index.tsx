@@ -10,6 +10,7 @@ import ContactForm from '@/components/ContactForm';
 import DynamicCollections from '@/components/DynamicCollections';
 import MobilePortfolioCarousel from '@/components/MobilePortfolioCarousel';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getImageUrl } from '@/utils/imageCompression';
 
 const Index = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -150,13 +151,14 @@ const Index = () => {
     }
   ];
 
+  // Обновленные пути к изображениям портфолио
   const portfolioImages = [
-    "/lovable-uploads/2cdf3057-4b67-4fd6-9a35-22d93960d69c.png",
-    "/lovable-uploads/12d2af38-c23d-4b9c-8feb-7bd0f637ecb5.png",
-    "/lovable-uploads/2dc1aa7a-1f43-480e-9254-b4a814d06baf.png",
-    "/lovable-uploads/a3c240e5-0ac4-4c59-9bb8-44e3c09400d1.png",
-    "/lovable-uploads/f2a9ca0c-e245-41fa-81a7-77852fe8f37a.png",
-    "/lovable-uploads/7605104b-dc16-4409-937f-d4dbd0035488.png"
+    "2cdf3057-4b67-4fd6-9a35-22d93960d69c.png",
+    "12d2af38-c23d-4b9c-8feb-7bd0f637ecb5.png",
+    "2dc1aa7a-1f43-480e-9254-b4a814d06baf.png",
+    "a3c240e5-0ac4-4c59-9bb8-44e3c09400d1.png",
+    "f2a9ca0c-e245-41fa-81a7-77852fe8f37a.png",
+    "7605104b-dc16-4409-937f-d4dbd0035488.png"
   ];
 
   const nextTestimonial = () => {
@@ -197,7 +199,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center">
             <img 
-              src="/lovable-uploads/2ff321c4-11f7-489a-860b-fadf6b38b375.png" 
+              src={getImageUrl("2ff321c4-11f7-489a-860b-fadf6b38b375.png", "general")} 
               alt="MADI Logo" 
               className="h-6 sm:h-8 w-auto"
             />
@@ -297,7 +299,7 @@ const Index = () => {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png?w=1920&q=75')`,
+            backgroundImage: `url('${getImageUrl("52fb3c8e-ed45-4620-a143-5f46300b53b1.png", "general")}')`,
             filter: 'brightness(0.3)'
           }}
         />
@@ -342,7 +344,7 @@ const Index = () => {
             <div 
               className="aspect-square bg-cover bg-center rounded-lg"
               style={{
-                backgroundImage: `url('/lovable-uploads/75fee044-f881-4fda-91c4-f03dbec16e0c.png?w=800&q=75')`,
+                backgroundImage: `url('${getImageUrl("75fee044-f881-4fda-91c4-f03dbec16e0c.png", "general")}')`,
                 filter: 'grayscale(100%)'
               }}
             />
