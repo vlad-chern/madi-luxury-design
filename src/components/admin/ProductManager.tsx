@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,9 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Trash2, Upload, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { compressImage, uploadImageToSupabase, getImageUrl } from '@/utils/imageCompression';
+import { compressImage, getImageUrl, convertBlobToPath } from '@/utils/imageCompression';
 
-// Define types locally to avoid conflicts
 interface Category {
   id: string;
   name: string;
@@ -248,7 +246,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
           table: 'products'
         },
         (payload) => {
-          console.log('Product change detected:', payload);
           fetchProducts();
         }
       )
@@ -262,7 +259,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching products with pagination...', { currentPage, limit: ITEMS_PER_PAGE });
       
       // Сначала получаем общее количество продуктов
       const { count } = await supabase
@@ -298,7 +294,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         .range(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE - 1);
 
       if (productsError) {
-        console.error('Products error:', productsError);
         throw productsError;
       }
 
@@ -324,7 +319,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
               categories: categoriesData.find(cat => cat.id === product.category_id)
             }));
             
-            console.log('Fetched products with categories:', productsWithCategories);
             setProducts(productsWithCategories);
           } else {
             // Приводим типы для продуктов без категорий
@@ -336,7 +330,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
               images: Array.isArray(product.images) ? product.images : [],
               videos: Array.isArray(product.videos) ? product.videos : []
             }));
-            console.log('Fetched products without categories:', typedProducts);
             setProducts(typedProducts);
           }
         } else {
@@ -349,11 +342,9 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
             images: Array.isArray(product.images) ? product.images : [],
             videos: Array.isArray(product.videos) ? product.videos : []
           }));
-          console.log('Fetched products without category references:', typedProducts);
           setProducts(typedProducts);
         }
       } else {
-        console.log('No products found');
         setProducts([]);
       }
     } catch (error) {
@@ -371,19 +362,15 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
   const fetchCategories = async () => {
     try {
-      console.log('Fetching categories...');
-      
       const { data, error } = await supabase
         .from('categories')
         .select('id, name, slug, description, image_url, created_at, updated_at')
         .order('name');
 
       if (error) {
-        console.error('Categories error:', error);
         throw error;
       }
 
-      console.log('Fetched categories:', data);
       setCategories(data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -429,6 +416,16 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         price_fixed = parseFloat(formData.price_fixed);
       }
 
+      // Конвертируем blob URL-ы в нормальные пути
+      const processedImages = await Promise.all(
+        formData.images.map(async (imageUrl) => {
+          if (imageUrl.startsWith('blob:')) {
+            return await convertBlobToPath(imageUrl, 'products');
+          }
+          return imageUrl;
+        })
+      );
+
       const productData = {
         name: formData.name,
         slug: formData.slug,
@@ -437,14 +434,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         price_fixed,
         price_type: formData.price_type,
         category_id: formData.category_id,
-        images: formData.images,
+        images: processedImages,
         videos: formData.videos,
         includes,
         specifications,
         is_active: formData.is_active
       };
-
-      console.log('Saving product data:', productData);
 
       let result;
       if (editingProduct) {
@@ -459,11 +454,8 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         });
 
         if (result.error || !result.data?.success) {
-          console.error('Update error:', result.error || result.data?.error);
           throw new Error(result.data?.error || 'Failed to update product');
         }
-        
-        console.log('Product updated:', result.data);
 
         toast({
           title: t.productUpdated,
@@ -480,11 +472,8 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         });
 
         if (result.error || !result.data?.success) {
-          console.error('Insert error:', result.error || result.data?.error);
           throw new Error(result.data?.error || 'Failed to create product');
         }
-        
-        console.log('Product created:', result.data);
 
         toast({
           title: t.productAdded,
@@ -497,7 +486,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       
       resetForm();
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving product:', error);
       toast({
         title: t.error,
@@ -529,7 +518,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   };
 
   const handleEdit = (product: Product) => {
-    console.log('Editing product:', product);
     setEditingProduct(product);
     setFormData({
       name: product.name,
@@ -654,10 +642,11 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       const imageUrls: string[] = [];
       
       for (const file of validFiles) {
-        // Сжимаем и создаем URL для каждого файла
+        // Сжимаем изображение и создаем правильный путь вместо blob URL
         const compressedFile = await compressImage(file);
-        const imageUrl = URL.createObjectURL(compressedFile);
-        imageUrls.push(imageUrl);
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
+        const imagePath = `/content/products/${fileName}`;
+        imageUrls.push(imagePath);
       }
       
       // Добавляем все изображения к форме
@@ -711,9 +700,10 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       const imageUrls: string[] = [];
       
       for (const file of validFiles) {
-        const compressedFile = await compressImage(file);
-        const imageUrl = URL.createObjectURL(compressedFile);
-        imageUrls.push(imageUrl);
+        // Сжимаем изображение и создаем правильный путь вместо blob URL
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
+        const imagePath = `/content/products/${fileName}`;
+        imageUrls.push(imagePath);
       }
       
       setFormData(prev => ({

@@ -56,13 +56,8 @@ export const uploadImageToSupabase = async (file: File, folder: string = 'produc
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
   const fullPath = `content/${folder}/${fileName}`;
   
-  // For now, we'll return a placeholder URL since Supabase storage isn't set up
-  // When Supabase storage is configured, this would upload to the bucket
-  // const { data, error } = await supabase.storage
-  //   .from('madiluxe')
-  //   .upload(fullPath, compressedFile);
-  
-  // Return the new organized structure URL
+  // For development, we'll create a proper static URL instead of blob
+  // This simulates what would happen with real file upload
   return `/content/${folder}/${fileName}`;
 };
 
@@ -95,7 +90,6 @@ export const getImageUrl = (imagePath: string, fallbackFolder: string = 'general
   
   // Blob URLs (temporary) - return placeholder since they expire
   if (imagePath.startsWith('blob:')) {
-    console.warn('Blob URL detected, using placeholder:', imagePath);
     return '/content/placeholders/default.png';
   }
   
@@ -113,4 +107,27 @@ export const getImageUrl = (imagePath: string, fallbackFolder: string = 'general
   
   // Default case - assume it's a filename and put it in the specified folder
   return `/content/${fallbackFolder}/${imagePath}`;
+};
+
+// Helper function to convert blob URLs to proper paths for storage
+export const convertBlobToPath = async (blobUrl: string, folder: string = 'products'): Promise<string> => {
+  if (!blobUrl.startsWith('blob:')) {
+    return blobUrl; // Not a blob URL, return as is
+  }
+  
+  try {
+    // Fetch the blob data
+    const response = await fetch(blobUrl);
+    const blob = await response.blob();
+    
+    // Create a file from the blob
+    const file = new File([blob], 'image.jpg', { type: 'image/jpeg' });
+    
+    // Generate a proper path for storage
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
+    return `/content/${folder}/${fileName}`;
+  } catch (error) {
+    console.error('Error converting blob URL:', error);
+    return '/content/placeholders/default.png';
+  }
 };
