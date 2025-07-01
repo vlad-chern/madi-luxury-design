@@ -17,7 +17,13 @@ export const useAppNavigation = () => {
   }, [navigate]);
 
   const goBack = useCallback(() => {
-    navigate(-1);
+    // Проверяем, есть ли история для возврата
+    if (window.history.length > 1 && document.referrer) {
+      navigate(-1);
+    } else {
+      // Если истории нет, идем на главную
+      navigate('/');
+    }
     setTimeout(() => {
       window.scrollTo(0, 0);
     }, 0);

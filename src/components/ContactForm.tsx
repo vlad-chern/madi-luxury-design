@@ -2,23 +2,14 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle, Send } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface ContactFormProps {
-  productId?: string;
-  productName?: string;
-  language?: 'es' | 'en';
+  language: 'es' | 'en';
 }
 
-const ContactForm: React.FC<ContactFormProps> = ({ 
-  productId, 
-  productName, 
-  language = 'es' 
-}) => {
+const ContactForm = ({ language }: ContactFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -26,98 +17,128 @@ const ContactForm: React.FC<ContactFormProps> = ({
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const translations = {
     es: {
-      title: productName ? `Consulta sobre ${productName}` : 'Contacta con nosotros',
-      nameLabel: 'Su nombre',
-      namePlaceholder: 'Su nombre',
-      emailLabel: 'Su email',
-      emailPlaceholder: 'Su email',
-      phoneLabel: 'Teléfono',
-      phonePlaceholder: 'Teléfono',
-      messageLabel: 'Cuéntenos sobre su proyecto...',
-      messagePlaceholder: 'Cuéntenos sobre su proyecto...',
-      submitButton: 'Enviar Solicitud de Consulta',
-      submittingButton: 'Enviando...',
-      successTitle: '¡Consulta enviada!',
-      successMessage: 'Hemos recibido tu consulta. Nos pondremos en contacto contigo muy pronto.',
-      newConsultation: 'Nueva Consulta',
-      errorTitle: 'Error',
-      errorMessage: 'No se pudo enviar la consulta. Por favor, inténtalo de nuevo.'
+      name: 'Nombre completo',
+      email: 'Correo electrónico',
+      phone: 'Teléfono',
+      message: 'Cuéntenos sobre su proyecto',
+      submit: 'Enviar Consulta',
+      sending: 'Enviando...',
+      success: 'Mensaje enviado correctamente. Nos pondremos en contacto pronto.',
+      error: 'Error al enviar el mensaje. Inténtelo de nuevo.',
+      required: 'Este campo es obligatorio',
+      invalidEmail: 'Correo electrónico no válido',
+      invalidPhone: 'Número de teléfono no válido'
     },
     en: {
-      title: productName ? `Inquiry about ${productName}` : 'Contact us',
-      nameLabel: 'Full name',
-      namePlaceholder: 'Your full name',
-      emailLabel: 'Email',
-      emailPlaceholder: 'your@email.com',
-      phoneLabel: 'Phone (optional)',
-      phonePlaceholder: '+34 xxx xxx xxx',
-      messageLabel: 'Message',
-      messagePlaceholder: 'Tell us more about your project...',
-      submitButton: 'Send Inquiry',
-      submittingButton: 'Sending...',
-      successTitle: 'Inquiry sent!',
-      successMessage: 'We have received your inquiry. We will contact you very soon.',
-      newConsultation: 'New Consultation',
-      errorTitle: 'Error',
-      errorMessage: 'Could not send the inquiry. Please try again.'
+      name: 'Full Name',
+      email: 'Email Address',
+      phone: 'Phone',
+      message: 'Tell us about your project',
+      submit: 'Send Inquiry',
+      sending: 'Sending...',
+      success: 'Message sent successfully. We will contact you soon.',
+      error: 'Error sending message. Please try again.',
+      required: 'This field is required',
+      invalidEmail: 'Invalid email address',
+      invalidPhone: 'Invalid phone number'
     }
   };
 
   const t = translations[language];
 
+  const validatePhone = (phone: string) => {
+    // Spanish phone number validation (supports +34, 34, 6/7/8/9 prefix)
+    const phoneRegex = /^(\+34|34)?[6-9]\d{8}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ''));
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = t.required;
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = t.required;
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = t.invalidEmail;
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = t.required;
+    } else if (!validatePhone(formData.phone)) {
+      newErrors.phone = t.invalidPhone;
+    }
+
+    if (!formData.message.trim()) {
+      newErrors.message = t.required;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // Guardar en la base de datos
-      const { data: orderData, error } = await supabase
+      const { error } = await supabase
         .from('orders')
-        .insert({
-          customer_name: formData.name,
-          customer_email: formData.email,
-          customer_phone: formData.phone || null,
-          product_id: productId || null,
-          message: formData.message,
-          status: 'new'
-        })
-        .select()
-        .single();
+        .insert([
+          {
+            customer_name: formData.name,
+            customer_email: formData.email,
+            customer_phone: formData.phone,
+            message: formData.message,
+            status: 'new'
+          }
+        ]);
 
       if (error) throw error;
 
-      // Enviar notificaciones
-      const notificationData = {
-        ...formData,
-        product_name: productName,
-        order_id: orderData.id
-      };
-
-      try {
-        await supabase.functions.invoke('send-notifications', {
-          body: { orderData: notificationData }
-        });
-      } catch (notificationError) {
-        console.error('Notification error:', notificationError);
-        // No mostramos error al usuario por las notificaciones
-      }
-
-      setIsSubmitted(true);
       toast({
-        title: t.successTitle,
-        description: t.successMessage,
+        title: "¡Éxito!",
+        description: t.success,
       });
 
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        message: ''
+      });
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({
-        title: t.errorTitle,
-        description: t.errorMessage,
+        title: "Error",
+        description: t.error,
         variant: "destructive",
       });
     } finally {
@@ -125,92 +146,72 @@ const ContactForm: React.FC<ContactFormProps> = ({
     }
   };
 
-  const resetForm = () => {
-    setFormData({ name: '', email: '', phone: '', message: '' });
-    setIsSubmitted(false);
-  };
-
-  if (isSubmitted) {
-    return (
-      <div className="bg-[rgb(22,22,22)] p-8 rounded-lg border border-green-500/20">
-        <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-green-400 mb-2 text-center">
-          {t.successTitle}
-        </h3>
-        <p className="text-gray-300 mb-4 text-center">
-          {t.successMessage}
-        </p>
-        <Button 
-          onClick={resetForm} 
-          className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)]"
-        >
-          {t.newConsultation}
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-[rgb(22,22,22)] p-8 rounded-lg">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <Input
-            type="text"
-            placeholder={t.namePlaceholder}
-            value={formData.name}
-            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            className="bg-transparent border-gray-600 text-white placeholder-gray-400"
-            required
-          />
-        </div>
-
-        <div>
-          <Input
-            type="email"
-            placeholder={t.emailPlaceholder}
-            value={formData.email}
-            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-            className="bg-transparent border-gray-600 text-white placeholder-gray-400"
-            required
-          />
-        </div>
-
-        <div>
-          <Input
-            type="tel"
-            placeholder={t.phonePlaceholder}
-            value={formData.phone}
-            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-            className="bg-transparent border-gray-600 text-white placeholder-gray-400"
-          />
-        </div>
-
-        <div>
-          <Textarea
-            placeholder={t.messagePlaceholder}
-            rows={4}
-            value={formData.message}
-            onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-            className="bg-transparent border-gray-600 text-white placeholder-gray-400 min-h-32"
-          />
-        </div>
-
-        <Button 
-          type="submit" 
-          className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] py-3" 
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
-              <Send className="w-4 h-4 mr-2 animate-spin" />
-              {t.submittingButton}
-            </>
-          ) : (
-            t.submitButton
-          )}
-        </Button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+      <div>
+        <Input
+          type="text"
+          name="name"
+          placeholder={t.name}
+          value={formData.name}
+          onChange={handleInputChange}
+          className={`bg-[rgb(32,32,32)] border-0 text-white placeholder:text-gray-400 focus:ring-0 focus:border-0 ${
+            errors.name ? 'ring-2 ring-red-500' : ''
+          }`}
+        />
+        {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
+      </div>
+      
+      <div>
+        <Input
+          type="email"
+          name="email"
+          placeholder={t.email}
+          value={formData.email}
+          onChange={handleInputChange}
+          className={`bg-[rgb(32,32,32)] border-0 text-white placeholder:text-gray-400 focus:ring-0 focus:border-0 ${
+            errors.email ? 'ring-2 ring-red-500' : ''
+          }`}
+        />
+        {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
+      </div>
+      
+      <div>
+        <Input
+          type="tel"
+          name="phone"
+          placeholder={t.phone}
+          value={formData.phone}
+          onChange={handleInputChange}
+          className={`bg-[rgb(32,32,32)] border-0 text-white placeholder:text-gray-400 focus:ring-0 focus:border-0 ${
+            errors.phone ? 'ring-2 ring-red-500' : ''
+          }`}
+        />
+        {errors.phone && <p className="text-red-400 text-sm mt-1">{errors.phone}</p>}
+      </div>
+      
+      <div>
+        <textarea
+          name="message"
+          placeholder={t.message}
+          rows={4}
+          value={formData.message}
+          onChange={handleInputChange}
+          className={`w-full bg-[rgb(32,32,32)] border-0 rounded-md px-3 py-2 text-white placeholder:text-gray-400 focus:outline-none focus:ring-0 resize-none ${
+            errors.message ? 'ring-2 ring-red-500' : ''
+          }`}
+        />
+        {errors.message && <p className="text-red-400 text-sm mt-1">{errors.message}</p>}
+      </div>
+      
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] py-3 text-base font-medium"
+      >
+        {isSubmitting ? t.sending : t.submit}
+      </Button>
+    </form>
   );
 };
 
