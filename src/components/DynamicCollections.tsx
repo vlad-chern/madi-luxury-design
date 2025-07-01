@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { getImageUrl } from '@/utils/imageCompression';
 
 const DynamicCollections = () => {
-  const { categories, isLoading } = useCategories();
+  const { categories, isLoading, error } = useCategories();
   const navigate = useNavigate();
 
   const handleCategoryClick = (category: string) => {
@@ -30,7 +30,8 @@ const DynamicCollections = () => {
     );
   }
 
-  if (!categories.length) {
+  // Если ошибка загрузки, показываем fallback без показа toast
+  if (error || !categories.length) {
     return (
       <div className="container mx-auto px-6">
         <div className="text-center">
@@ -38,7 +39,7 @@ const DynamicCollections = () => {
             Nuestras <span className="text-[rgb(180,165,142)]">Colecciones</span>
           </h2>
           <p className="text-gray-400 text-lg">
-            Las colecciones se están preparando. Vuelva pronto para ver nuestras creaciones exclusivas.
+            {error ? 'Error al cargar las colecciones. Intente recargar la página.' : 'Las colecciones se están preparando. Vuelva pronto para ver nuestras creaciones exclusivas.'}
           </p>
         </div>
       </div>

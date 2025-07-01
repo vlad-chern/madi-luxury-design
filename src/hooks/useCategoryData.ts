@@ -27,7 +27,7 @@ export const useCategoryData = (categorySlug: string | undefined) => {
       
       console.log('Fetching category data for slug:', categorySlug);
       
-      // Fetch category data with timeout
+      // Уменьжаем таймаут для более быстрого отклика
       const categoryPromise = supabase
         .from('categories')
         .select('*')
@@ -37,7 +37,7 @@ export const useCategoryData = (categorySlug: string | undefined) => {
       const categoryResult = await Promise.race([
         categoryPromise,
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Tiempo de espera agotado para la categoría')), 10000)
+          setTimeout(() => reject(new Error('Tiempo de espera agotado para la categoría')), 5000)
         )
       ]) as any;
       
@@ -54,7 +54,7 @@ export const useCategoryData = (categorySlug: string | undefined) => {
       console.log('Category data loaded:', categoryResult.data);
       setCategoryData(categoryResult.data);
 
-      // Fetch products for this category with timeout
+      // Fetch products только если категория найдена
       const productsPromise = supabase
         .from('products')
         .select(`
@@ -71,7 +71,7 @@ export const useCategoryData = (categorySlug: string | undefined) => {
       const productsResult = await Promise.race([
         productsPromise,
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Tiempo de espera agotado para los productos')), 10000)
+          setTimeout(() => reject(new Error('Tiempo de espera agotado para los productos')), 5000)
         )
       ]) as any;
       

@@ -12,26 +12,8 @@ export const useCategories = () => {
   useEffect(() => {
     fetchCategories();
 
-    // Подписка на изменения в таблице categories
-    const channel = supabase
-      .channel('categories-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'categories'
-        },
-        () => {
-          console.log('Categories updated, refetching...');
-          fetchCategories();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // Убираем real-time подписку чтобы уменьшить нагрузку на базу
+    // Подписка будет добавлена только в админке где это действительно нужно
   }, []);
 
   const fetchCategories = async () => {
@@ -39,29 +21,34 @@ export const useCategories = () => {
       setIsLoading(true);
       setError(null);
       
-      const { data, error } = await supabase
+      // Добавляем таймаут для запроса
+      const categoriesPromise = supabase
         .from('categories')
         .select('*')
         .order('created_at', { ascending: true });
+
+      const categoriesResult = await Promise.race([
+        categoriesPromise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Tiempo de espera agotado')), 8000)
+        )
+      ]) as any;
       
-      if (error) {
-        console.error('Error fetching categories:', error);
-        throw error;
+      if (categoriesResult.error) {
+        console.error('Error fetching categories:', categoriesResult.error);
+        throw categoriesResult.error;
       }
       
-      console.log('Categories loaded:', data?.length || 0);
-      setCategories(data || []);
+      console.log('Categories loaded:', categoriesResult.data?.length || 0);
+      setCategories(categoriesResult.data || []);
       
     } catch (error: any) {
       console.error('Error fetching categories:', error);
       const errorMessage = error.message || 'Error al cargar las categorías';
       setError(errorMessage);
       
-      toast({
-        title: "Error de carga",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      // Не показываем toast на главной странице чтобы не мешать пользователю
+      console.warn('Categories loading failed:', errorMessage);
     } finally {
       setIsLoading(false);
     }
