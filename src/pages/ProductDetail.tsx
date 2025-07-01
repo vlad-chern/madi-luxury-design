@@ -1,4 +1,5 @@
 
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import Footer from '@/components/Footer';
@@ -11,9 +12,9 @@ import { useProductDetail } from '@/hooks/useProductDetail';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
 
 const ProductDetail = () => {
-  const { productSlug, categorySlug } = useParams();
+  const { productSlug } = useParams();
   const navigate = useNavigate();
-  const { navigateTo } = useAppNavigation();
+  const { goBack } = useAppNavigation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const { product, isLoading, error } = useProductDetail(productSlug);
@@ -30,20 +31,13 @@ const ProductDetail = () => {
   };
 
   const handleBack = () => {
-    // Сначала пробуем вернуться в категорию, если знаем categorySlug
-    if (categorySlug) {
-      navigateTo(`/category/${categorySlug}`);
-      return;
+    // Проверяем, можем ли мы вернуться назад в истории
+    if (window.history.length > 1) {
+      goBack();
+    } else {
+      // Если истории нет, идем на главную
+      navigate('/');
     }
-    
-    // Если categorySlug нет, пробуем вернуться назад в истории
-    if (window.history.length > 2) {
-      window.history.back();
-      return;
-    }
-    
-    // В крайнем случае идем на главную
-    navigateTo('/');
   };
 
   if (isLoading) {
@@ -79,3 +73,4 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
+

@@ -1,7 +1,6 @@
 
 import { useEffect, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { getImageUrl } from '@/utils/imageCompression';
 
 interface MobilePortfolioCarouselProps {
   images: string[];
@@ -61,7 +60,7 @@ const MobilePortfolioCarousel = ({ images, title, subtitle }: MobilePortfolioCar
             key={index}
             className="aspect-square bg-cover bg-center rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
             style={{
-              backgroundImage: `url('${getImageUrl(image, 'portfolio')}')`
+              backgroundImage: `url('${image}')`
             }}
           />
         ))}
@@ -85,7 +84,7 @@ const MobilePortfolioCarousel = ({ images, title, subtitle }: MobilePortfolioCar
             key={index}
             className="flex-shrink-0 w-64 h-64 bg-cover bg-center rounded-lg"
             style={{
-              backgroundImage: `url('${getImageUrl(image, 'portfolio')}')`
+              backgroundImage: `url('${image}')`
             }}
           />
         ))}

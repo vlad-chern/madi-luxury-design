@@ -2,10 +2,9 @@
 import { Button } from '@/components/ui/button';
 import { useCategories } from '@/hooks/useCategories';
 import { useNavigate } from 'react-router-dom';
-import { getImageUrl } from '@/utils/imageCompression';
 
 const DynamicCollections = () => {
-  const { categories, isLoading, error } = useCategories();
+  const { categories, isLoading } = useCategories();
   const navigate = useNavigate();
 
   const handleCategoryClick = (category: string) => {
@@ -30,8 +29,7 @@ const DynamicCollections = () => {
     );
   }
 
-  // Если ошибка загрузки, показываем fallback без показа toast
-  if (error || !categories.length) {
+  if (!categories.length) {
     return (
       <div className="container mx-auto px-6">
         <div className="text-center">
@@ -39,25 +37,24 @@ const DynamicCollections = () => {
             Nuestras <span className="text-[rgb(180,165,142)]">Colecciones</span>
           </h2>
           <p className="text-gray-400 text-lg">
-            {error ? 'Error al cargar las colecciones. Intente recargar la página.' : 'Las colecciones se están preparando. Vuelva pronto para ver nuestras creaciones exclusivas.'}
+            Las colecciones se están preparando. Vuelva pronto para ver nuestras creaciones exclusivas.
           </p>
         </div>
       </div>
     );
   }
 
-  const getCategoryImage = (category: any) => {
+  const getImageUrl = (category: any) => {
     if (category.image_url) return category.image_url;
     
-    // Fallback images из новой структуры папок
+    // Fallback images basadas en el slug
     const fallbackImages: { [key: string]: string } = {
-      'cocinas': '3473e16d-3e78-4595-83ba-3de762170ac5.png',
-      'vestidores': '6077d6cb-0b90-4c79-bc56-1688ceb20f0a.png',
-      'armarios': 'c0bfff03-02b0-4ff8-8777-ae7ad8a62484.png'
+      'cocinas': '/lovable-uploads/3473e16d-3e78-4595-83ba-3de762170ac5.png',
+      'vestidores': '/lovable-uploads/6077d6cb-0b90-4c79-bc56-1688ceb20f0a.png',
+      'armarios': '/lovable-uploads/c0bfff03-02b0-4ff8-8777-ae7ad8a62484.png'
     };
     
-    const fallbackFile = fallbackImages[category.slug] || '52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
-    return getImageUrl(fallbackFile, 'categories');
+    return fallbackImages[category.slug] || '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
   };
 
   return (
@@ -78,7 +75,7 @@ const DynamicCollections = () => {
               <div 
                 className="aspect-video bg-cover bg-center cursor-pointer transition-transform duration-500 group-hover:scale-105"
                 style={{
-                  backgroundImage: `url('${getCategoryImage(category)}')`
+                  backgroundImage: `url('${getImageUrl(category)}')`
                 }}
                 onClick={() => handleCategoryClick(category.slug)}
               >

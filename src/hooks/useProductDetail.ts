@@ -10,6 +10,30 @@ export const useProductDetail = (productSlug: string | undefined) => {
   useEffect(() => {
     console.log('useProductDetail - productSlug:', productSlug);
     fetchProduct();
+
+    // Подписка на изменения в таблице products
+    const channel = supabase
+      .channel('product-detail-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'products'
+        },
+        (payload) => {
+          console.log('Product updated:', payload);
+          // Обновляем только если это тот же товар
+          if (payload.new.slug === productSlug) {
+            fetchProduct();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [productSlug]);
 
   const fetchProduct = async () => {
@@ -34,7 +58,7 @@ export const useProductDetail = (productSlug: string | undefined) => {
         `)
         .eq('slug', productSlug)
         .eq('is_active', true)
-        .maybeSingle();
+        .single();
       
       if (error) {
         console.error('Supabase error:', error);

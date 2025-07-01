@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckCircle, Send } from 'lucide-react';
-import { validatePhoneNumber } from '@/utils/phoneValidation';
 
 interface ContactFormProps {
   productId?: string;
@@ -28,7 +27,6 @@ const ContactForm: React.FC<ContactFormProps> = ({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [phoneError, setPhoneError] = useState('');
   const { toast } = useToast();
 
   const translations = {
@@ -39,7 +37,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
       emailLabel: 'Su email',
       emailPlaceholder: 'Su email',
       phoneLabel: 'Teléfono',
-      phonePlaceholder: '+34 xxx xxx xxx',
+      phonePlaceholder: 'Teléfono',
       messageLabel: 'Cuéntenos sobre su proyecto...',
       messagePlaceholder: 'Cuéntenos sobre su proyecto...',
       submitButton: 'Enviar Solicitud de Consulta',
@@ -48,8 +46,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
       successMessage: 'Hemos recibido tu consulta. Nos pondremos en contacto contigo muy pronto.',
       newConsultation: 'Nueva Consulta',
       errorTitle: 'Error',
-      errorMessage: 'No se pudo enviar la consulta. Por favor, inténtalo de nuevo.',
-      phoneError: 'Por favor, introduce un número de teléfono válido'
+      errorMessage: 'No se pudo enviar la consulta. Por favor, inténtalo de nuevo.'
     },
     en: {
       title: productName ? `Inquiry about ${productName}` : 'Contact us',
@@ -67,34 +64,14 @@ const ContactForm: React.FC<ContactFormProps> = ({
       successMessage: 'We have received your inquiry. We will contact you very soon.',
       newConsultation: 'New Consultation',
       errorTitle: 'Error',
-      errorMessage: 'Could not send the inquiry. Please try again.',
-      phoneError: 'Please enter a valid phone number'
+      errorMessage: 'Could not send the inquiry. Please try again.'
     }
   };
 
   const t = translations[language];
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const phone = e.target.value;
-    setFormData(prev => ({ ...prev, phone }));
-    
-    // Валидация телефона при вводе
-    if (phone && !validatePhoneNumber(phone)) {
-      setPhoneError(t.phoneError);
-    } else {
-      setPhoneError('');
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Проверяем телефон перед отправкой
-    if (formData.phone && !validatePhoneNumber(formData.phone)) {
-      setPhoneError(t.phoneError);
-      return;
-    }
-    
     setIsSubmitting(true);
 
     try {
@@ -151,7 +128,6 @@ const ContactForm: React.FC<ContactFormProps> = ({
   const resetForm = () => {
     setFormData({ name: '', email: '', phone: '', message: '' });
     setIsSubmitted(false);
-    setPhoneError('');
   };
 
   if (isSubmitted) {
@@ -204,14 +180,9 @@ const ContactForm: React.FC<ContactFormProps> = ({
             type="tel"
             placeholder={t.phonePlaceholder}
             value={formData.phone}
-            onChange={handlePhoneChange}
-            className={`bg-transparent border-gray-600 text-white placeholder-gray-400 ${
-              phoneError ? 'border-red-500' : ''
-            }`}
+            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+            className="bg-transparent border-gray-600 text-white placeholder-gray-400"
           />
-          {phoneError && (
-            <p className="text-red-400 text-sm mt-1">{phoneError}</p>
-          )}
         </div>
 
         <div>
@@ -227,7 +198,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
         <Button 
           type="submit" 
           className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] py-3" 
-          disabled={isSubmitting || !!phoneError}
+          disabled={isSubmitting}
         >
           {isSubmitting ? (
             <>

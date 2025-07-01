@@ -8,11 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Edit, Trash2, Upload, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { compressImage, getImageUrl, convertBlobToPath, uploadImageToSupabase } from '@/utils/imageCompression';
+import { compressImage, uploadImageToSupabase } from '@/utils/imageCompression';
 
+// Define types locally to avoid conflicts
 interface Category {
   id: string;
   name: string;
@@ -51,11 +52,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalProducts, setTotalProducts] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const ITEMS_PER_PAGE = 10;
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -120,12 +116,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       uploadingImage: 'Subiendo imagen...',
       imageUploadError: 'Error al subir imagen',
       selectImage: 'Seleccionar imagen',
-      dragDropImage: 'Arrastra una imagen aquí o haz clic para seleccionar',
-      loading: 'Cargando...',
-      loadError: 'Error al cargar datos',
-      previousPage: 'Página anterior',
-      nextPage: 'Página siguiente',
-      showingResults: 'Mostrando {start}-{end} de {total} productos'
+      dragDropImage: 'Arrastra una imagen aquí o haz clic para seleccionar'
     },
     en: {
       title: 'Product Management',
@@ -170,12 +161,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       uploadingImage: 'Uploading image...',
       imageUploadError: 'Error uploading image',
       selectImage: 'Select image',
-      dragDropImage: 'Drag an image here or click to select',
-      loading: 'Loading...',
-      loadError: 'Error loading data',
-      previousPage: 'Previous page',
-      nextPage: 'Next page',
-      showingResults: 'Showing {start}-{end} of {total} products'
+      dragDropImage: 'Drag an image here or click to select'
     },
     ru: {
       title: 'Управление товарами',
@@ -204,7 +190,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       noPriceSet: 'Не указана',
       selectCategory: 'Выберите категорию',
       includesPlaceholder: 'Персонализированный дизайн и профессиональная консультация\nРучная работа с премиальными материалами',
-      specificationsPlaceholder: 'Время доставки: 6-8 недель\nМатериалы: Благородное дерево, натуральный мрамор',  
+      specificationsPlaceholder: 'Время доставки: 6-8 недель\nМатериалы: Благородное дерево, натуральный мрамор',
       priceFromType: 'От (цены)',
       fixedPriceType: 'Фиксированная',
       productAdded: 'Товар добавлен',
@@ -220,12 +206,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       uploadingImage: 'Загрузка изображения...',
       imageUploadError: 'Ошибка загрузки изображения',
       selectImage: 'Выбрать изображение',
-      dragDropImage: 'Перетащите изображение сюда или нажмите для выбора',
-      loading: 'Загрузка...',
-      loadError: 'Ошибка загрузки данных',
-      previousPage: 'Предыдущая страница',
-      nextPage: 'Следующая страница',
-      showingResults: 'Показано {start}-{end} из {total} товаров'
+      dragDropImage: 'Перетащите изображение сюда или нажмите для выбора'
     }
   };
 
@@ -246,6 +227,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
           table: 'products'
         },
         (payload) => {
+          console.log('Product change detected:', payload);
           fetchProducts();
         }
       )
@@ -254,109 +236,60 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentPage]);
+  }, []);
 
   const fetchProducts = async () => {
     try {
-      setIsLoading(true);
-      
-      // Сначала получаем общее количество продуктов
-      const { count } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true });
-
-      if (count !== null) {
-        setTotalProducts(count);
-        setHasMore((currentPage + 1) * ITEMS_PER_PAGE < count);
-      }
-
-      // Получаем продукты с пагинацией, но без связанных категорий
-      const { data: productsData, error: productsError } = await supabase
+      const { data, error } = await supabase
         .from('products')
         .select(`
-          id,
-          name,
-          slug,
-          description,
-          price_from,
-          price_fixed,
-          price_type,
-          category_id,
-          images,
-          videos,
-          includes,
-          specifications,
-          is_active,
-          created_at,
-          updated_at
+          *,
+          categories (
+            id,
+            name,
+            slug,
+            description,
+            image_url,
+            created_at,
+            updated_at
+          )
         `)
-        .order('created_at', { ascending: false })
-        .range(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE - 1);
+        .order('created_at', { ascending: false });
 
-      if (productsError) {
-        throw productsError;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
       }
-
-      // Получаем категории отдельно для найденных продуктов
-      if (productsData && productsData.length > 0) {
-        const categoryIds = [...new Set(productsData.map(p => p.category_id).filter(Boolean))];
-        
-        if (categoryIds.length > 0) {
-          const { data: categoriesData, error: categoriesError } = await supabase
-            .from('categories')
-            .select('id, name, slug, description, image_url, created_at, updated_at')
-            .in('id', categoryIds);
-
-          if (!categoriesError && categoriesData) {
-            // Добавляем категории к продуктам и приводим типы
-            const productsWithCategories: Product[] = productsData.map(product => ({
-              ...product,
-              price_type: (product.price_type as 'from' | 'fixed') || 'from',
-              specifications: (product.specifications as Record<string, any>) || {},
-              includes: Array.isArray(product.includes) ? product.includes : [],
-              images: Array.isArray(product.images) ? product.images : [],
-              videos: Array.isArray(product.videos) ? product.videos : [],
-              categories: categoriesData.find(cat => cat.id === product.category_id)
-            }));
-            
-            setProducts(productsWithCategories);
-          } else {
-            // Приводим типы для продуктов без категорий
-            const typedProducts: Product[] = productsData.map(product => ({
-              ...product,
-              price_type: (product.price_type as 'from' | 'fixed') || 'from',
-              specifications: (product.specifications as Record<string, any>) || {},
-              includes: Array.isArray(product.includes) ? product.includes : [],
-              images: Array.isArray(product.images) ? product.images : [],
-              videos: Array.isArray(product.videos) ? product.videos : []
-            }));
-            setProducts(typedProducts);
-          }
-        } else {
-          // Приводим типы для продуктов без ссылок на категории
-          const typedProducts: Product[] = productsData.map(product => ({
-            ...product,
-            price_type: (product.price_type as 'from' | 'fixed') || 'from',
-            specifications: (product.specifications as Record<string, any>) || {},
-            includes: Array.isArray(product.includes) ? product.includes : [],
-            images: Array.isArray(product.images) ? product.images : [],
-            videos: Array.isArray(product.videos) ? product.videos : []
-          }));
-          setProducts(typedProducts);
-        }
-      } else {
-        setProducts([]);
-      }
+      
+      console.log('Fetched products:', data);
+      // Properly cast and transform the data to match our interface
+      const typedProducts: Product[] = data?.map(product => ({
+        ...product,
+        price_type: (product.price_type as 'from' | 'fixed') || 'from',
+        description: product.description || '',
+        category_id: product.category_id || '',
+        images: product.images || [],
+        videos: product.videos || [],
+        includes: product.includes || [],
+        specifications: (product.specifications as Record<string, any>) || {},
+        created_at: product.created_at || '',
+        updated_at: product.updated_at || '',
+        categories: product.categories ? {
+          ...product.categories,
+          description: product.categories.description || '',
+          image_url: product.categories.image_url || null,
+          created_at: product.categories.created_at || '',
+          updated_at: product.categories.updated_at || ''
+        } : undefined
+      })) || [];
+      setProducts(typedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
         title: t.error,
-        description: t.loadError,
+        description: "No se pudo cargar los productos",
         variant: "destructive",
       });
-      setProducts([]);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -364,21 +297,13 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     try {
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name, slug, description, image_url, created_at, updated_at')
+        .select('*')
         .order('name');
 
-      if (error) {
-        throw error;
-      }
-
+      if (error) throw error;
       setCategories(data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
-      toast({
-        title: t.error,
-        description: 'No se pudieron cargar las categorías',
-        variant: "destructive",
-      });
     }
   };
 
@@ -386,16 +311,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     e.preventDefault();
     
     try {
-      const sessionToken = localStorage.getItem('admin_session_token');
-      if (!sessionToken) {
-        toast({
-          title: t.error,
-          description: 'Sesión expirada',
-          variant: "destructive",
-        });
-        return;
-      }
-
       const includes = includesList.split('\n').filter(item => item.trim() !== '');
       const specifications = specificationsList.split('\n').reduce((acc, line) => {
         const [key, value] = line.split(':').map(s => s.trim());
@@ -416,16 +331,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         price_fixed = parseFloat(formData.price_fixed);
       }
 
-      // Конвертируем blob URL-ы в нормальные пути
-      const processedImages = await Promise.all(
-        formData.images.map(async (imageUrl) => {
-          if (imageUrl.startsWith('blob:')) {
-            return await convertBlobToPath(imageUrl, 'products');
-          }
-          return imageUrl;
-        })
-      );
-
       const productData = {
         name: formData.name,
         slug: formData.slug,
@@ -434,46 +339,46 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         price_fixed,
         price_type: formData.price_type,
         category_id: formData.category_id,
-        images: processedImages,
+        images: formData.images,
         videos: formData.videos,
         includes,
         specifications,
         is_active: formData.is_active
       };
 
+      console.log('Saving product data:', productData);
+
       let result;
       if (editingProduct) {
-        result = await supabase.functions.invoke('admin-query', {
-          body: {
-            session_token: sessionToken,
-            query: 'products',
-            action: 'update',
-            data: productData,
-            id: editingProduct.id
-          }
-        });
+        result = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', editingProduct.id)
+          .select();
 
-        if (result.error || !result.data?.success) {
-          throw new Error(result.data?.error || 'Failed to update product');
+        if (result.error) {
+          console.error('Update error:', result.error);
+          throw result.error;
         }
+        
+        console.log('Product updated:', result.data);
 
         toast({
           title: t.productUpdated,
           description: t.productUpdatedDesc,
         });
       } else {
-        result = await supabase.functions.invoke('admin-query', {
-          body: {
-            session_token: sessionToken,
-            query: 'products',
-            action: 'insert',
-            data: productData
-          }
-        });
+        result = await supabase
+          .from('products')
+          .insert([productData])
+          .select();
 
-        if (result.error || !result.data?.success) {
-          throw new Error(result.data?.error || 'Failed to create product');
+        if (result.error) {
+          console.error('Insert error:', result.error);
+          throw result.error;
         }
+        
+        console.log('Product created:', result.data);
 
         toast({
           title: t.productAdded,
@@ -486,7 +391,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       
       resetForm();
       setIsDialogOpen(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving product:', error);
       toast({
         title: t.error,
@@ -518,6 +423,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   };
 
   const handleEdit = (product: Product) => {
+    console.log('Editing product:', product);
     setEditingProduct(product);
     setFormData({
       name: product.name,
@@ -540,28 +446,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
   const handleDelete = async (id: string) => {
     try {
-      const sessionToken = localStorage.getItem('admin_session_token');
-      if (!sessionToken) {
-        toast({
-          title: t.error,
-          description: 'Sesión expirada',
-          variant: "destructive",
-        });
-        return;
-      }
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
 
-      const result = await supabase.functions.invoke('admin-query', {
-        body: {
-          session_token: sessionToken,
-          query: 'products',
-          action: 'delete',
-          id: id
-        }
-      });
-
-      if (result.error || !result.data?.success) {
-        throw new Error(result.data?.error || 'Failed to delete product');
-      }
+      if (error) throw error;
 
       toast({
         title: t.productDeleted,
@@ -619,6 +509,22 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     }));
   };
 
+  const getImageUrl = (imagePath: string) => {
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    if (imagePath.startsWith('/lovable-uploads/')) {
+      return imagePath;
+    }
+    if (imagePath.startsWith('lovable-uploads/')) {
+      return `/${imagePath}`;
+    }
+    if (imagePath.startsWith('blob:')) {
+      return imagePath;
+    }
+    return `https://images.unsplash.com/${imagePath}`;
+  };
+
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -642,14 +548,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       const imageUrls: string[] = [];
       
       for (const file of validFiles) {
-        console.log('Processing file:', file.name);
-        // Создаем blob URL для немедленного отображения
-        const blobUrl = await uploadImageToSupabase(file, 'products');
-        console.log('Generated blob URL:', blobUrl);
-        imageUrls.push(blobUrl);
+        // Сжимаем и создаем URL для каждого файла
+        const compressedFile = await compressImage(file);
+        const imageUrl = URL.createObjectURL(compressedFile);
+        imageUrls.push(imageUrl);
       }
       
-      console.log('Adding images to form:', imageUrls);
       // Добавляем все изображения к форме
       setFormData(prev => ({
         ...prev,
@@ -701,14 +605,11 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       const imageUrls: string[] = [];
       
       for (const file of validFiles) {
-        console.log('Processing dropped file:', file.name);
-        // Создаем blob URL для немедленного отображения
-        const blobUrl = await uploadImageToSupabase(file, 'products');
-        console.log('Generated blob URL for dropped file:', blobUrl);
-        imageUrls.push(blobUrl);
+        const compressedFile = await compressImage(file);
+        const imageUrl = URL.createObjectURL(compressedFile);
+        imageUrls.push(imageUrl);
       }
       
-      console.log('Adding dropped images to form:', imageUrls);
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, ...imageUrls]
@@ -736,22 +637,15 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     
     // Render existing images
     for (let i = 0; i < Math.min(images.length, maxSlots); i++) {
-      const imageUrl = getImageUrl(images[i], 'products');
-      console.log('Rendering image slot:', i, 'with URL:', imageUrl);
-      
       slots.push(
         <div key={`image-${i}`} className="relative group">
           <img 
-            src={imageUrl} 
+            src={getImageUrl(images[i])} 
             alt={`Product ${i + 1}`}
             className="w-16 h-16 object-cover rounded border"
             onError={(e) => {
-              console.log('Image failed to load, using placeholder:', imageUrl);
               const target = e.target as HTMLImageElement;
-              target.src = '/content/placeholders/default.png';
-            }}
-            onLoad={() => {
-              console.log('Image loaded successfully:', imageUrl);
+              target.src = '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
             }}
           />
           <Button
@@ -778,40 +672,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     
     return slots;
   };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (hasMore) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const formatResultsText = (text: string) => {
-    const start = currentPage * ITEMS_PER_PAGE + 1;
-    const end = Math.min((currentPage + 1) * ITEMS_PER_PAGE, totalProducts);
-    return text
-      .replace('{start}', start.toString())
-      .replace('{end}', end.toString())
-      .replace('{total}', totalProducts.toString());
-  };
-
-  if (isLoading && products.length === 0) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p>{t.loading}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card>
@@ -1012,35 +872,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         </div>
       </CardHeader>
       <CardContent>
-        {/* Pagination info */}
-        {totalProducts > 0 && (
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-sm text-gray-600">
-              {formatResultsText(t.showingResults)}
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePreviousPage}
-                disabled={currentPage === 0 || isLoading}
-              >
-                <ChevronLeft className="w-4 h-4" />
-                {t.previousPage}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNextPage}
-                disabled={!hasMore || isLoading}
-              >
-                {t.nextPage}
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        )}
-
         <Table>
           <TableHeader>
             <TableRow>
@@ -1058,12 +889,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                 <TableCell>
                   {product.images && product.images.length > 0 ? (
                     <img 
-                      src={getImageUrl(product.images[0], 'products')} 
+                      src={getImageUrl(product.images[0])} 
                       alt={product.name}
                       className="w-12 h-12 object-cover rounded"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = '/content/placeholders/default.png';
+                        target.src = '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
                       }}
                     />
                   ) : (
@@ -1096,12 +927,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
             ))}
           </TableBody>
         </Table>
-
-        {products.length === 0 && !isLoading && (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Нет продуктов для отображения</p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

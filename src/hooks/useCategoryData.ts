@@ -27,28 +27,35 @@ export const useCategoryData = (categorySlug: string | undefined) => {
       
       console.log('Fetching category data for slug:', categorySlug);
       
-      // Получаем категорию
-      const { data: categoryResult, error: categoryError } = await supabase
+      // Fetch category data with timeout
+      const categoryPromise = supabase
         .from('categories')
         .select('*')
         .eq('slug', categorySlug)
         .maybeSingle();
+
+      const categoryResult = await Promise.race([
+        categoryPromise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Tiempo de espera agotado para la categoría')), 10000)
+        )
+      ]) as any;
       
-      if (categoryError) {
-        console.error('Category fetch error:', categoryError);
-        throw new Error(`Error al cargar la categoría: ${categoryError.message}`);
+      if (categoryResult.error) {
+        console.error('Category fetch error:', categoryResult.error);
+        throw new Error(`Error al cargar la categoría: ${categoryResult.error.message}`);
       }
       
-      if (!categoryResult) {
+      if (!categoryResult.data) {
         console.error('Category not found for slug:', categorySlug);
         throw new Error('Categoría no encontrada');
       }
       
-      console.log('Category data loaded:', categoryResult);
-      setCategoryData(categoryResult);
+      console.log('Category data loaded:', categoryResult.data);
+      setCategoryData(categoryResult.data);
 
-      // Получаем продукты для этой категории
-      const { data: productsResult, error: productsError } = await supabase
+      // Fetch products for this category with timeout
+      const productsPromise = supabase
         .from('products')
         .select(`
           *,
@@ -57,17 +64,24 @@ export const useCategoryData = (categorySlug: string | undefined) => {
             slug
           )
         `)
-        .eq('category_id', categoryResult.id)
+        .eq('category_id', categoryResult.data.id)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
+
+      const productsResult = await Promise.race([
+        productsPromise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Tiempo de espera agotado para los productos')), 10000)
+        )
+      ]) as any;
       
-      if (productsError) {
-        console.error('Products fetch error:', productsError);
-        throw new Error(`Error al cargar los productos: ${productsError.message}`);
+      if (productsResult.error) {
+        console.error('Products fetch error:', productsResult.error);
+        throw new Error(`Error al cargar los productos: ${productsResult.error.message}`);
       }
       
-      console.log('Products loaded:', productsResult?.length || 0);
-      setProducts(productsResult || []);
+      console.log('Products loaded:', productsResult.data?.length || 0);
+      setProducts(productsResult.data || []);
       
     } catch (error: any) {
       console.error('Error fetching category data:', error);

@@ -49,97 +49,19 @@ export const compressImage = (file: File, maxWidth: number = 800, maxHeight: num
 };
 
 export const uploadImageToSupabase = async (file: File, folder: string = 'products'): Promise<string> => {
-  console.log('Uploading image to Supabase:', file.name);
-  
   // Compress the image before uploading
   const compressedFile = await compressImage(file);
   
-  // Generate a unique filename with organized folder structure
+  // Generate a unique filename with folder structure
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
   const fullPath = `content/${folder}/${fileName}`;
   
-  // Create blob URL for immediate preview
-  const blobUrl = URL.createObjectURL(compressedFile);
-  console.log('Created blob URL for preview:', blobUrl);
+  // For now, we'll return a placeholder URL since Supabase storage isn't set up
+  // When Supabase storage is configured, this would upload to the bucket
+  // const { data, error } = await supabase.storage
+  //   .from('madiluxe')
+  //   .upload(fullPath, compressedFile);
   
-  // Return the blob URL for immediate use
-  return blobUrl;
-};
-
-// Helper function to get the correct image URL based on different path formats
-export const getImageUrl = (imagePath: string, fallbackFolder: string = 'general') => {
-  console.log('getImageUrl called with:', imagePath);
-  
-  if (!imagePath) {
-    console.log('No image path provided, using default placeholder');
-    return '/content/placeholders/default.png';
-  }
-  
-  // Already a full URL (external)
-  if (imagePath.startsWith('http')) {
-    console.log('External URL detected:', imagePath);
-    return imagePath;
-  }
-  
-  // Already in new content structure
-  if (imagePath.startsWith('/content/')) {
-    console.log('Content path detected:', imagePath);
-    return imagePath;
-  }
-  
-  // Legacy lovable-uploads structure - convert to new structure
-  if (imagePath.startsWith('/lovable-uploads/')) {
-    console.log('Legacy lovable-uploads path detected, converting:', imagePath);
-    const filename = imagePath.replace('/lovable-uploads/', '');
-    return `/content/${fallbackFolder}/${filename}`;
-  }
-  
-  if (imagePath.startsWith('lovable-uploads/')) {
-    console.log('Legacy lovable-uploads path without slash detected, converting:', imagePath);
-    const filename = imagePath.replace('lovable-uploads/', '');
-    return `/content/${fallbackFolder}/${filename}`;
-  }
-  
-  // Blob URLs (temporary) - return as is for immediate display
-  if (imagePath.startsWith('blob:')) {
-    console.log('Blob URL detected, returning as is:', imagePath);
-    return imagePath;
-  }
-  
-  // Unsplash or other external image services
-  if (imagePath.includes('unsplash.com')) {
-    console.log('Unsplash URL detected:', imagePath);
-    return `https://images.unsplash.com/${imagePath}`;
-  }
-  
-  // Check if it's just a filename from the old structure
-  if (imagePath.includes('.png') || imagePath.includes('.jpg') || imagePath.includes('.jpeg')) {
-    console.log('File extension detected, creating content path:', imagePath);
-    // Extract just the filename
-    const filename = imagePath.split('/').pop() || imagePath;
-    return `/content/${fallbackFolder}/${filename}`;
-  }
-  
-  // Default case - assume it's a filename and put it in the specified folder
-  console.log('Default case, creating content path:', imagePath);
-  return `/content/${fallbackFolder}/${imagePath}`;
-};
-
-// Helper function to convert blob URLs to proper paths for storage
-export const convertBlobToPath = async (blobUrl: string, folder: string = 'products'): Promise<string> => {
-  if (!blobUrl.startsWith('blob:')) {
-    return blobUrl; // Not a blob URL, return as is
-  }
-  
-  try {
-    console.log('Converting blob URL to path:', blobUrl);
-    // Generate a proper path for storage
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
-    const imagePath = `/content/${folder}/${fileName}`;
-    console.log('Generated path for blob:', imagePath);
-    return imagePath;
-  } catch (error) {
-    console.error('Error converting blob URL:', error);
-    return '/content/placeholders/default.png';
-  }
+  // Return a placeholder URL with the new structure
+  return `/content/${folder}/${fileName}`;
 };

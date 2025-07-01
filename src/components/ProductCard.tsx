@@ -8,8 +8,6 @@ import { useState } from 'react';
 import { Phone } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { validatePhoneNumber } from '@/utils/phoneValidation';
-import { getImageUrl } from '@/utils/imageCompression';
 
 interface ProductCardProps {
   id: string;
@@ -39,7 +37,6 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const navigate = useNavigate();
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [phoneError, setPhoneError] = useState('');
   const { toast } = useToast();
 
   const formatPrice = () => {
@@ -51,81 +48,51 @@ const ProductCard = ({
     return 'Precio bajo consulta';
   };
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const phone = e.target.value;
-    setPhoneNumber(phone);
-    
-    if (phone && !validatePhoneNumber(phone)) {
-      setPhoneError('Teléfono inválido');
-    } else {
-      setPhoneError('');
-    }
-  };
-
   const handleQuickOrder = async () => {
-    if (!phoneNumber.trim()) {
+    if (phoneNumber.trim()) {
+      try {
+        const { error } = await supabase
+          .from('orders')
+          .insert([{
+            customer_name: 'Cliente (pedido rápido)',
+            customer_email: 'quick-order@temp.com',
+            customer_phone: phoneNumber,
+            product_id: id,
+            message: `Pedido rápido para producto: ${name}`
+          }]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Consulta enviada",
+          description: "Nos pondremos en contacto contigo muy pronto",
+        });
+        setPhoneNumber('');
+      } catch (error) {
+        console.error('Error creating order:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo enviar la consulta",
+          variant: "destructive",
+        });
+      }
+    } else {
       toast({
         title: "Error",
         description: "Por favor, introduce tu número de teléfono",
         variant: "destructive",
       });
-      return;
-    }
-
-    if (!validatePhoneNumber(phoneNumber)) {
-      setPhoneError('Por favor, introduce un número de teléfono válido');
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .insert([{
-          customer_name: 'Cliente (pedido rápido)',
-          customer_email: 'quick-order@temp.com',
-          customer_phone: phoneNumber,
-          product_id: id,
-          message: `Pedido rápido para producto: ${name}`
-        }]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Consulta enviada",
-        description: "Nos pondremos en contacto contigo muy pronto",
-      });
-      setPhoneNumber('');
-      setPhoneError('');
-    } catch (error) {
-      console.error('Error creating order:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo enviar la consulta",
-        variant: "destructive",
-      });
     }
   };
-
-  // Используем правильную функцию для получения URL изображения
-  const imageUrl = getImageUrl(main_image, 'products');
-  console.log('ProductCard - main_image:', main_image, 'resolved to:', imageUrl);
 
   return (
     <Card className="bg-[rgb(22,22,22)] border-gray-800 overflow-hidden group hover:border-[rgb(180,165,142)] transition-all duration-300">
       <div className="aspect-square overflow-hidden">
         <img
-          src={imageUrl}
+          src={main_image}
           alt={name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
-          onError={(e) => {
-            console.log('ProductCard image failed to load, using placeholder:', imageUrl);
-            const target = e.target as HTMLImageElement;
-            target.src = '/content/placeholders/default.png';
-          }}
-          onLoad={() => {
-            console.log('ProductCard image loaded successfully:', imageUrl);
-          }}
         />
       </div>
       <CardContent className="p-4 sm:p-6">
@@ -152,26 +119,20 @@ const ProductCard = ({
             {/* Форма быстрого заказа */}
             <div className="bg-[rgb(18,18,18)] p-3 rounded-lg border border-gray-700">
               <p className="text-gray-300 text-xs mb-2">Pedido rápido</p>
-              <div className="space-y-2">
+              <div className="flex gap-2">
                 <Input 
                   type="tel"
-                  placeholder="+34 xxx xxx xxx"
+                  placeholder="Tu teléfono"
                   value={phoneNumber}
-                  onChange={handlePhoneChange}
-                  className={`bg-transparent border-gray-600 text-white placeholder-gray-400 text-sm h-8 ${
-                    phoneError ? 'border-red-500' : ''
-                  }`}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="bg-transparent border-gray-600 text-white placeholder-gray-400 flex-1 text-sm h-8"
                 />
-                {phoneError && (
-                  <p className="text-red-400 text-xs">{phoneError}</p>
-                )}
                 <Button 
                   onClick={handleQuickOrder}
-                  disabled={!!phoneError || !phoneNumber.trim()}
-                  className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] h-8 text-xs"
+                  className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-3 h-8"
+                  size="sm"
                 >
-                  <Phone className="w-3 h-3 mr-1" />
-                  Llamar
+                  <Phone className="w-3 h-3" />
                 </Button>
               </div>
             </div>
