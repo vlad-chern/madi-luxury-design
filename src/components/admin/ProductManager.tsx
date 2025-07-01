@@ -248,50 +248,58 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching products...');
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          *,
-          categories (
-            id,
-            name,
-            slug,
-            description,
-            image_url,
-            created_at,
-            updated_at
-          )
-        `)
-        .order('created_at', { ascending: false });
+      const sessionToken = localStorage.getItem('admin_session_token');
+      if (!sessionToken) {
+        console.log('No session token available');
+        toast({
+          title: t.error,
+          description: 'Sesión expirada',
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Fetching products via edge function...');
+      
+      // Используем edge функцию для получения продуктов
+      const { data, error } = await supabase.functions.invoke('admin-query', {
+        body: {
+          session_token: sessionToken,
+          query: 'products_with_categories',
+          action: 'select'
+        }
+      });
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('Error fetching products:', error);
         throw error;
       }
-      
-      console.log('Fetched products:', data);
-      // Properly cast and transform the data to match our interface
-      const typedProducts: Product[] = data?.map(product => ({
-        ...product,
-        price_type: (product.price_type as 'from' | 'fixed') || 'from',
-        description: product.description || '',
-        category_id: product.category_id || '',
-        images: product.images || [],
-        videos: product.videos || [],
-        includes: product.includes || [],
-        specifications: (product.specifications as Record<string, any>) || {},
-        created_at: product.created_at || '',
-        updated_at: product.updated_at || '',
-        categories: product.categories ? {
-          ...product.categories,
-          description: product.categories.description || '',
-          image_url: product.categories.image_url || null,
-          created_at: product.categories.created_at || '',
-          updated_at: product.categories.updated_at || ''
-        } : undefined
-      })) || [];
-      setProducts(typedProducts);
+
+      if (data?.success) {
+        console.log('Fetched products:', data.data);
+        const typedProducts: Product[] = data.data?.map((product: any) => ({
+          ...product,
+          price_type: (product.price_type as 'from' | 'fixed') || 'from',
+          description: product.description || '',
+          category_id: product.category_id || '',
+          images: product.images || [],
+          videos: product.videos || [],
+          includes: product.includes || [],
+          specifications: (product.specifications as Record<string, any>) || {},
+          created_at: product.created_at || '',
+          updated_at: product.updated_at || '',
+          categories: product.categories ? {
+            ...product.categories,
+            description: product.categories.description || '',
+            image_url: product.categories.image_url || null,
+            created_at: product.categories.created_at || '',
+            updated_at: product.categories.updated_at || ''
+          } : undefined
+        })) || [];
+        setProducts(typedProducts);
+      } else {
+        throw new Error(data?.error || 'Failed to fetch products');
+      }
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
@@ -306,18 +314,33 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
   const fetchCategories = async () => {
     try {
-      console.log('Fetching categories...');
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
+      const sessionToken = localStorage.getItem('admin_session_token');
+      if (!sessionToken) {
+        console.log('No session token available for categories');
+        return;
+      }
+
+      console.log('Fetching categories via edge function...');
+      
+      const { data, error } = await supabase.functions.invoke('admin-query', {
+        body: {
+          session_token: sessionToken,
+          query: 'categories',
+          action: 'select'
+        }
+      });
 
       if (error) {
         console.error('Categories error:', error);
         throw error;
       }
-      console.log('Fetched categories:', data);
-      setCategories(data || []);
+
+      if (data?.success) {
+        console.log('Fetched categories:', data.data);
+        setCategories(data.data || []);
+      } else {
+        throw new Error(data?.error || 'Failed to fetch categories');
+      }
     } catch (error) {
       console.error('Error fetching categories:', error);
       toast({
@@ -332,6 +355,16 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     e.preventDefault();
     
     try {
+      const sessionToken = localStorage.getItem('admin_session_token');
+      if (!sessionToken) {
+        toast({
+          title: t.error,
+          description: 'Sesión expirada',
+          variant: "destructive",
+        });
+        return;
+      }
+
       const includes = includesList.split('\n').filter(item => item.trim() !== '');
       const specifications = specificationsList.split('\n').reduce((acc, line) => {
         const [key, value] = line.split(':').map(s => s.trim());
@@ -371,15 +404,19 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
       let result;
       if (editingProduct) {
-        result = await supabase
-          .from('products')
-          .update(productData)
-          .eq('id', editingProduct.id)
-          .select();
+        result = await supabase.functions.invoke('admin-query', {
+          body: {
+            session_token: sessionToken,
+            query: 'products',
+            action: 'update',
+            data: productData,
+            id: editingProduct.id
+          }
+        });
 
-        if (result.error) {
-          console.error('Update error:', result.error);
-          throw result.error;
+        if (result.error || !result.data?.success) {
+          console.error('Update error:', result.error || result.data?.error);
+          throw new Error(result.data?.error || 'Failed to update product');
         }
         
         console.log('Product updated:', result.data);
@@ -389,14 +426,18 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
           description: t.productUpdatedDesc,
         });
       } else {
-        result = await supabase
-          .from('products')
-          .insert([productData])
-          .select();
+        result = await supabase.functions.invoke('admin-query', {
+          body: {
+            session_token: sessionToken,
+            query: 'products',
+            action: 'insert',
+            data: productData
+          }
+        });
 
-        if (result.error) {
-          console.error('Insert error:', result.error);
-          throw result.error;
+        if (result.error || !result.data?.success) {
+          console.error('Insert error:', result.error || result.data?.error);
+          throw new Error(result.data?.error || 'Failed to create product');
         }
         
         console.log('Product created:', result.data);
@@ -467,12 +508,28 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id);
+      const sessionToken = localStorage.getItem('admin_session_token');
+      if (!sessionToken) {
+        toast({
+          title: t.error,
+          description: 'Sesión expirada',
+          variant: "destructive",
+        });
+        return;
+      }
 
-      if (error) throw error;
+      const result = await supabase.functions.invoke('admin-query', {
+        body: {
+          session_token: sessionToken,
+          query: 'products',
+          action: 'delete',
+          id: id
+        }
+      });
+
+      if (result.error || !result.data?.success) {
+        throw new Error(result.data?.error || 'Failed to delete product');
+      }
 
       toast({
         title: t.productDeleted,
