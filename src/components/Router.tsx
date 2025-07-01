@@ -17,8 +17,8 @@ const Router = () => {
       <Route path="/about" element={<AboutUs />} />
       <Route path="/category/:categorySlug" element={<CategoryPage />} />
       <Route path="/product/:categorySlug/:productSlug" element={<ProductDetail />} />
-      <Route path="/admin" element={<AdminLogin />} />
-      <Route path="/admin/panel" element={<AdminPanel />} />
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin" element={<AdminPanel />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />
       <Route path="*" element={<NotFound />} />

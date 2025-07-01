@@ -74,23 +74,30 @@ const AdminPanel = () => {
     const checkAuth = async () => {
       try {
         const sessionToken = localStorage.getItem('admin_session_token');
+        console.log('Checking auth with token:', sessionToken ? 'exists' : 'missing');
+        
         if (sessionToken) {
           const { data } = await supabase.functions.invoke('admin-verify', {
             body: { session_token: sessionToken }
           });
           
+          console.log('Auth verification response:', data);
+          
           if (data?.success) {
             setIsAuthenticated(true);
             setCurrentAdmin(data.admin);
-            console.log('Current admin:', data.admin);
+            console.log('Authentication successful, current admin:', data.admin);
           } else {
+            console.log('Authentication failed, redirecting to login');
             localStorage.removeItem('admin_session_token');
             navigate('/admin/login');
           }
         } else {
+          console.log('No session token, redirecting to login');
           navigate('/admin/login');
         }
       } catch (error) {
+        console.error('Auth check error:', error);
         localStorage.removeItem('admin_session_token');
         navigate('/admin/login');
       } finally {

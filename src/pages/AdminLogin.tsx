@@ -42,9 +42,12 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     try {
+      console.log('Attempting login with:', email);
       const { data, error } = await supabase.functions.invoke('admin-auth', {
         body: { email, password }
       });
+      
+      console.log('Login response:', data, error);
       
       if (error || !data?.success) {
         toast({
@@ -58,9 +61,11 @@ const AdminLogin = () => {
           title: "Успешный вход",
           description: "Добро пожаловать в админ-панель",
         });
+        console.log('Redirecting to /admin');
         navigate('/admin');
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Ошибка",
         description: "Произошла ошибка при входе",
