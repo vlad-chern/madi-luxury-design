@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Trash2, Upload, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { compressImage, getImageUrl, convertBlobToPath } from '@/utils/imageCompression';
+import { compressImage, getImageUrl, convertBlobToPath, uploadImageToSupabase } from '@/utils/imageCompression';
 
 interface Category {
   id: string;
@@ -642,13 +642,14 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       const imageUrls: string[] = [];
       
       for (const file of validFiles) {
-        // Сжимаем изображение и создаем правильный путь вместо blob URL
-        const compressedFile = await compressImage(file);
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
-        const imagePath = `/content/products/${fileName}`;
-        imageUrls.push(imagePath);
+        console.log('Processing file:', file.name);
+        // Создаем blob URL для немедленного отображения
+        const blobUrl = await uploadImageToSupabase(file, 'products');
+        console.log('Generated blob URL:', blobUrl);
+        imageUrls.push(blobUrl);
       }
       
+      console.log('Adding images to form:', imageUrls);
       // Добавляем все изображения к форме
       setFormData(prev => ({
         ...prev,
@@ -700,12 +701,14 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       const imageUrls: string[] = [];
       
       for (const file of validFiles) {
-        // Сжимаем изображение и создаем правильный путь вместо blob URL
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
-        const imagePath = `/content/products/${fileName}`;
-        imageUrls.push(imagePath);
+        console.log('Processing dropped file:', file.name);
+        // Создаем blob URL для немедленного отображения
+        const blobUrl = await uploadImageToSupabase(file, 'products');
+        console.log('Generated blob URL for dropped file:', blobUrl);
+        imageUrls.push(blobUrl);
       }
       
+      console.log('Adding dropped images to form:', imageUrls);
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, ...imageUrls]
@@ -733,15 +736,22 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     
     // Render existing images
     for (let i = 0; i < Math.min(images.length, maxSlots); i++) {
+      const imageUrl = getImageUrl(images[i], 'products');
+      console.log('Rendering image slot:', i, 'with URL:', imageUrl);
+      
       slots.push(
         <div key={`image-${i}`} className="relative group">
           <img 
-            src={getImageUrl(images[i], 'products')} 
+            src={imageUrl} 
             alt={`Product ${i + 1}`}
             className="w-16 h-16 object-cover rounded border"
             onError={(e) => {
+              console.log('Image failed to load, using placeholder:', imageUrl);
               const target = e.target as HTMLImageElement;
               target.src = '/content/placeholders/default.png';
+            }}
+            onLoad={() => {
+              console.log('Image loaded successfully:', imageUrl);
             }}
           />
           <Button

@@ -9,6 +9,7 @@ import { Phone } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { validatePhoneNumber } from '@/utils/phoneValidation';
+import { getImageUrl } from '@/utils/imageCompression';
 
 interface ProductCardProps {
   id: string;
@@ -105,14 +106,26 @@ const ProductCard = ({
     }
   };
 
+  // Используем правильную функцию для получения URL изображения
+  const imageUrl = getImageUrl(main_image, 'products');
+  console.log('ProductCard - main_image:', main_image, 'resolved to:', imageUrl);
+
   return (
     <Card className="bg-[rgb(22,22,22)] border-gray-800 overflow-hidden group hover:border-[rgb(180,165,142)] transition-all duration-300">
       <div className="aspect-square overflow-hidden">
         <img
-          src={main_image}
+          src={imageUrl}
           alt={name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
+          onError={(e) => {
+            console.log('ProductCard image failed to load, using placeholder:', imageUrl);
+            const target = e.target as HTMLImageElement;
+            target.src = '/content/placeholders/default.png';
+          }}
+          onLoad={() => {
+            console.log('ProductCard image loaded successfully:', imageUrl);
+          }}
         />
       </div>
       <CardContent className="p-4 sm:p-6">
