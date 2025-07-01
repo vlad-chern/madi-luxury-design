@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -313,9 +314,13 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
           if (!categoriesError && categoriesData) {
             // Добавляем категории к продуктам и приводим типы
-            const productsWithCategories = productsData.map(product => ({
+            const productsWithCategories: Product[] = productsData.map(product => ({
               ...product,
               price_type: (product.price_type as 'from' | 'fixed') || 'from',
+              specifications: (product.specifications as Record<string, any>) || {},
+              includes: Array.isArray(product.includes) ? product.includes : [],
+              images: Array.isArray(product.images) ? product.images : [],
+              videos: Array.isArray(product.videos) ? product.videos : [],
               categories: categoriesData.find(cat => cat.id === product.category_id)
             }));
             
@@ -323,18 +328,26 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
             setProducts(productsWithCategories);
           } else {
             // Приводим типы для продуктов без категорий
-            const typedProducts = productsData.map(product => ({
+            const typedProducts: Product[] = productsData.map(product => ({
               ...product,
-              price_type: (product.price_type as 'from' | 'fixed') || 'from'
+              price_type: (product.price_type as 'from' | 'fixed') || 'from',
+              specifications: (product.specifications as Record<string, any>) || {},
+              includes: Array.isArray(product.includes) ? product.includes : [],
+              images: Array.isArray(product.images) ? product.images : [],
+              videos: Array.isArray(product.videos) ? product.videos : []
             }));
             console.log('Fetched products without categories:', typedProducts);
             setProducts(typedProducts);
           }
         } else {
           // Приводим типы для продуктов без ссылок на категории
-          const typedProducts = productsData.map(product => ({
+          const typedProducts: Product[] = productsData.map(product => ({
             ...product,
-            price_type: (product.price_type as 'from' | 'fixed') || 'from'
+            price_type: (product.price_type as 'from' | 'fixed') || 'from',
+            specifications: (product.specifications as Record<string, any>) || {},
+            includes: Array.isArray(product.includes) ? product.includes : [],
+            images: Array.isArray(product.images) ? product.images : [],
+            videos: Array.isArray(product.videos) ? product.videos : []
           }));
           console.log('Fetched products without category references:', typedProducts);
           setProducts(typedProducts);
