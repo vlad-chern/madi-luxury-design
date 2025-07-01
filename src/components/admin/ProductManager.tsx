@@ -52,6 +52,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -116,7 +117,9 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       uploadingImage: 'Subiendo imagen...',
       imageUploadError: 'Error al subir imagen',
       selectImage: 'Seleccionar imagen',
-      dragDropImage: 'Arrastra una imagen aquí o haz clic para seleccionar'
+      dragDropImage: 'Arrastra una imagen aquí o haz clic para seleccionar',
+      loading: 'Cargando productos...',
+      loadError: 'Error al cargar productos'
     },
     en: {
       title: 'Product Management',
@@ -161,7 +164,9 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       uploadingImage: 'Uploading image...',
       imageUploadError: 'Error uploading image',
       selectImage: 'Select image',
-      dragDropImage: 'Drag an image here or click to select'
+      dragDropImage: 'Drag an image here or click to select',
+      loading: 'Loading products...',
+      loadError: 'Error loading products'
     },
     ru: {
       title: 'Управление товарами',
@@ -206,7 +211,9 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       uploadingImage: 'Загрузка изображения...',
       imageUploadError: 'Ошибка загрузки изображения',
       selectImage: 'Выбрать изображение',
-      dragDropImage: 'Перетащите изображение сюда или нажмите для выбора'
+      dragDropImage: 'Перетащите изображение сюда или нажмите для выбора',
+      loading: 'Загрузка товаров...',
+      loadError: 'Ошибка загрузки товаров'
     }
   };
 
@@ -215,81 +222,69 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-
-    // Подписка на изменения в таблице products
-    const channel = supabase
-      .channel('product-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'products'
-        },
-        (payload) => {
-          console.log('Product change detected:', payload);
-          fetchProducts();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const fetchProducts = async () => {
     try {
-      const { data, error } = await supabase
+      setIsLoading(true);
+      console.log('Fetching products...');
+      
+      // First fetch products without categories to avoid timeout
+      const { data: productsData, error: productsError } = await supabase
         .from('products')
-        .select(`
-          *,
-          categories (
-            id,
-            name,
-            slug,
-            description,
-            image_url,
-            created_at,
-            updated_at
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      if (productsError) {
+        console.error('Products fetch error:', productsError);
+        throw productsError;
       }
-      
-      console.log('Fetched products:', data);
-      // Properly cast and transform the data to match our interface
-      const typedProducts: Product[] = data?.map(product => ({
-        ...product,
-        price_type: (product.price_type as 'from' | 'fixed') || 'from',
-        description: product.description || '',
-        category_id: product.category_id || '',
-        images: product.images || [],
-        videos: product.videos || [],
-        includes: product.includes || [],
-        specifications: (product.specifications as Record<string, any>) || {},
-        created_at: product.created_at || '',
-        updated_at: product.updated_at || '',
-        categories: product.categories ? {
-          ...product.categories,
-          description: product.categories.description || '',
-          image_url: product.categories.image_url || null,
-          created_at: product.categories.created_at || '',
-          updated_at: product.categories.updated_at || ''
-        } : undefined
-      })) || [];
-      setProducts(typedProducts);
+
+      // Then fetch categories separately
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('categories')
+        .select('*');
+
+      if (categoriesError) {
+        console.error('Categories fetch error:', categoriesError);
+        throw categoriesError;
+      }
+
+      // Combine the data manually
+      const productsWithCategories = productsData?.map(product => {
+        const category = categoriesData?.find(cat => cat.id === product.category_id);
+        return {
+          ...product,
+          price_type: (product.price_type as 'from' | 'fixed') || 'from',
+          description: product.description || '',
+          category_id: product.category_id || '',
+          images: product.images || [],
+          videos: product.videos || [],
+          includes: product.includes || [],
+          specifications: (product.specifications as Record<string, any>) || {},
+          created_at: product.created_at || '',
+          updated_at: product.updated_at || '',
+          categories: category ? {
+            ...category,
+            description: category.description || '',
+            image_url: category.image_url || null,
+            created_at: category.created_at || '',
+            updated_at: category.updated_at || ''
+          } : undefined
+        };
+      }) || [];
+
+      console.log('Fetched products:', productsWithCategories.length);
+      setProducts(productsWithCategories);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
         title: t.error,
-        description: "No se pudo cargar los productos",
+        description: t.loadError,
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -672,6 +667,24 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     
     return slots;
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t.title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+              <p className="text-gray-600">{t.loading}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

@@ -1,14 +1,21 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = 'https://goshfdcvsbslvmfvgixb.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvc2hmZGN2c2JzbHZtZnZnaXhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyNjM5MDUsImV4cCI6MjA2NjgzOTkwNX0._LySVXW4og6Tjz2E7lUwMel46HbB_mZidXRKK1dYpJ4';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Create a single instance to avoid multiple client warnings
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
 
 // Types
 export interface Category {
