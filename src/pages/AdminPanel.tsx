@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Globe } from 'lucide-react';
+import { LogOut, Globe, Menu } from 'lucide-react';
 import ProductManager from '@/components/admin/ProductManager';
 import CategoryManager from '@/components/admin/CategoryManager';
 import OrdersManager from '@/components/admin/OrdersManager';
@@ -138,14 +138,56 @@ const AdminPanel = () => {
     return null;
   }
 
-  const tabsCount = canAccessAdminManagement() ? 7 : 6;
+  const tabItems = [
+    { value: 'categories', label: t.categories },
+    { value: 'products', label: t.products },
+    { value: 'orders', label: t.orders },
+    { value: 'customers', label: t.customers },
+    { value: 'integrations', label: t.integrations },
+    { value: 'seo', label: t.seo },
+    ...(canAccessAdminManagement() ? [{ value: 'administrators', label: t.administrators }] : [])
+  ];
+
+  const TabNavigation = ({ isMobile = false }: { isMobile?: boolean }) => (
+    <div className={isMobile ? "flex flex-col space-y-2 p-4" : "hidden lg:flex flex-wrap gap-2"}>
+      {tabItems.map((item) => (
+        <TabsTrigger 
+          key={item.value}
+          value={item.value} 
+          className={isMobile ? "justify-start text-left" : "px-4 py-2"}
+        >
+          {item.label}
+        </TabsTrigger>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">{t.title}</h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">{t.title}</h1>
+              
+              {/* Mobile Menu */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm" className="lg:hidden">
+                    <Menu className="w-4 h-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-72">
+                  <div className="py-4">
+                    <h2 className="text-lg font-semibold mb-4">Navegación</h2>
+                    <Tabs defaultValue="categories" orientation="vertical">
+                      <TabNavigation isMobile={true} />
+                    </Tabs>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
             <div className="flex items-center space-x-2 md:space-x-4">
               <Select value={language} onValueChange={(value: 'es' | 'en' | 'ru') => setLanguage(value)}>
                 <SelectTrigger className="w-24 md:w-32">
@@ -172,17 +214,16 @@ const AdminPanel = () => {
           {/* Main content area */}
           <div className="flex-1 lg:flex-none lg:w-3/4">
             <Tabs defaultValue="categories" className="space-y-4 md:space-y-6">
-              <TabsList className={`grid w-full text-xs md:text-sm overflow-x-auto grid-cols-${tabsCount}`}>
-                <TabsTrigger value="categories" className="px-2 py-1 md:px-3 md:py-1.5">{t.categories}</TabsTrigger>
-                <TabsTrigger value="products" className="px-2 py-1 md:px-3 md:py-1.5">{t.products}</TabsTrigger>
-                <TabsTrigger value="orders" className="px-2 py-1 md:px-3 md:py-1.5">{t.orders}</TabsTrigger>
-                <TabsTrigger value="customers" className="px-2 py-1 md:px-3 md:py-1.5">{t.customers}</TabsTrigger>
-                <TabsTrigger value="integrations" className="px-2 py-1 md:px-3 md:py-1.5">{t.integrations}</TabsTrigger>
-                <TabsTrigger value="seo" className="px-2 py-1 md:px-3 md:py-1.5">{t.seo}</TabsTrigger>
-                {canAccessAdminManagement() && (
-                  <TabsTrigger value="administrators" className="px-2 py-1 md:px-3 md:py-1.5">{t.administrators}</TabsTrigger>
-                )}
-              </TabsList>
+              {/* Desktop Navigation */}
+              <div className="hidden lg:block">
+                <TabsList className="grid w-full grid-cols-6 lg:grid-cols-7 text-sm">
+                  {tabItems.map((item) => (
+                    <TabsTrigger key={item.value} value={item.value} className="px-2 py-1.5">
+                      {item.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
 
               <TabsContent value="categories">
                 <CategoryManager language={language} />

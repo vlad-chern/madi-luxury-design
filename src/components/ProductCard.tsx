@@ -1,8 +1,13 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import SafeLink from "./SafeLink";
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Phone } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductCardProps {
   id: string;
@@ -31,6 +36,8 @@ const ProductCard = ({
   category 
 }: ProductCardProps) => {
   const navigate = useNavigate();
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const { toast } = useToast();
 
   const formatPrice = () => {
     if (price_type === 'fixed' && price_fixed) {
@@ -41,14 +48,41 @@ const ProductCard = ({
     return 'Precio bajo consulta';
   };
 
-  const handleContactClick = () => {
-    navigate('/');
-    setTimeout(() => {
-      const contactSection = document.getElementById('contacto');
-      if (contactSection) {
-        contactSection.scrollIntoView({ behavior: 'smooth' });
+  const handleQuickOrder = async () => {
+    if (phoneNumber.trim()) {
+      try {
+        const { error } = await supabase
+          .from('orders')
+          .insert([{
+            customer_name: 'Cliente (pedido rápido)',
+            customer_email: 'quick-order@temp.com',
+            customer_phone: phoneNumber,
+            product_id: id,
+            message: `Pedido rápido para producto: ${name}`
+          }]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Consulta enviada",
+          description: "Nos pondremos en contacto contigo muy pronto",
+        });
+        setPhoneNumber('');
+      } catch (error) {
+        console.error('Error creating order:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo enviar la consulta",
+          variant: "destructive",
+        });
       }
-    }, 100);
+    } else {
+      toast({
+        title: "Error",
+        description: "Por favor, introduce tu número de teléfono",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -69,10 +103,10 @@ const ProductCard = ({
             <div className="text-[rgb(180,165,142)] font-semibold text-lg">{formatPrice()}</div>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-2 pt-2">
+          <div className="flex flex-col gap-3 pt-2">
             <SafeLink
               to={`/product/${category.slug}/${slug}`}
-              className="flex-1"
+              className="w-full"
             >
               <Button 
                 variant="outline" 
@@ -81,12 +115,27 @@ const ProductCard = ({
                 Ver Detalles
               </Button>
             </SafeLink>
-            <Button 
-              className="flex-1 bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] text-sm"
-              onClick={handleContactClick}
-            >
-              Solicitar Diseño Personalizado
-            </Button>
+            
+            {/* Форма быстрого заказа */}
+            <div className="bg-[rgb(18,18,18)] p-3 rounded-lg border border-gray-700">
+              <p className="text-gray-300 text-xs mb-2">Pedido rápido</p>
+              <div className="flex gap-2">
+                <Input 
+                  type="tel"
+                  placeholder="Tu teléfono"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="bg-transparent border-gray-600 text-white placeholder-gray-400 flex-1 text-sm h-8"
+                />
+                <Button 
+                  onClick={handleQuickOrder}
+                  className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-3 h-8"
+                  size="sm"
+                >
+                  <Phone className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>
