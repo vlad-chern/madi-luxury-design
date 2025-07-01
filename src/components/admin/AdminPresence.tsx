@@ -2,54 +2,48 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Clock } from 'lucide-react';
+import { Users, Clock, UserCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AdminSession {
   id: string;
-  admin_name: string;
-  last_seen: string;
-  is_online: boolean;
+  created_at: string;
+  expires_at: string;
+  admins: {
+    name: string;
+    email: string;
+  };
 }
 
 interface AdminPresenceProps {
   language: 'es' | 'en' | 'ru';
 }
 
-const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
+const AdminPresence = ({ language }: AdminPresenceProps) => {
   const [adminSessions, setAdminSessions] = useState<AdminSession[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const translations = {
     es: {
-      title: 'Administradores',
+      title: 'Administradores Activos',
+      noActive: 'No hay administradores activos',
+      loading: 'Cargando...',
       online: 'En línea',
-      offline: 'Desconectado',
-      noAdmins: 'No hay administradores activos',
-      lastSeen: 'Visto por última vez',
-      now: 'ahora',
-      minutesAgo: 'min',
-      hoursAgo: 'h'
+      expires: 'Expira'
     },
     en: {
-      title: 'Administrators',
+      title: 'Active Administrators',
+      noActive: 'No active administrators',
+      loading: 'Loading...',
       online: 'Online',
-      offline: 'Offline',
-      noAdmins: 'No active administrators',
-      lastSeen: 'Last seen',
-      now: 'now',
-      minutesAgo: 'min',
-      hoursAgo: 'h'
+      expires: 'Expires'
     },
     ru: {
-      title: 'Администраторы',
+      title: 'Активные Администраторы',
+      noActive: 'Нет активных администраторов',
+      loading: 'Загрузка...',
       online: 'Онлайн',
-      offline: 'Офлайн',
-      noAdmins: 'Нет активных администраторов',
-      lastSeen: 'Последний раз',
-      now: 'сейчас',
-      minutesAgo: 'мин',
-      hoursAgo: 'ч'
+      expires: 'Истекает'
     }
   };
 
@@ -57,6 +51,8 @@ const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
 
   useEffect(() => {
     fetchAdminSessions();
+    
+    // Обновляем каждые 30 секунд
     const interval = setInterval(fetchAdminSessions, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -64,37 +60,69 @@ const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
   const fetchAdminSessions = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('admin_sessions')
-        .select(`
-          id,
-          created_at,
-          expires_at,
-          admins!inner (
-            name,
-            email
-          )
-        `)
-        .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false });
+      const sessionToken = localStorage.getItem('admin_session_token');
+      if (!sessionToken) {
+        console.log('No session token available');
+        setAdminSessions([]);
+        return;
+      }
+
+      console.log('Fetching admin sessions...');
+      
+      // Используем edge функцию для получения сессий
+      const { data, error } = await supabase.functions.invoke('admin-query', {
+        body: {
+          session_token: sessionToken,
+          query: 'admin_sessions',
+          action: 'select'
+        }
+      });
 
       if (error) {
         console.error('Error fetching admin sessions:', error);
-      } else {
-        const mappedSessions: AdminSession[] = (data || []).map(session => {
-          const now = new Date();
+        return;
+      }
+
+      if (data?.success) {
+        // Фильтруем только активные сессии и добавляем информацию об админах
+        const activeSessions = (data.data || []).filter((session: any) => {
           const expiresAt = new Date(session.expires_at);
-          const isOnline = expiresAt > now;
-          
-          return {
-            id: session.id,
-            admin_name: session.admins?.name || session.admins?.email || 'Unknown Admin',
-            last_seen: session.created_at,
-            is_online: isOnline
-          };
+          return expiresAt > new Date();
         });
-        
-        setAdminSessions(mappedSessions);
+
+        // Получаем информацию об админах для каждой сессии
+        const sessionsWithAdmins = await Promise.all(
+          activeSessions.map(async (session: any) => {
+            try {
+              const adminResult = await supabase.functions.invoke('admin-query', {
+                body: {
+                  session_token: sessionToken,
+                  query: 'admins',
+                  action: 'select'
+                }
+              });
+
+              if (adminResult.data?.success) {
+                const admin = adminResult.data.data.find((a: any) => a.id === session.admin_id);
+                if (admin) {
+                  return {
+                    ...session,
+                    admins: {
+                      name: admin.name || admin.email,
+                      email: admin.email
+                    }
+                  };
+                }
+              }
+              return null;
+            } catch (err) {
+              console.error('Error fetching admin info:', err);
+              return null;
+            }
+          })
+        );
+
+        setAdminSessions(sessionsWithAdmins.filter(Boolean));
       }
     } catch (error) {
       console.error('Error fetching admin sessions:', error);
@@ -103,55 +131,59 @@ const AdminPresence: React.FC<AdminPresenceProps> = ({ language }) => {
     }
   };
 
-  const getTimeAgo = (lastSeen: string) => {
+  const formatTimeRemaining = (expiresAt: string) => {
+    const expires = new Date(expiresAt);
     const now = new Date();
-    const lastSeenDate = new Date(lastSeen);
-    const diffInMinutes = Math.floor((now.getTime() - lastSeenDate.getTime()) / (1000 * 60));
-
-    if (diffInMinutes < 1) return t.now;
-    if (diffInMinutes < 60) return `${diffInMinutes}${t.minutesAgo}`;
-    return `${Math.floor(diffInMinutes / 60)}${t.hoursAgo}`;
+    const diff = expires.getTime() - now.getTime();
+    
+    if (diff <= 0) return '0 min';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   };
 
   return (
-    <Card className="h-fit">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-sm md:text-base">
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-sm">
           <Users className="w-4 h-4" />
-          <span className="truncate">{t.title}</span>
+          {t.title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 md:p-4">
-        <div className="space-y-3">
-          {adminSessions.length === 0 ? (
-            <div className="text-center text-gray-500 py-4">
-              <Users className="w-6 h-6 md:w-8 md:h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-xs md:text-sm">{t.noAdmins}</p>
-            </div>
-          ) : (
-            <div className="space-y-2 max-h-48 md:max-h-64 overflow-y-auto">
-              {adminSessions.map((session) => (
-                <div key={session.id} className="flex items-center justify-between p-2 border rounded-lg">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div className={`w-2 h-2 rounded-full ${session.is_online ? 'bg-green-500' : 'bg-gray-400'}`} />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-xs md:text-sm truncate">{session.admin_name}</p>
-                      {!session.is_online && (
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <Clock className="w-3 h-3" />
-                          <span>{getTimeAgo(session.last_seen)}</span>
-                        </div>
-                      )}
-                    </div>
+      <CardContent>
+        {isLoading ? (
+          <div className="text-center text-sm text-gray-500">{t.loading}</div>
+        ) : adminSessions.length === 0 ? (
+          <div className="text-center text-sm text-gray-500">{t.noActive}</div>
+        ) : (
+          <div className="space-y-3">
+            {adminSessions.map((session) => (
+              <div key={session.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-green-600" />
+                  <div>
+                    <div className="text-sm font-medium">{session.admins.name}</div>
+                    <div className="text-xs text-gray-500">{session.admins.email}</div>
                   </div>
-                  <Badge variant={session.is_online ? 'default' : 'secondary'} className="text-xs">
-                    {session.is_online ? t.online : t.offline}
-                  </Badge>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <div className="text-right">
+                  <Badge variant="secondary" className="text-xs mb-1">
+                    {t.online}
+                  </Badge>
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <Clock className="w-3 h-3" />
+                    {t.expires}: {formatTimeRemaining(session.expires_at)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
