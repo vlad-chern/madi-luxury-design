@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,12 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
   
   // Создаем массив всех изображений, убираем дубликаты и применяем правильные пути
   const allImages = [mainImage, ...images]
-    .filter((image, index, arr) => image && arr.indexOf(image) === index)
+    .filter((image, index, arr) => {
+      // Убираем пустые и дублирующиеся изображения
+      if (!image) return false;
+      const processedImage = getImageUrl(image, 'products');
+      return arr.findIndex(img => getImageUrl(img, 'products') === processedImage) === index;
+    })
     .map(image => getImageUrl(image, 'products'));
   
   console.log('ProductImageGallery - allImages with proper paths:', allImages);
@@ -43,6 +49,28 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
       prev === allImages.length - 1 ? 0 : prev + 1
     );
   };
+
+  // Если нет изображений, показываем placeholder
+  if (allImages.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="aspect-square bg-gray-800 rounded-lg flex items-center justify-center">
+          <div 
+            className="w-full h-full bg-cover bg-center rounded-lg"
+            style={{
+              backgroundImage: `url('/content/placeholders/default.png')`
+            }}
+          />
+        </div>
+        <div className="flex justify-center space-x-2">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star key={star} className="w-5 h-5 fill-[rgb(180,165,142)] text-[rgb(180,165,142)]" />
+          ))}
+          <span className="text-gray-400 ml-2">(5.0) - Calidad Premium</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -78,11 +106,11 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
         </div>
       </div>
 
-      {/* Галерея thumbnail изображений - показываем всегда если есть изображения */}
-      {allImages.length > 0 && (
+      {/* Галерея thumbnail изображений - показываем если есть изображения */}
+      {allImages.length > 1 && (
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-gray-400">
-            Galería {allImages.length > 1 && `(${allImages.length} fotos)`}
+            Galería ({allImages.length} fotos)
           </h4>
           <Carousel className="w-full">
             <CarouselContent className="-ml-2">

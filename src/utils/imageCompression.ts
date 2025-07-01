@@ -93,14 +93,22 @@ export const getImageUrl = (imagePath: string, fallbackFolder: string = 'general
     return `/content/${fallbackFolder}/${filename}`;
   }
   
-  // Blob URLs (temporary)
+  // Blob URLs (temporary) - return placeholder since they expire
   if (imagePath.startsWith('blob:')) {
-    return imagePath;
+    console.warn('Blob URL detected, using placeholder:', imagePath);
+    return '/content/placeholders/default.png';
   }
   
   // Unsplash or other external image services
   if (imagePath.includes('unsplash.com')) {
     return `https://images.unsplash.com/${imagePath}`;
+  }
+  
+  // Check if it's just a filename from the old structure
+  if (imagePath.includes('.png') || imagePath.includes('.jpg') || imagePath.includes('.jpeg')) {
+    // Extract just the filename
+    const filename = imagePath.split('/').pop() || imagePath;
+    return `/content/${fallbackFolder}/${filename}`;
   }
   
   // Default case - assume it's a filename and put it in the specified folder
