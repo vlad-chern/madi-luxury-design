@@ -288,6 +288,33 @@ export type Database = {
           },
         ]
       }
+      seo_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          setting_key: string
+          setting_value: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          setting_key: string
+          setting_value?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          setting_key?: string
+          setting_value?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

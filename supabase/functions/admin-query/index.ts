@@ -17,7 +17,7 @@ serve(async (req) => {
 
     if (!session_token) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Session token required' }),
+        JSON.stringify({ error: 'Токен сессии отсутствует' }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 401 
@@ -25,32 +25,31 @@ serve(async (req) => {
       )
     }
 
-    // Создаем админский клиент с service role key
-    const supabaseAdmin = createClient(
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Проверяем валидность сессии администратора
-    const { data: sessionData, error: sessionError } = await supabaseAdmin
+    // Проверяем сессию администратора
+    const { data: session, error: sessionError } = await supabaseClient
       .from('admin_sessions')
       .select(`
-        admin_id,
-        expires_at,
-        admins!inner(
+        *,
+        admins (
           id,
           email,
+          name,
           role,
           is_active
         )
       `)
       .eq('session_token', session_token)
       .gt('expires_at', new Date().toISOString())
-      .single()
+      .maybeSingle()
 
-    if (sessionError || !sessionData) {
+    if (sessionError || !session || !session.admins?.is_active) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Invalid or expired session' }),
+        JSON.stringify({ error: 'Недействительная сессия' }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 401 
@@ -58,319 +57,109 @@ serve(async (req) => {
       )
     }
 
-    if (!sessionData.admins.is_active) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Admin account is disabled' }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 403 
-        }
-      )
-    }
-
     let result;
 
-    // Выполняем запрос в зависимости от действия
     switch (action) {
       case 'select':
-        if (query === 'customers') {
-          const { data: customers, error } = await supabaseAdmin
-            .from('customers')
-            .select('*')
-            .order('created_at', { ascending: false })
-          
-          if (error) throw error
-          result = { success: true, data: customers }
-        } else if (query === 'categories') {
-          const { data: categories, error } = await supabaseAdmin
-            .from('categories')
-            .select('*')
-            .order('created_at', { ascending: false })
-          
-          if (error) throw error
-          result = { success: true, data: categories }
-        } else if (query === 'products') {
-          const { data: products, error } = await supabaseAdmin
-            .from('products')
-            .select(`
-              *,
-              categories (
-                name,
-                slug
-              )
-            `)
-            .order('created_at', { ascending: false })
-          
-          if (error) throw error
-          result = { success: true, data: products }
-        } else if (query === 'orders') {
-          const { data: orders, error } = await supabaseAdmin
-            .from('orders')
-            .select(`
-              *,
-              products (
-                name,
-                slug
-              )
-            `)
-            .order('created_at', { ascending: false })
-          
-          if (error) throw error
-          result = { success: true, data: orders }
-        } else if (query === 'integrations') {
-          const { data: integrations, error } = await supabaseAdmin
-            .from('integrations')
-            .select('*')
-            .order('created_at', { ascending: false })
-          
-          if (error) throw error
-          result = { success: true, data: integrations }
-        } else if (query === 'admins') {
-          // Только администраторы могут просматривать других администраторов
-          if (sessionData.admins.role !== 'admin') {
-            return new Response(
-              JSON.stringify({ success: false, error: 'Access denied' }),
-              { 
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 403 
-              }
-            )
-          }
-          
-          const { data: admins, error } = await supabaseAdmin
-            .from('admins')
-            .select('id, email, name, role, is_active, created_at')
-            .order('created_at', { ascending: false })
-          
-          if (error) throw error
-          result = { success: true, data: admins }
-        }
+        const { data: selectData, error: selectError } = await supabaseClient
+          .from(query)
+          .select('*')
+          .order('created_at', { ascending: false })
+        
+        if (selectError) throw selectError
+        result = selectData
         break
 
       case 'insert':
-        if (query === 'customers') {
-          const { data: customer, error } = await supabaseAdmin
-            .from('customers')
-            .insert([data])
-            .select()
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: customer }
-        } else if (query === 'categories') {
-          const { data: category, error } = await supabaseAdmin
-            .from('categories')
-            .insert([data])
-            .select()
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: category }
-        } else if (query === 'products') {
-          const { data: product, error } = await supabaseAdmin
-            .from('products')
-            .insert([data])
-            .select()
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: product }
-        } else if (query === 'orders') {
-          const { data: order, error } = await supabaseAdmin
-            .from('orders')
-            .insert([data])
-            .select()
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: order }
-        } else if (query === 'integrations') {
-          const { data: integration, error } = await supabaseAdmin
-            .from('integrations')
-            .insert([data])
-            .select()
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: integration }
-        } else if (query === 'admins') {
-          // Только администраторы могут создавать других администраторов
-          if (sessionData.admins.role !== 'admin') {
-            return new Response(
-              JSON.stringify({ success: false, error: 'Access denied' }),
-              { 
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 403 
-              }
-            )
-          }
-          
-          const { data: admin, error } = await supabaseAdmin
-            .from('admins')
-            .insert([data])
-            .select('id, email, name, role, is_active, created_at')
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: admin }
-        }
+        const { data: insertData, error: insertError } = await supabaseClient
+          .from(query)
+          .insert(data)
+          .select()
+        
+        if (insertError) throw insertError
+        result = insertData
         break
 
       case 'update':
-        if (query === 'customers') {
-          const { data: customer, error } = await supabaseAdmin
-            .from('customers')
-            .update(data)
-            .eq('id', id)
-            .select()
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: customer }
-        } else if (query === 'categories') {
-          const { data: category, error } = await supabaseAdmin
-            .from('categories')
-            .update(data)
-            .eq('id', id)
-            .select()
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: category }
-        } else if (query === 'products') {
-          const { data: product, error } = await supabaseAdmin
-            .from('products')
-            .update(data)
-            .eq('id', id)
-            .select()
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: product }
-        } else if (query === 'orders') {
-          const { data: order, error } = await supabaseAdmin
-            .from('orders')
-            .update(data)
-            .eq('id', id)
-            .select()
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: order }
-        } else if (query === 'integrations') {
-          const { data: integration, error } = await supabaseAdmin
-            .from('integrations')
-            .update(data)
-            .eq('id', id)
-            .select()
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: integration }
-        } else if (query === 'admins') {
-          // Только администраторы могут обновлять других администраторов
-          if (sessionData.admins.role !== 'admin') {
-            return new Response(
-              JSON.stringify({ success: false, error: 'Access denied' }),
-              { 
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 403 
-              }
-            )
+        const { data: updateData, error: updateError } = await supabaseClient
+          .from(query)
+          .update(data)
+          .eq('id', id)
+          .select()
+        
+        if (updateError) throw updateError
+        result = updateData
+        break
+
+      case 'upsert':
+        // Специальная логика для upsert based on setting_key для seo_settings
+        if (query === 'seo_settings' && data.setting_key) {
+          const { data: existingData, error: checkError } = await supabaseClient
+            .from('seo_settings')
+            .select('id')
+            .eq('setting_key', data.setting_key)
+            .maybeSingle()
+
+          if (checkError && checkError.code !== 'PGRST116') {
+            throw checkError
           }
+
+          if (existingData) {
+            // Update existing
+            const { data: updateData, error: updateError } = await supabaseClient
+              .from('seo_settings')
+              .update({
+                setting_value: data.setting_value,
+                is_active: data.is_active,
+                updated_at: new Date().toISOString()
+              })
+              .eq('setting_key', data.setting_key)
+              .select()
+            
+            if (updateError) throw updateError
+            result = updateData
+          } else {
+            // Insert new
+            const { data: insertData, error: insertError } = await supabaseClient
+              .from('seo_settings')
+              .insert(data)
+              .select()
+            
+            if (insertError) throw insertError
+            result = insertData
+          }
+        } else {
+          // Standard upsert
+          const { data: upsertData, error: upsertError } = await supabaseClient
+            .from(query)
+            .upsert(data)
+            .select()
           
-          const { data: admin, error } = await supabaseAdmin
-            .from('admins')
-            .update(data)
-            .eq('id', id)
-            .select('id, email, name, role, is_active, created_at')
-            .single()
-          
-          if (error) throw error
-          result = { success: true, data: admin }
+          if (upsertError) throw upsertError
+          result = upsertData
         }
         break
 
       case 'delete':
-        if (query === 'customers') {
-          const { error } = await supabaseAdmin
-            .from('customers')
-            .delete()
-            .eq('id', id)
-          
-          if (error) throw error
-          result = { success: true }
-        } else if (query === 'categories') {
-          const { error } = await supabaseAdmin
-            .from('categories')
-            .delete()
-            .eq('id', id)
-          
-          if (error) throw error
-          result = { success: true }
-        } else if (query === 'products') {
-          const { error } = await supabaseAdmin
-            .from('products')
-            .delete()
-            .eq('id', id)
-          
-          if (error) throw error
-          result = { success: true }
-        } else if (query === 'orders') {
-          const { error } = await supabaseAdmin
-            .from('orders')
-            .delete()
-            .eq('id', id)
-          
-          if (error) throw error
-          result = { success: true }
-        } else if (query === 'integrations') {
-          const { error } = await supabaseAdmin
-            .from('integrations')
-            .delete()
-            .eq('id', id)
-          
-          if (error) throw error
-          result = { success: true }
-        } else if (query === 'admins') {
-          // Только администраторы могут удалять других администраторов
-          if (sessionData.admins.role !== 'admin') {
-            return new Response(
-              JSON.stringify({ success: false, error: 'Access denied' }),
-              { 
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 403 
-              }
-            )
-          }
-          
-          // Нельзя удалить самого себя
-          if (id === sessionData.admin_id) {
-            return new Response(
-              JSON.stringify({ success: false, error: 'Cannot delete your own account' }),
-              { 
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 400 
-              }
-            )
-          }
-          
-          const { error } = await supabaseAdmin
-            .from('admins')
-            .delete()
-            .eq('id', id)
-          
-          if (error) throw error
-          result = { success: true }
-        }
+        const { data: deleteData, error: deleteError } = await supabaseClient
+          .from(query)
+          .delete()
+          .eq('id', id)
+          .select()
+        
+        if (deleteError) throw deleteError
+        result = deleteData
         break
 
       default:
-        throw new Error('Invalid action')
+        throw new Error('Неподдерживаемое действие')
     }
 
     return new Response(
-      JSON.stringify(result),
+      JSON.stringify({ 
+        success: true,
+        data: result
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
@@ -380,10 +169,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Admin query error:', error)
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || 'Internal server error' 
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 

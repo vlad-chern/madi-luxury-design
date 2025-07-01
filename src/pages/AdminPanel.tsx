@@ -13,6 +13,7 @@ import ImprovedIntegrationsManager from '@/components/admin/ImprovedIntegrations
 import AdminManager from '@/components/admin/AdminManager';
 import StorageMonitor from '@/components/admin/StorageMonitor';
 import AdminPresence from '@/components/admin/AdminPresence';
+import SEOManager from '@/components/admin/SEOManager';
 import { supabase } from '@/integrations/supabase/client';
 
 const AdminPanel = () => {
@@ -32,6 +33,7 @@ const AdminPanel = () => {
       customers: 'Clientes',
       integrations: 'Integraciones',
       administrators: 'Administradores',
+      seo: 'SEO',
       storage: 'Storage',
       presence: 'Presencia',
       checking: 'Verificando autorización...'
@@ -45,6 +47,7 @@ const AdminPanel = () => {
       customers: 'Customers',
       integrations: 'Integrations',
       administrators: 'Administrators',
+      seo: 'SEO',
       storage: 'Storage',
       presence: 'Presence',
       checking: 'Checking authorization...'
@@ -58,6 +61,7 @@ const AdminPanel = () => {
       customers: 'Клиенты',
       integrations: 'Интеграции',
       administrators: 'Администраторы',
+      seo: 'SEO',
       storage: 'Хранилище',
       presence: 'Присутствие',
       checking: 'Проверка авторизации...'
@@ -127,6 +131,8 @@ const AdminPanel = () => {
     return null;
   }
 
+  const tabsCount = canAccessAdminManagement() ? 7 : 6;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b">
@@ -159,12 +165,13 @@ const AdminPanel = () => {
           {/* Main content area */}
           <div className="flex-1 lg:flex-none lg:w-3/4">
             <Tabs defaultValue="categories" className="space-y-4 md:space-y-6">
-              <TabsList className={`grid w-full text-xs md:text-sm overflow-x-auto ${canAccessAdminManagement() ? 'grid-cols-6' : 'grid-cols-5'}`}>
+              <TabsList className={`grid w-full text-xs md:text-sm overflow-x-auto grid-cols-${tabsCount}`}>
                 <TabsTrigger value="categories" className="px-2 py-1 md:px-3 md:py-1.5">{t.categories}</TabsTrigger>
                 <TabsTrigger value="products" className="px-2 py-1 md:px-3 md:py-1.5">{t.products}</TabsTrigger>
                 <TabsTrigger value="orders" className="px-2 py-1 md:px-3 md:py-1.5">{t.orders}</TabsTrigger>
                 <TabsTrigger value="customers" className="px-2 py-1 md:px-3 md:py-1.5">{t.customers}</TabsTrigger>
                 <TabsTrigger value="integrations" className="px-2 py-1 md:px-3 md:py-1.5">{t.integrations}</TabsTrigger>
+                <TabsTrigger value="seo" className="px-2 py-1 md:px-3 md:py-1.5">{t.seo}</TabsTrigger>
                 {canAccessAdminManagement() && (
                   <TabsTrigger value="administrators" className="px-2 py-1 md:px-3 md:py-1.5">{t.administrators}</TabsTrigger>
                 )}
@@ -188,6 +195,10 @@ const AdminPanel = () => {
 
               <TabsContent value="integrations">
                 <ImprovedIntegrationsManager language={language} />
+              </TabsContent>
+
+              <TabsContent value="seo">
+                <SEOManager language={language} />
               </TabsContent>
 
               {canAccessAdminManagement() && (
