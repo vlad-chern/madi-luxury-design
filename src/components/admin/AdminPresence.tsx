@@ -22,6 +22,7 @@ interface AdminPresenceProps {
 const AdminPresence = ({ language }: AdminPresenceProps) => {
   const [adminSessions, setAdminSessions] = useState<AdminSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   const translations = {
     es: {
@@ -29,21 +30,24 @@ const AdminPresence = ({ language }: AdminPresenceProps) => {
       noActive: 'No hay administradores activos',
       loading: 'Cargando...',
       online: 'En línea',
-      expires: 'Expira'
+      expires: 'Expira',
+      lastUpdate: 'Última actualización'
     },
     en: {
       title: 'Active Administrators',
       noActive: 'No active administrators',
       loading: 'Loading...',
       online: 'Online',
-      expires: 'Expires'
+      expires: 'Expires',
+      lastUpdate: 'Last update'
     },
     ru: {
       title: 'Активные Администраторы',
       noActive: 'Нет активных администраторов',
       loading: 'Загрузка...',
       online: 'Онлайн',
-      expires: 'Истекает'
+      expires: 'Истекает',
+      lastUpdate: 'Последнее обновление'
     }
   };
 
@@ -52,12 +56,17 @@ const AdminPresence = ({ language }: AdminPresenceProps) => {
   useEffect(() => {
     fetchAdminSessions();
     
-    // Обновляем каждые 30 секунд
-    const interval = setInterval(fetchAdminSessions, 30000);
+    // Обновляем только каждые 15 минут (900000 мс) вместо 30 секунд
+    const interval = setInterval(fetchAdminSessions, 900000);
     return () => clearInterval(interval);
   }, []);
 
   const fetchAdminSessions = async () => {
+    // Не делаем новый запрос если последний был менее 5 минут назад
+    if (lastUpdate && Date.now() - lastUpdate.getTime() < 300000) {
+      return;
+    }
+
     setIsLoading(true);
     try {
       const sessionToken = localStorage.getItem('admin_session_token');
@@ -84,35 +93,35 @@ const AdminPresence = ({ language }: AdminPresenceProps) => {
       }
 
       if (data?.success) {
-        // Фильтруем только активные сессии и добавляем информацию об админах
+        // Фильтруем только активные сессии
+        const now = new Date();
         const activeSessions = (data.data || []).filter((session: any) => {
           const expiresAt = new Date(session.expires_at);
-          return expiresAt > new Date();
+          return expiresAt > now;
         });
 
-        // Получаем информацию об админах для каждой сессии
+        // Получаем информацию об админах для каждой сессии (максимум 3 запроса)
         const sessionsWithAdmins = await Promise.all(
-          activeSessions.map(async (session: any) => {
+          activeSessions.slice(0, 3).map(async (session: any) => {
             try {
               const adminResult = await supabase.functions.invoke('admin-query', {
                 body: {
                   session_token: sessionToken,
                   query: 'admins',
-                  action: 'select'
+                  action: 'select',
+                  filters: { id: session.admin_id }
                 }
               });
 
-              if (adminResult.data?.success) {
-                const admin = adminResult.data.data.find((a: any) => a.id === session.admin_id);
-                if (admin) {
-                  return {
-                    ...session,
-                    admins: {
-                      name: admin.name || admin.email,
-                      email: admin.email
-                    }
-                  };
-                }
+              if (adminResult.data?.success && adminResult.data.data.length > 0) {
+                const admin = adminResult.data.data[0];
+                return {
+                  ...session,
+                  admins: {
+                    name: admin.name || admin.email,
+                    email: admin.email
+                  }
+                };
               }
               return null;
             } catch (err) {
@@ -123,6 +132,7 @@ const AdminPresence = ({ language }: AdminPresenceProps) => {
         );
 
         setAdminSessions(sessionsWithAdmins.filter(Boolean));
+        setLastUpdate(new Date());
       }
     } catch (error) {
       console.error('Error fetching admin sessions:', error);
@@ -147,13 +157,39 @@ const AdminPresence = ({ language }: AdminPresenceProps) => {
     return `${minutes}m`;
   };
 
+  const formatLastUpdate = () => {
+    if (!lastUpdate) return '';
+    const now = new Date();
+    const diff = now.getTime() - lastUpdate.getTime();
+    const minutes = Math.floor(diff / (1000 * 60));
+    
+    if (minutes < 1) return 'hace menos de 1 min';
+    if (minutes < 60) return `hace ${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    return `hace ${hours}h ${minutes % 60}m`;
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-sm">
           <Users className="w-4 h-4" />
           {t.title}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={fetchAdminSessions}
+            disabled={isLoading}
+            className="ml-auto text-xs"
+          >
+            Actualizar
+          </Button>
         </CardTitle>
+        {lastUpdate && (
+          <div className="text-xs text-gray-500">
+            {t.lastUpdate}: {formatLastUpdate()}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -184,7 +220,7 @@ const AdminPresence = ({ language }: AdminPresenceProps) => {
             ))}
           </div>
         )}
-      </CardContent>
+      </div>
     </Card>
   );
 };
