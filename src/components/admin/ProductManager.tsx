@@ -52,6 +52,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -116,7 +117,9 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       uploadingImage: 'Subiendo imagen...',
       imageUploadError: 'Error al subir imagen',
       selectImage: 'Seleccionar imagen',
-      dragDropImage: 'Arrastra una imagen aquí o haz clic para seleccionar'
+      dragDropImage: 'Arrastra una imagen aquí o haz clic para seleccionar',
+      loading: 'Cargando...',
+      loadError: 'Error al cargar datos'
     },
     en: {
       title: 'Product Management',
@@ -161,7 +164,9 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       uploadingImage: 'Uploading image...',
       imageUploadError: 'Error uploading image',
       selectImage: 'Select image',
-      dragDropImage: 'Drag an image here or click to select'
+      dragDropImage: 'Drag an image here or click to select',
+      loading: 'Loading...',
+      loadError: 'Error loading data'
     },
     ru: {
       title: 'Управление товарами',
@@ -190,7 +195,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       noPriceSet: 'Не указана',
       selectCategory: 'Выберите категорию',
       includesPlaceholder: 'Персонализированный дизайн и профессиональная консультация\nРучная работа с премиальными материалами',
-      specificationsPlaceholder: 'Время доставки: 6-8 недель\nМатериалы: Благородное дерево, натуральный мрамор',
+      specificationsPlaceholder: 'Время доставки: 6-8 недель\nМатериалы: Благородное дерево, натуральный мрамор',  
       priceFromType: 'От (цены)',
       fixedPriceType: 'Фиксированная',
       productAdded: 'Товар добавлен',
@@ -206,7 +211,9 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       uploadingImage: 'Загрузка изображения...',
       imageUploadError: 'Ошибка загрузки изображения',
       selectImage: 'Выбрать изображение',
-      dragDropImage: 'Перетащите изображение сюда или нажмите для выбора'
+      dragDropImage: 'Перетащите изображение сюда или нажмите для выбора',
+      loading: 'Загрузка...',
+      loadError: 'Ошибка загрузки данных'
     }
   };
 
@@ -240,6 +247,8 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
   const fetchProducts = async () => {
     try {
+      setIsLoading(true);
+      console.log('Fetching products...');
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -287,23 +296,35 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       console.error('Error fetching products:', error);
       toast({
         title: t.error,
-        description: "No se pudo cargar los productos",
+        description: t.loadError,
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fetchCategories = async () => {
     try {
+      console.log('Fetching categories...');
       const { data, error } = await supabase
         .from('categories')
         .select('*')
         .order('name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Categories error:', error);
+        throw error;
+      }
+      console.log('Fetched categories:', data);
       setCategories(data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
+      toast({
+        title: t.error,
+        description: 'No se pudieron cargar las categorías',
+        variant: "destructive",
+      });
     }
   };
 
@@ -656,6 +677,19 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     
     return slots;
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p>{t.loading}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
