@@ -10,6 +10,7 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !^/api/
 RewriteCond %{REQUEST_URI} !^/assets/
 RewriteCond %{REQUEST_URI} !^/lovable-uploads/
+RewriteCond %{REQUEST_URI} !^/content/
 # Redirect all other requests to index.html
 RewriteRule ^(.*)$ /index.html [QSA,L]
 

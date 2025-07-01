@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { compressImage, uploadImageToSupabase } from '@/utils/imageCompression';
+import { compressImage, uploadImageToSupabase, getImageUrl } from '@/utils/imageCompression';
 
 // Define types locally to avoid conflicts
 interface Category {
@@ -509,22 +509,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     }));
   };
 
-  const getImageUrl = (imagePath: string) => {
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    if (imagePath.startsWith('/lovable-uploads/')) {
-      return imagePath;
-    }
-    if (imagePath.startsWith('lovable-uploads/')) {
-      return `/${imagePath}`;
-    }
-    if (imagePath.startsWith('blob:')) {
-      return imagePath;
-    }
-    return `https://images.unsplash.com/${imagePath}`;
-  };
-
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -640,12 +624,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       slots.push(
         <div key={`image-${i}`} className="relative group">
           <img 
-            src={getImageUrl(images[i])} 
+            src={getImageUrl(images[i], 'products')} 
             alt={`Product ${i + 1}`}
             className="w-16 h-16 object-cover rounded border"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+              target.src = '/content/placeholders/default.png';
             }}
           />
           <Button
@@ -889,12 +873,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                 <TableCell>
                   {product.images && product.images.length > 0 ? (
                     <img 
-                      src={getImageUrl(product.images[0])} 
+                      src={getImageUrl(product.images[0], 'products')} 
                       alt={product.name}
                       className="w-12 h-12 object-cover rounded"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+                        target.src = '/content/placeholders/default.png';
                       }}
                     />
                   ) : (

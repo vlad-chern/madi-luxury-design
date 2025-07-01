@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { getImageUrl } from '@/utils/imageCompression';
 
 interface ProductImageGalleryProps {
   mainImage: string;
@@ -21,11 +21,12 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
   console.log('ProductImageGallery - mainImage:', mainImage);
   console.log('ProductImageGallery - images array:', images);
   
-  // Создаем массив всех изображений, убираем дубликаты
-  const allImages = [mainImage, ...images].filter((image, index, arr) => 
-    image && arr.indexOf(image) === index
-  );
-  console.log('ProductImageGallery - allImages:', allImages);
+  // Создаем массив всех изображений, убираем дубликаты и применяем правильные пути
+  const allImages = [mainImage, ...images]
+    .filter((image, index, arr) => image && arr.indexOf(image) === index)
+    .map(image => getImageUrl(image, 'products'));
+  
+  console.log('ProductImageGallery - allImages with proper paths:', allImages);
   
   const handleThumbnailClick = (index: number) => {
     setSelectedImageIndex(index);

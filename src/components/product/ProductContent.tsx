@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Product } from '@/lib/supabase';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
@@ -9,6 +8,7 @@ import ProductImageGallery from '@/components/product/ProductImageGallery';
 import ProductInfo from '@/components/product/ProductInfo';
 import QuickOrderForm from '@/components/product/QuickOrderForm';
 import WhyChooseMadi from '@/components/product/WhyChooseMadi';
+import { getImageUrl } from '@/utils/imageCompression';
 
 interface ProductContentProps {
   product: Product;
@@ -19,11 +19,11 @@ const ProductContent = ({ product, formatPrice }: ProductContentProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const mainImage = product.images && product.images.length > 0 
-    ? product.images[0] 
-    : '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+    ? getImageUrl(product.images[0], 'products')
+    : getImageUrl('', 'placeholders');
 
   console.log('ProductContent - product.images:', product.images);
-  console.log('ProductContent - mainImage:', mainImage);
+  console.log('ProductContent - mainImage with proper path:', mainImage);
 
   return (
     <div className="pt-20">

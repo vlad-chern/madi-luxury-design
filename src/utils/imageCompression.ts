@@ -52,7 +52,7 @@ export const uploadImageToSupabase = async (file: File, folder: string = 'produc
   // Compress the image before uploading
   const compressedFile = await compressImage(file);
   
-  // Generate a unique filename with folder structure
+  // Generate a unique filename with organized folder structure
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
   const fullPath = `content/${folder}/${fileName}`;
   
@@ -62,6 +62,47 @@ export const uploadImageToSupabase = async (file: File, folder: string = 'produc
   //   .from('madiluxe')
   //   .upload(fullPath, compressedFile);
   
-  // Return a placeholder URL with the new structure
+  // Return the new organized structure URL
   return `/content/${folder}/${fileName}`;
+};
+
+// Helper function to get the correct image URL based on different path formats
+export const getImageUrl = (imagePath: string, fallbackFolder: string = 'general') => {
+  if (!imagePath) {
+    return '/content/placeholders/default.png';
+  }
+  
+  // Already a full URL (external)
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // Already in new content structure
+  if (imagePath.startsWith('/content/')) {
+    return imagePath;
+  }
+  
+  // Legacy lovable-uploads structure - convert to new structure
+  if (imagePath.startsWith('/lovable-uploads/')) {
+    const filename = imagePath.replace('/lovable-uploads/', '');
+    return `/content/${fallbackFolder}/${filename}`;
+  }
+  
+  if (imagePath.startsWith('lovable-uploads/')) {
+    const filename = imagePath.replace('lovable-uploads/', '');
+    return `/content/${fallbackFolder}/${filename}`;
+  }
+  
+  // Blob URLs (temporary)
+  if (imagePath.startsWith('blob:')) {
+    return imagePath;
+  }
+  
+  // Unsplash or other external image services
+  if (imagePath.includes('unsplash.com')) {
+    return `https://images.unsplash.com/${imagePath}`;
+  }
+  
+  // Default case - assume it's a filename and put it in the specified folder
+  return `/content/${fallbackFolder}/${imagePath}`;
 };
