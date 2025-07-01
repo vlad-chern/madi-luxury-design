@@ -312,21 +312,32 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
             .in('id', categoryIds);
 
           if (!categoriesError && categoriesData) {
-            // Добавляем категории к продуктам
+            // Добавляем категории к продуктам и приводим типы
             const productsWithCategories = productsData.map(product => ({
               ...product,
+              price_type: (product.price_type as 'from' | 'fixed') || 'from',
               categories: categoriesData.find(cat => cat.id === product.category_id)
             }));
             
             console.log('Fetched products with categories:', productsWithCategories);
             setProducts(productsWithCategories);
           } else {
-            console.log('Fetched products without categories:', productsData);
-            setProducts(productsData);
+            // Приводим типы для продуктов без категорий
+            const typedProducts = productsData.map(product => ({
+              ...product,
+              price_type: (product.price_type as 'from' | 'fixed') || 'from'
+            }));
+            console.log('Fetched products without categories:', typedProducts);
+            setProducts(typedProducts);
           }
         } else {
-          console.log('Fetched products without category references:', productsData);
-          setProducts(productsData);
+          // Приводим типы для продуктов без ссылок на категории
+          const typedProducts = productsData.map(product => ({
+            ...product,
+            price_type: (product.price_type as 'from' | 'fixed') || 'from'
+          }));
+          console.log('Fetched products without category references:', typedProducts);
+          setProducts(typedProducts);
         }
       } else {
         console.log('No products found');
