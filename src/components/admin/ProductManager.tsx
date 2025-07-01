@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { compressImage, uploadImageToSupabase, getImageUrl } from '@/utils/imageCompression';
@@ -53,6 +53,10 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const ITEMS_PER_PAGE = 10;
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -119,7 +123,10 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       selectImage: 'Seleccionar imagen',
       dragDropImage: 'Arrastra una imagen aquí o haz clic para seleccionar',
       loading: 'Cargando...',
-      loadError: 'Error al cargar datos'
+      loadError: 'Error al cargar datos',
+      previousPage: 'Página anterior',
+      nextPage: 'Página siguiente',
+      showingResults: 'Mostrando {start}-{end} de {total} productos'
     },
     en: {
       title: 'Product Management',
@@ -166,7 +173,10 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       selectImage: 'Select image',
       dragDropImage: 'Drag an image here or click to select',
       loading: 'Loading...',
-      loadError: 'Error loading data'
+      loadError: 'Error loading data',
+      previousPage: 'Previous page',
+      nextPage: 'Next page',
+      showingResults: 'Showing {start}-{end} of {total} products'
     },
     ru: {
       title: 'Управление товарами',
@@ -213,7 +223,10 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       selectImage: 'Выбрать изображение',
       dragDropImage: 'Перетащите изображение сюда или нажмите для выбора',
       loading: 'Загрузка...',
-      loadError: 'Ошибка загрузки данных'
+      loadError: 'Ошибка загрузки данных',
+      previousPage: 'Предыдущая страница',
+      nextPage: 'Следующая страница',
+      showingResults: 'Показано {start}-{end} из {total} товаров'
     }
   };
 
@@ -243,62 +256,81 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [currentPage]);
 
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      const sessionToken = localStorage.getItem('admin_session_token');
-      if (!sessionToken) {
-        console.log('No session token available');
-        toast({
-          title: t.error,
-          description: 'Sesión expirada',
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('Fetching products via edge function...');
+      console.log('Fetching products with pagination...', { currentPage, limit: ITEMS_PER_PAGE });
       
-      // Используем edge функцию для получения продуктов
-      const { data, error } = await supabase.functions.invoke('admin-query', {
-        body: {
-          session_token: sessionToken,
-          query: 'products_with_categories',
-          action: 'select'
-        }
-      });
+      // Сначала получаем общее количество продуктов
+      const { count } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
 
-      if (error) {
-        console.error('Error fetching products:', error);
-        throw error;
+      if (count !== null) {
+        setTotalProducts(count);
+        setHasMore((currentPage + 1) * ITEMS_PER_PAGE < count);
       }
 
-      if (data?.success) {
-        console.log('Fetched products:', data.data);
-        const typedProducts: Product[] = data.data?.map((product: any) => ({
-          ...product,
-          price_type: (product.price_type as 'from' | 'fixed') || 'from',
-          description: product.description || '',
-          category_id: product.category_id || '',
-          images: product.images || [],
-          videos: product.videos || [],
-          includes: product.includes || [],
-          specifications: (product.specifications as Record<string, any>) || {},
-          created_at: product.created_at || '',
-          updated_at: product.updated_at || '',
-          categories: product.categories ? {
-            ...product.categories,
-            description: product.categories.description || '',
-            image_url: product.categories.image_url || null,
-            created_at: product.categories.created_at || '',
-            updated_at: product.categories.updated_at || ''
-          } : undefined
-        })) || [];
-        setProducts(typedProducts);
+      // Получаем продукты с пагинацией, но без связанных категорий
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select(`
+          id,
+          name,
+          slug,
+          description,
+          price_from,
+          price_fixed,
+          price_type,
+          category_id,
+          images,
+          videos,
+          includes,
+          specifications,
+          is_active,
+          created_at,
+          updated_at
+        `)
+        .order('created_at', { ascending: false })
+        .range(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE - 1);
+
+      if (productsError) {
+        console.error('Products error:', productsError);
+        throw productsError;
+      }
+
+      // Получаем категории отдельно для найденных продуктов
+      if (productsData && productsData.length > 0) {
+        const categoryIds = [...new Set(productsData.map(p => p.category_id).filter(Boolean))];
+        
+        if (categoryIds.length > 0) {
+          const { data: categoriesData, error: categoriesError } = await supabase
+            .from('categories')
+            .select('id, name, slug, description, image_url, created_at, updated_at')
+            .in('id', categoryIds);
+
+          if (!categoriesError && categoriesData) {
+            // Добавляем категории к продуктам
+            const productsWithCategories = productsData.map(product => ({
+              ...product,
+              categories: categoriesData.find(cat => cat.id === product.category_id)
+            }));
+            
+            console.log('Fetched products with categories:', productsWithCategories);
+            setProducts(productsWithCategories);
+          } else {
+            console.log('Fetched products without categories:', productsData);
+            setProducts(productsData);
+          }
+        } else {
+          console.log('Fetched products without category references:', productsData);
+          setProducts(productsData);
+        }
       } else {
-        throw new Error(data?.error || 'Failed to fetch products');
+        console.log('No products found');
+        setProducts([]);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -307,6 +339,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         description: t.loadError,
         variant: "destructive",
       });
+      setProducts([]);
     } finally {
       setIsLoading(false);
     }
@@ -314,33 +347,20 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
   const fetchCategories = async () => {
     try {
-      const sessionToken = localStorage.getItem('admin_session_token');
-      if (!sessionToken) {
-        console.log('No session token available for categories');
-        return;
-      }
-
-      console.log('Fetching categories via edge function...');
+      console.log('Fetching categories...');
       
-      const { data, error } = await supabase.functions.invoke('admin-query', {
-        body: {
-          session_token: sessionToken,
-          query: 'categories',
-          action: 'select'
-        }
-      });
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name, slug, description, image_url, created_at, updated_at')
+        .order('name');
 
       if (error) {
         console.error('Categories error:', error);
         throw error;
       }
 
-      if (data?.success) {
-        console.log('Fetched categories:', data.data);
-        setCategories(data.data || []);
-      } else {
-        throw new Error(data?.error || 'Failed to fetch categories');
-      }
+      console.log('Fetched categories:', data);
+      setCategories(data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
       toast({
@@ -735,7 +755,28 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     return slots;
   };
 
-  if (isLoading) {
+  const handlePreviousPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (hasMore) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const formatResultsText = (text: string) => {
+    const start = currentPage * ITEMS_PER_PAGE + 1;
+    const end = Math.min((currentPage + 1) * ITEMS_PER_PAGE, totalProducts);
+    return text
+      .replace('{start}', start.toString())
+      .replace('{end}', end.toString())
+      .replace('{total}', totalProducts.toString());
+  };
+
+  if (isLoading && products.length === 0) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
@@ -947,6 +988,35 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         </div>
       </CardHeader>
       <CardContent>
+        {/* Pagination info */}
+        {totalProducts > 0 && (
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-sm text-gray-600">
+              {formatResultsText(t.showingResults)}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 0 || isLoading}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                {t.previousPage}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
+                disabled={!hasMore || isLoading}
+              >
+                {t.nextPage}
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         <Table>
           <TableHeader>
             <TableRow>
@@ -1002,6 +1072,12 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
             ))}
           </TableBody>
         </Table>
+
+        {products.length === 0 && !isLoading && (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Нет продуктов для отображения</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
