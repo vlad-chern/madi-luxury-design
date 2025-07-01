@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,7 +33,7 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
       error: 'Error al enviar el mensaje. Inténtelo de nuevo.',
       required: 'Este campo es obligatorio',
       invalidEmail: 'Correo electrónico no válido',
-      invalidPhone: 'Número de teléfono no válido'
+      invalidPhone: 'Número de teléfono no válido (formato: +34XXXXXXXXX o 6XXXXXXXX)'
     },
     en: {
       name: 'Full Name',
@@ -47,7 +46,7 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
       error: 'Error sending message. Please try again.',
       required: 'This field is required',
       invalidEmail: 'Invalid email address',
-      invalidPhone: 'Invalid phone number'
+      invalidPhone: 'Invalid phone number (format: +34XXXXXXXXX or 6XXXXXXXX)'
     }
   };
 
@@ -56,7 +55,8 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
   const validatePhone = (phone: string) => {
     // Spanish phone number validation (supports +34, 34, 6/7/8/9 prefix)
     const phoneRegex = /^(\+34|34)?[6-9]\d{8}$/;
-    return phoneRegex.test(phone.replace(/\s/g, ''));
+    const cleanPhone = phone.replace(/\s|-/g, '');
+    return phoneRegex.test(cleanPhone);
   };
 
   const validateEmail = (email: string) => {
@@ -64,9 +64,37 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
     return emailRegex.test(email);
   };
 
+  const formatPhone = (phone: string) => {
+    // Remove all non-numeric characters except +
+    let cleaned = phone.replace(/[^\d+]/g, '');
+    
+    // If starts with +34, keep it
+    if (cleaned.startsWith('+34')) {
+      return cleaned;
+    }
+    
+    // If starts with 34, add +
+    if (cleaned.startsWith('34')) {
+      return '+' + cleaned;
+    }
+    
+    // If starts with 6,7,8,9 add +34
+    if (/^[6-9]/.test(cleaned)) {
+      return '+34' + cleaned;
+    }
+    
+    return cleaned;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    let processedValue = value;
+    if (name === 'phone') {
+      processedValue = formatPhone(value);
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: processedValue }));
     
     // Clear error when user starts typing
     if (errors[name]) {
