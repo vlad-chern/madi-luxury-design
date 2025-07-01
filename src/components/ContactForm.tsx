@@ -7,14 +7,16 @@ import { supabase } from '@/lib/supabase';
 
 interface ContactFormProps {
   language: 'es' | 'en';
+  productId?: string;
+  productName?: string;
 }
 
-const ContactForm = ({ language }: ContactFormProps) => {
+const ContactForm = ({ language, productId, productName }: ContactFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    message: ''
+    message: productName ? `Consulta sobre: ${productName}` : ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -116,6 +118,7 @@ const ContactForm = ({ language }: ContactFormProps) => {
             customer_name: formData.name,
             customer_email: formData.email,
             customer_phone: formData.phone,
+            product_id: productId || null,
             message: formData.message,
             status: 'new'
           }
@@ -132,7 +135,7 @@ const ContactForm = ({ language }: ContactFormProps) => {
         name: '',
         email: '',
         phone: '',
-        message: ''
+        message: productName ? `Consulta sobre: ${productName}` : ''
       });
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -155,9 +158,7 @@ const ContactForm = ({ language }: ContactFormProps) => {
           placeholder={t.name}
           value={formData.name}
           onChange={handleInputChange}
-          className={`bg-[rgb(32,32,32)] border-0 text-white placeholder:text-gray-400 focus:ring-0 focus:border-0 ${
-            errors.name ? 'ring-2 ring-red-500' : ''
-          }`}
+          className={errors.name ? 'ring-2 ring-red-500' : ''}
         />
         {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
       </div>
@@ -169,9 +170,7 @@ const ContactForm = ({ language }: ContactFormProps) => {
           placeholder={t.email}
           value={formData.email}
           onChange={handleInputChange}
-          className={`bg-[rgb(32,32,32)] border-0 text-white placeholder:text-gray-400 focus:ring-0 focus:border-0 ${
-            errors.email ? 'ring-2 ring-red-500' : ''
-          }`}
+          className={errors.email ? 'ring-2 ring-red-500' : ''}
         />
         {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
       </div>
@@ -183,9 +182,7 @@ const ContactForm = ({ language }: ContactFormProps) => {
           placeholder={t.phone}
           value={formData.phone}
           onChange={handleInputChange}
-          className={`bg-[rgb(32,32,32)] border-0 text-white placeholder:text-gray-400 focus:ring-0 focus:border-0 ${
-            errors.phone ? 'ring-2 ring-red-500' : ''
-          }`}
+          className={errors.phone ? 'ring-2 ring-red-500' : ''}
         />
         {errors.phone && <p className="text-red-400 text-sm mt-1">{errors.phone}</p>}
       </div>
