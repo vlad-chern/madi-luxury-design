@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin, Menu, X, Instagram } from 'lucide-react';
@@ -310,7 +309,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Philosophy Section - Optimized image */}
+      {/* Philosophy Section - Fixed alignment */}
       <section className="py-12 sm:py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
@@ -323,7 +322,7 @@ const Index = () => {
               maxHeight={600}
               quality={0.6}
             />
-            <div className="px-2">
+            <div className="flex flex-col justify-center px-2">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight">
                 {t.philosophy.title}<br />
                 <span className="text-[rgb(180,165,142)]">{t.philosophy.subtitle}</span>
@@ -333,7 +332,7 @@ const Index = () => {
               </p>
               <button 
                 onClick={() => navigate('/about')}
-                className="text-[rgb(180,165,142)] text-sm sm:text-base lg:text-lg hover:underline"
+                className="text-[rgb(180,165,142)] text-sm sm:text-base lg:text-lg hover:underline self-start"
               >
                 {t.philosophy.cta}
               </button>
