@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin, Menu, X, Instagram } from 'lucide-react';
@@ -164,15 +165,14 @@ const Index = () => {
         type="website"
       />
       
-      {/* Enhanced Navigation with Glassmorphism */}
-      <nav className="fixed top-0 w-full z-50 bg-black/20 backdrop-blur-xl border-b border-white/10 shadow-2xl">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Logo Section */}
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 bg-[rgb(14,14,14)]/90 backdrop-blur-sm border-b border-gray-800">
+        <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center">
             <OptimizedImage 
               src="/lovable-uploads/2ff321c4-11f7-489a-860b-fadf6b38b375.png" 
               alt="MADI Logo" 
-              className="h-8 sm:h-10 w-auto filter brightness-110"
+              className="h-6 sm:h-8 w-auto"
               maxWidth={200}
               maxHeight={80}
               quality={0.8}
@@ -180,43 +180,32 @@ const Index = () => {
           </div>
           
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8 xl:space-x-12">
+          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             <button 
               onClick={() => navigate('/colecciones')}
-              className="relative text-white/90 hover:text-[rgb(180,165,142)] transition-all duration-300 text-base xl:text-lg font-medium tracking-wide group"
+              className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base"
             >
               {t.nav.collections}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[rgb(180,165,142)] to-[rgb(200,185,162)] group-hover:w-full transition-all duration-300"></span>
             </button>
-            <a 
-              href="#proceso" 
-              className="relative text-white/90 hover:text-[rgb(180,165,142)] transition-all duration-300 text-base xl:text-lg font-medium tracking-wide group"
-            >
+            <a href="#proceso" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
               {t.nav.process}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[rgb(180,165,142)] to-[rgb(200,185,162)] group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a 
-              href="#contacto" 
-              className="relative text-white/90 hover:text-[rgb(180,165,142)] transition-all duration-300 text-base xl:text-lg font-medium tracking-wide group"
-            >
+            <a href="#contacto" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
               {t.nav.contact}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[rgb(180,165,142)] to-[rgb(200,185,162)] group-hover:w-full transition-all duration-300"></span>
             </a>
-            
-            {/* Language Switcher */}
             <button 
               onClick={toggleLanguage}
-              className="px-4 py-2 text-sm bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full transition-all duration-300 hover:scale-105 font-medium tracking-wider"
+              className="text-sm hover:text-[rgb(180,165,142)] transition-colors px-2 py-1 rounded border border-gray-600"
             >
               {language} / {language === 'ES' ? 'EN' : 'ES'}
             </button>
           </div>
 
-          {/* Mobile Controls */}
-          <div className="lg:hidden flex items-center space-x-3">
+          {/* Mobile menu button */}
+          <div className="lg:hidden flex items-center space-x-2">
             <button 
               onClick={toggleLanguage}
-              className="text-xs bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5 transition-all duration-300 font-medium min-w-[45px]"
+              className="text-xs hover:text-[rgb(180,165,142)] transition-colors px-2 py-1 rounded border border-gray-600 min-w-[40px]"
             >
               {language}
             </button>
@@ -224,47 +213,47 @@ const Index = () => {
               variant="ghost"
               size="sm"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-white hover:text-[rgb(180,165,142)] hover:bg-white/10 p-2 rounded-full transition-all duration-300"
+              className="text-white hover:text-[rgb(180,165,142)] p-2"
             >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
           </div>
 
-          {/* Desktop CTA Button */}
-          <Button className="hidden lg:flex bg-gradient-to-r from-[rgb(180,165,142)] to-[rgb(200,185,162)] text-[rgb(14,14,14)] hover:from-[rgb(160,145,122)] hover:to-[rgb(180,165,142)] border-0 text-base xl:text-lg px-6 xl:px-8 py-3 font-semibold tracking-wide shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-full">
+          {/* Desktop CTA */}
+          <Button className="hidden lg:block bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] border border-[rgb(180,165,142)] text-sm xl:text-base px-4 xl:px-6 py-2">
             {t.nav.startConsultation}
           </Button>
         </div>
 
-        {/* Enhanced Mobile Menu */}
+        {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-black/30 backdrop-blur-xl border-t border-white/10">
-            <div className="container mx-auto px-6 py-6 space-y-4">
+          <div className="lg:hidden bg-[rgb(14,14,14)] border-t border-gray-800">
+            <div className="container mx-auto px-4 py-4 space-y-3">
               <button 
                 onClick={() => {
                   navigate('/colecciones');
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left py-3 text-base text-white/90 hover:text-[rgb(180,165,142)] transition-all duration-300 font-medium tracking-wide border-b border-white/10 last:border-b-0"
+                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors w-full text-left"
               >
                 {t.nav.collections}
               </button>
               <a 
                 href="#proceso" 
-                className="block w-full py-3 text-base text-white/90 hover:text-[rgb(180,165,142)] transition-all duration-300 font-medium tracking-wide border-b border-white/10"
+                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t.nav.process}
               </a>
               <a 
                 href="#contacto" 
-                className="block w-full py-3 text-base text-white/90 hover:text-[rgb(180,165,142)] transition-all duration-300 font-medium tracking-wide border-b border-white/10"
+                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t.nav.contact}
               </a>
               <Button 
-                className="w-full bg-gradient-to-r from-[rgb(180,165,142)] to-[rgb(200,185,162)] text-[rgb(14,14,14)] hover:from-[rgb(160,145,122)] hover:to-[rgb(180,165,142)] text-base py-3 font-semibold tracking-wide shadow-lg rounded-full mt-4"
+                className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] text-sm py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t.nav.startConsultation}
