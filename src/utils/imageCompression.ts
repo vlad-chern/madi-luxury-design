@@ -1,30 +1,43 @@
 
-export const compressImage = (file: File, maxWidth: number = 800, maxHeight: number = 600, quality: number = 0.8): Promise<File> => {
+export const compressImage = (file: File, maxWidth: number = 600, maxHeight: number = 450, quality: number = 0.6): Promise<File> => {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
     
     img.onload = () => {
-      // Calculate new dimensions
+      // Calculate new dimensions with more aggressive scaling
       let { width, height } = img;
       
-      if (width > height) {
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width;
-          width = maxWidth;
-        }
-      } else {
-        if (height > maxHeight) {
-          width = (width * maxHeight) / height;
-          height = maxHeight;
+      // If image is very large, scale it down more aggressively
+      const maxDimension = Math.max(maxWidth, maxHeight);
+      const currentMaxDimension = Math.max(width, height);
+      
+      if (currentMaxDimension > maxDimension) {
+        const scaleFactor = maxDimension / currentMaxDimension;
+        width = Math.floor(width * scaleFactor);
+        height = Math.floor(height * scaleFactor);
+      }
+      
+      // Further optimize if still large
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.floor((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.floor((width * maxHeight) / height);
+            height = maxHeight;
+          }
         }
       }
       
       canvas.width = width;
       canvas.height = height;
       
-      // Draw and compress
+      // Draw and compress with better quality settings
       ctx?.drawImage(img, 0, 0, width, height);
       
       canvas.toBlob(
@@ -34,6 +47,7 @@ export const compressImage = (file: File, maxWidth: number = 800, maxHeight: num
               type: 'image/jpeg',
               lastModified: Date.now(),
             });
+            console.log(`Image compressed: ${file.name} from ${(file.size / 1024).toFixed(1)}KB to ${(compressedFile.size / 1024).toFixed(1)}KB`);
             resolve(compressedFile);
           } else {
             resolve(file);
@@ -48,13 +62,68 @@ export const compressImage = (file: File, maxWidth: number = 800, maxHeight: num
   });
 };
 
+// Новая функция для сжатия изображений по URL
+export const compressImageFromUrl = (imageUrl: string, maxWidth: number = 600, maxHeight: number = 450, quality: number = 0.6): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      let { width, height } = img;
+      
+      // Calculate new dimensions with aggressive scaling
+      const maxDimension = Math.max(maxWidth, maxHeight);
+      const currentMaxDimension = Math.max(width, height);
+      
+      if (currentMaxDimension > maxDimension) {
+        const scaleFactor = maxDimension / currentMaxDimension;
+        width = Math.floor(width * scaleFactor);
+        height = Math.floor(height * scaleFactor);
+      }
+      
+      // Further optimize dimensions
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.floor((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.floor((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      ctx?.drawImage(img, 0, 0, width, height);
+      
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+      resolve(compressedDataUrl);
+    };
+    
+    img.onerror = () => {
+      console.warn(`Failed to compress image: ${imageUrl}`);
+      resolve(imageUrl); // Return original URL if compression fails
+    };
+    
+    img.src = imageUrl;
+  });
+};
+
 export const uploadImageToSupabase = async (file: File, folder: string = 'products'): Promise<string> => {
   const { supabase } = await import('@/integrations/supabase/client');
   
   console.log('Starting image upload to Supabase...', file.name);
   
-  // Compress the image before uploading
-  const compressedFile = await compressImage(file);
+  // Compress the image more aggressively before uploading
+  const compressedFile = await compressImage(file, 600, 450, 0.6);
   
   // Generate a unique filename
   const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';

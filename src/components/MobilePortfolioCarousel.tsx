@@ -1,6 +1,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import OptimizedImage from './OptimizedImage';
 
 interface MobilePortfolioCarouselProps {
   images: string[];
@@ -56,12 +57,14 @@ const MobilePortfolioCarousel = ({ images, title, subtitle }: MobilePortfolioCar
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         {images.map((image, index) => (
-          <div 
+          <OptimizedImage
             key={index}
+            src={image}
+            alt={`Portfolio image ${index + 1}`}
             className="aspect-square bg-cover bg-center rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
-            style={{
-              backgroundImage: `url('${image}')`
-            }}
+            maxWidth={400}
+            maxHeight={400}
+            quality={0.7}
           />
         ))}
       </div>
@@ -80,12 +83,14 @@ const MobilePortfolioCarousel = ({ images, title, subtitle }: MobilePortfolioCar
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {images.map((image, index) => (
-          <div 
+          <OptimizedImage
             key={index}
+            src={image}
+            alt={`Portfolio image ${index + 1}`}
             className="flex-shrink-0 w-64 h-64 bg-cover bg-center rounded-lg"
-            style={{
-              backgroundImage: `url('${image}')`
-            }}
+            maxWidth={300}
+            maxHeight={300}
+            quality={0.6}
           />
         ))}
       </div>

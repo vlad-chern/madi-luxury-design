@@ -8,6 +8,7 @@ import SEOHead from '@/components/SEOHead';
 import CookieConsent from '@/components/CookieConsent';
 import ContactForm from '@/components/ContactForm';
 import DynamicCollections from '@/components/DynamicCollections';
+import OptimizedImage from '@/components/OptimizedImage';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
@@ -167,10 +168,13 @@ const Index = () => {
       <nav className="fixed top-0 w-full z-50 bg-[rgb(14,14,14)]/90 backdrop-blur-sm border-b border-gray-800">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center">
-            <img 
+            <OptimizedImage 
               src="/lovable-uploads/2ff321c4-11f7-489a-860b-fadf6b38b375.png" 
               alt="MADI Logo" 
               className="h-6 sm:h-8 w-auto"
+              maxWidth={200}
+              maxHeight={80}
+              quality={0.8}
             />
           </div>
           
@@ -258,14 +262,16 @@ const Index = () => {
         )}
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero Section - Optimized background image */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png?w=1920&q=75')`,
-            filter: 'brightness(0.3)'
-          }}
+        <OptimizedImage
+          src="/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png"
+          alt="MADI Hero Background"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: 'brightness(0.3)' }}
+          maxWidth={1200}
+          maxHeight={800}
+          quality={0.5}
         />
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
           <h1 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
@@ -301,16 +307,18 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Philosophy Section */}
+      {/* Philosophy Section - Optimized image */}
       <section className="py-12 sm:py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
-            <div 
+            <OptimizedImage 
+              src="/lovable-uploads/75fee044-f881-4fda-91c4-f03dbec16e0c.png"
+              alt="MADI Philosophy"
               className="aspect-square bg-cover bg-center rounded-lg"
-              style={{
-                backgroundImage: `url('/lovable-uploads/75fee044-f881-4fda-91c4-f03dbec16e0c.png?w=800&q=75')`,
-                filter: 'grayscale(100%)'
-              }}
+              style={{ filter: 'grayscale(100%)' }}
+              maxWidth={600}
+              maxHeight={600}
+              quality={0.6}
             />
             <div className="px-2">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight">
