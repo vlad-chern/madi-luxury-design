@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import Index from '@/pages/Index';
 import AboutUs from '@/pages/AboutUs';
 import CategoryPage from '@/pages/CategoryPage';
+import CategoriesPage from '@/pages/CategoriesPage';
 import ProductDetail from '@/pages/ProductDetail';
 import AdminLogin from '@/pages/AdminLogin';
 import AdminPanel from '@/pages/AdminPanel';
@@ -15,6 +16,7 @@ const Router = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/about" element={<AboutUs />} />
+      <Route path="/colecciones" element={<CategoriesPage />} />
       <Route path="/category/:categorySlug" element={<CategoryPage />} />
       <Route path="/product/:categorySlug/:productSlug" element={<ProductDetail />} />
       <Route path="/admin/login" element={<AdminLogin />} />

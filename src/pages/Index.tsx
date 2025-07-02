@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin, Menu, X, Instagram } from 'lucide-react';
@@ -7,8 +8,6 @@ import WhatsAppWidget from '@/components/WhatsAppWidget';
 import SEOHead from '@/components/SEOHead';
 import CookieConsent from '@/components/CookieConsent';
 import ContactForm from '@/components/ContactForm';
-import DynamicCollections from '@/components/DynamicCollections';
-import MobilePortfolioCarousel from '@/components/MobilePortfolioCarousel';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
@@ -47,14 +46,6 @@ const Index = () => {
       },
       social: {
         collaborate: 'Colaboramos con los mejores arquitectos y diseñadores de interiores'
-      },
-      portfolio: {
-        title: 'Inspiración para su',
-        subtitle: 'Espacio'
-      },
-      collections: {
-        title: 'Nuestras',
-        subtitle: 'Colecciones'
       },
       process: {
         title: 'El Viaje',
@@ -98,14 +89,6 @@ const Index = () => {
       },
       social: {
         collaborate: 'We collaborate with the best architects and interior designers'
-      },
-      portfolio: {
-        title: 'Inspiration for your',
-        subtitle: 'Space'
-      },
-      collections: {
-        title: 'Our',
-        subtitle: 'Collections'
       },
       process: {
         title: 'The MADI',
@@ -151,15 +134,6 @@ const Index = () => {
     }
   ];
 
-  const portfolioImages = [
-    "/lovable-uploads/2cdf3057-4b67-4fd6-9a35-22d93960d69c.png",
-    "/lovable-uploads/12d2af38-c23d-4b9c-8feb-7bd0f637ecb5.png",
-    "/lovable-uploads/2dc1aa7a-1f43-480e-9254-b4a814d06baf.png",
-    "/lovable-uploads/a3c240e5-0ac4-4c59-9bb8-44e3c09400d1.png",
-    "/lovable-uploads/f2a9ca0c-e245-41fa-81a7-77852fe8f37a.png",
-    "/lovable-uploads/7605104b-dc16-4409-937f-d4dbd0035488.png"
-  ];
-
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
   };
@@ -168,14 +142,10 @@ const Index = () => {
     setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
-  const handleCategoryClick = (category: string) => {
-    navigate(`/category/${category}`);
-  };
-
-  const scrollToCollections = () => {
-    const collectionsSection = document.getElementById('colecciones');
-    if (collectionsSection) {
-      collectionsSection.scrollIntoView({ behavior: 'smooth' });
+  const scrollToProcess = () => {
+    const processSection = document.getElementById('proceso');
+    if (processSection) {
+      processSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -206,12 +176,12 @@ const Index = () => {
           
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            <a href="#colecciones" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
+            <button 
+              onClick={() => navigate('/colecciones')}
+              className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base"
+            >
               {t.nav.collections}
-            </a>
-            <a href="#proyectos" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
-              {t.nav.projects}
-            </a>
+            </button>
             <a href="#proceso" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
               {t.nav.process}
             </a>
@@ -254,20 +224,15 @@ const Index = () => {
         {mobileMenuOpen && (
           <div className="lg:hidden bg-[rgb(14,14,14)] border-t border-gray-800">
             <div className="container mx-auto px-4 py-4 space-y-3">
-              <a 
-                href="#colecciones" 
-                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
+              <button 
+                onClick={() => {
+                  navigate('/colecciones');
+                  setMobileMenuOpen(false);
+                }}
+                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors w-full text-left"
               >
                 {t.nav.collections}
-              </a>
-              <a 
-                href="#proyectos" 
-                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t.nav.projects}
-              </a>
+              </button>
               <a 
                 href="#proceso" 
                 className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
@@ -313,7 +278,7 @@ const Index = () => {
           <Button 
             size={isMobile ? "default" : "lg"} 
             className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] px-6 sm:px-8 md:px-12 py-3 sm:py-4 text-sm sm:text-base md:text-lg"
-            onClick={scrollToCollections}
+            onClick={scrollToProcess}
           >
             {t.hero.cta}
           </Button>
@@ -364,25 +329,6 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* Portfolio Section */}
-      <section id="proyectos" className="py-12 sm:py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 sm:mb-12 lg:mb-16 px-2">
-            {t.portfolio.title} <span className="text-[rgb(180,165,142)]">{t.portfolio.subtitle}</span>
-          </h2>
-          <MobilePortfolioCarousel 
-            images={portfolioImages}
-            title=""
-            subtitle=""
-          />
-        </div>
-      </section>
-
-      {/* Collections Section */}
-      <section id="colecciones" className="py-12 sm:py-16 lg:py-24 bg-[rgb(18,18,18)]">
-        <DynamicCollections />
       </section>
 
       {/* Process Section */}
