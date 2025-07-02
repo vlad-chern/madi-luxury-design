@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin, Menu, X, Instagram } from 'lucide-react';
@@ -8,6 +7,7 @@ import WhatsAppWidget from '@/components/WhatsAppWidget';
 import SEOHead from '@/components/SEOHead';
 import CookieConsent from '@/components/CookieConsent';
 import ContactForm from '@/components/ContactForm';
+import DynamicCollections from '@/components/DynamicCollections';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
@@ -329,6 +329,11 @@ const Index = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Collections Section */}
+      <section className="py-12 sm:py-16 lg:py-24 bg-[rgb(18,18,18)]">
+        <DynamicCollections />
       </section>
 
       {/* Process Section */}
