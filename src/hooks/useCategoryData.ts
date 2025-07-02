@@ -81,7 +81,26 @@ export const useCategoryData = (categorySlug: string | undefined) => {
       }
       
       console.log('Products loaded:', productsResult.data?.length || 0);
-      setProducts(productsResult.data || []);
+      
+      // Получаем публичные URL для главных изображений товаров
+      const productsWithImages = (productsResult.data || []).map((product: Product) => {
+        if (product.images && product.images.length > 0) {
+          const mainImagePath = product.images[0];
+          // Просто получаем публичный URL
+          const { data: urlData } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(mainImagePath);
+          
+          // Заменяем первое изображение на публичный URL
+          const updatedImages = [...product.images];
+          updatedImages[0] = urlData.publicUrl;
+          
+          return { ...product, images: updatedImages };
+        }
+        return product;
+      });
+      
+      setProducts(productsWithImages);
       
     } catch (error: any) {
       console.error('Error fetching category data:', error);

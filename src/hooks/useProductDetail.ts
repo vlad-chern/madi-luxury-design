@@ -66,8 +66,22 @@ export const useProductDetail = (productSlug: string | undefined) => {
       }
       
       console.log('Fetched product:', data);
-      console.log('Product images:', data?.images);
-      setProduct(data);
+
+      if (data) {
+        // Получаем публичные URL для каждого пути изображения
+        const imageUrls = (data.images || []).map((imagePath: string) => {
+          const { data: urlData } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(imagePath);
+          return urlData.publicUrl;
+        });
+        
+        // Фильтруем на случай, если какой-то URL не сгенерировался
+        const validImageUrls = imageUrls.filter((url): url is string => !!url);
+        console.log('Product images URLs:', validImageUrls);
+        
+        setProduct({ ...data, images: validImageUrls });
+      }
     } catch (error) {
       console.error('Error fetching product:', error);
       setError(error instanceof Error ? error.message : 'Unknown error');

@@ -250,15 +250,25 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
         throw categoriesError;
       }
 
-      // Combine the data manually
-      const productsWithCategories = productsData?.map(product => {
+      // Combine the data manually and process images
+      const productsWithCategories = (productsData || []).map(product => {
         const category = categoriesData?.find(cat => cat.id === product.category_id);
+        
+        // Получаем публичные URL для изображений товара
+        const imageUrls = (product.images || []).map((path: string) => {
+          // Просто получаем публичный URL для каждого изображения
+          const { data: urlData } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(path);
+          return urlData.publicUrl;
+        }).filter(Boolean);
+        
         return {
           ...product,
           price_type: (product.price_type as 'from' | 'fixed') || 'from',
           description: product.description || '',
           category_id: product.category_id || '',
-          images: product.images || [],
+          images: imageUrls, // Используем публичные URL
           videos: product.videos || [],
           includes: product.includes || [],
           specifications: (product.specifications as Record<string, any>) || {},
@@ -272,9 +282,9 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
             updated_at: category.updated_at || ''
           } : undefined
         };
-      }) || [];
+      });
 
-      console.log('Fetched products:', productsWithCategories.length);
+      console.log('Fetched products with images:', productsWithCategories.length);
       setProducts(productsWithCategories);
     } catch (error) {
       console.error('Error fetching products:', error);
