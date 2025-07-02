@@ -322,7 +322,7 @@ const Index = () => {
               maxHeight={600}
               quality={0.6}
             />
-            <div className="flex flex-col justify-center px-2">
+            <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left px-2">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight">
                 {t.philosophy.title}<br />
                 <span className="text-[rgb(180,165,142)]">{t.philosophy.subtitle}</span>
@@ -332,7 +332,7 @@ const Index = () => {
               </p>
               <button 
                 onClick={() => navigate('/about')}
-                className="text-[rgb(180,165,142)] text-sm sm:text-base lg:text-lg hover:underline self-start"
+                className="text-[rgb(180,165,142)] text-sm sm:text-base lg:text-lg hover:underline"
               >
                 {t.philosophy.cta}
               </button>
