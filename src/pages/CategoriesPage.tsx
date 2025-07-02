@@ -80,6 +80,17 @@ const CategoriesPage = () => {
 
   const t = translations[language];
 
+  // Function to handle navigation to main page sections
+  const handleSectionNavigation = (sectionId: string) => {
+    navigate('/');
+    setTimeout(() => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   // Testimonials data
   const testimonials = [
     {
@@ -150,15 +161,24 @@ const CategoriesPage = () => {
             <span className="text-[rgb(180,165,142)] text-sm xl:text-base font-medium">
               {t.nav.collections}
             </span>
-            <a href="/#proyectos" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
+            <button 
+              onClick={() => handleSectionNavigation('proyectos')}
+              className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base"
+            >
               {t.nav.projects}
-            </a>
-            <a href="/#proceso" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
+            </button>
+            <button 
+              onClick={() => handleSectionNavigation('proceso')}
+              className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base"
+            >
               {t.nav.process}
-            </a>
-            <a href="/#contacto" className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base">
+            </button>
+            <button 
+              onClick={() => handleSectionNavigation('contacto')}
+              className="hover:text-[rgb(180,165,142)] transition-colors text-sm xl:text-base"
+            >
               {t.nav.contact}
-            </a>
+            </button>
             <button 
               onClick={toggleLanguage}
               className="text-sm hover:text-[rgb(180,165,142)] transition-colors px-2 py-1 rounded border border-gray-600"
@@ -207,27 +227,33 @@ const CategoriesPage = () => {
               <span className="block py-2 text-sm text-[rgb(180,165,142)] font-medium">
                 {t.nav.collections}
               </span>
-              <a 
-                href="/#proyectos" 
-                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
+              <button 
+                onClick={() => {
+                  handleSectionNavigation('proyectos');
+                  setMobileMenuOpen(false);
+                }}
+                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors w-full text-left"
               >
                 {t.nav.projects}
-              </a>
-              <a 
-                href="/#proceso" 
-                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
+              </button>
+              <button 
+                onClick={() => {
+                  handleSectionNavigation('proceso');
+                  setMobileMenuOpen(false);
+                }}
+                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors w-full text-left"
               >
                 {t.nav.process}
-              </a>
-              <a 
-                href="/#contacto" 
-                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
+              </button>
+              <button 
+                onClick={() => {
+                  handleSectionNavigation('contacto');
+                  setMobileMenuOpen(false);
+                }}
+                className="block py-2 text-sm hover:text-[rgb(180,165,142)] transition-colors w-full text-left"
               >
                 {t.nav.contact}
-              </a>
+              </button>
               <Button 
                 className="w-full bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] text-sm py-2"
                 onClick={() => setMobileMenuOpen(false)}
