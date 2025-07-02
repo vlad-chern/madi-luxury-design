@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Star, Phone, Mail, MapPin, Menu, X, Instagram } from 'lucide-react';
@@ -262,17 +263,19 @@ const Index = () => {
         )}
       </nav>
 
-      {/* Hero Section - Optimized background image */}
+      {/* Hero Section - Fixed background image structure */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <OptimizedImage
-          src="/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png"
-          alt="MADI Hero Background"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: 'brightness(0.3)' }}
-          maxWidth={1200}
-          maxHeight={800}
-          quality={0.5}
-        />
+        <div className="absolute inset-0 w-full h-full">
+          <OptimizedImage
+            src="/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png"
+            alt="MADI Hero Background"
+            className="w-full h-full object-cover"
+            maxWidth={1200}
+            maxHeight={800}
+            quality={0.5}
+          />
+          <div className="absolute inset-0 bg-black/70"></div>
+        </div>
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
           <h1 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
             {t.hero.title}<br />
