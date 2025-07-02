@@ -20,6 +20,50 @@ export const useCategoryData = (categorySlug: string | undefined) => {
     }
   }, [categorySlug]);
 
+  const processProductImage = (product: Product) => {
+    if (!product.images || product.images.length === 0) {
+      console.log('No main image for product:', product.name);
+      return {
+        ...product,
+        images: ['/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png']
+      };
+    }
+
+    const mainImagePath = product.images[0];
+    console.log('Processing main image for product:', product.name, 'path:', mainImagePath);
+    
+    let processedMainImage = mainImagePath;
+    
+    // Если это уже полный URL, оставляем как есть
+    if (mainImagePath.startsWith('http://') || mainImagePath.startsWith('https://')) {
+      processedMainImage = mainImagePath;
+    }
+    // Если это путь к lovable-uploads, оставляем как есть
+    else if (mainImagePath.startsWith('/lovable-uploads/') || mainImagePath.startsWith('lovable-uploads/')) {
+      processedMainImage = mainImagePath.startsWith('/') ? mainImagePath : `/${mainImagePath}`;
+    }
+    // Если это путь в Supabase Storage, получаем публичный URL
+    else if (mainImagePath && !mainImagePath.startsWith('blob:')) {
+      const { data: urlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(mainImagePath);
+      
+      console.log('Generated public URL for main image:', urlData.publicUrl);
+      processedMainImage = urlData.publicUrl;
+    }
+    
+    // Заменяем первое изображение на обработанное
+    const updatedImages = [...product.images];
+    updatedImages[0] = processedMainImage;
+    
+    console.log('Final main image URL for', product.name, ':', processedMainImage);
+    
+    return { 
+      ...product, 
+      images: updatedImages
+    };
+  };
+
   const fetchCategoryAndProducts = async () => {
     try {
       setIsLoading(true);
@@ -80,26 +124,13 @@ export const useCategoryData = (categorySlug: string | undefined) => {
         throw new Error(`Error al cargar los productos: ${productsResult.error.message}`);
       }
       
-      console.log('Products loaded:', productsResult.data?.length || 0);
+      console.log('Products loaded count:', productsResult.data?.length || 0);
+      console.log('Raw products data:', productsResult.data);
       
-      // Получаем публичные URL для главных изображений товаров
-      const productsWithImages = (productsResult.data || []).map((product: Product) => {
-        if (product.images && product.images.length > 0) {
-          const mainImagePath = product.images[0];
-          // Просто получаем публичный URL
-          const { data: urlData } = supabase.storage
-            .from('product-images')
-            .getPublicUrl(mainImagePath);
-          
-          // Заменяем первое изображение на публичный URL
-          const updatedImages = [...product.images];
-          updatedImages[0] = urlData.publicUrl;
-          
-          return { ...product, images: updatedImages };
-        }
-        return product;
-      });
+      // Обрабатываем главные изображения товаров
+      const productsWithImages = (productsResult.data || []).map(processProductImage);
       
+      console.log('Products with processed images:', productsWithImages);
       setProducts(productsWithImages);
       
     } catch (error: any) {

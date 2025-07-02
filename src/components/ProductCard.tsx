@@ -85,14 +85,44 @@ const ProductCard = ({
     }
   };
 
+  // Обработка изображения для корректного отображения
+  const getImageUrl = (imagePath: string) => {
+    console.log('ProductCard - processing image:', imagePath);
+    
+    if (!imagePath) {
+      return '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+    }
+    
+    // Если это уже полный URL, возвращаем как есть
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    
+    // Если это путь к lovable-uploads, возвращаем как есть
+    if (imagePath.startsWith('/lovable-uploads/') || imagePath.startsWith('lovable-uploads/')) {
+      return imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    }
+    
+    // Возвращаем как есть для других случаев
+    return imagePath;
+  };
+
+  const imageUrl = getImageUrl(main_image);
+  console.log('ProductCard - final image URL:', imageUrl);
+
   return (
     <Card className="bg-[rgb(22,22,22)] border-gray-800 overflow-hidden group hover:border-[rgb(180,165,142)] transition-all duration-300">
       <div className="aspect-square overflow-hidden">
         <img
-          src={main_image}
+          src={imageUrl}
           alt={name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
+          onError={(e) => {
+            console.error('Image failed to load:', imageUrl);
+            const target = e.target as HTMLImageElement;
+            target.src = '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+          }}
         />
       </div>
       <CardContent className="p-4 sm:p-6">

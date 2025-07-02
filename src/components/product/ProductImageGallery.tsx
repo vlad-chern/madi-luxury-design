@@ -25,7 +25,26 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
   const allImages = [mainImage, ...images].filter((image, index, arr) => 
     image && arr.indexOf(image) === index
   );
-  console.log('ProductImageGallery - allImages:', allImages);
+  
+  console.log('ProductImageGallery - allImages after processing:', allImages);
+  
+  const getImageUrl = (imagePath: string) => {
+    if (!imagePath) {
+      return '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+    }
+    
+    // Если это уже полный URL, возвращаем как есть
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    
+    // Если это путь к lovable-uploads, возвращаем как есть
+    if (imagePath.startsWith('/lovable-uploads/') || imagePath.startsWith('lovable-uploads/')) {
+      return imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    }
+    
+    return imagePath;
+  };
   
   const handleThumbnailClick = (index: number) => {
     setSelectedImageIndex(index);
@@ -43,6 +62,9 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
     );
   };
 
+  const currentImageUrl = getImageUrl(allImages[selectedImageIndex]);
+  console.log('ProductImageGallery - current image URL:', currentImageUrl);
+
   return (
     <div className="space-y-6">
       {/* Главное изображение */}
@@ -50,7 +72,7 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
         <div 
           className="aspect-square bg-cover bg-center rounded-lg relative overflow-hidden bg-gray-800"
           style={{
-            backgroundImage: `url('${allImages[selectedImageIndex]}')`
+            backgroundImage: `url('${currentImageUrl}')`
           }}
         >
           {/* Навигационные стрелки - показываются при наведении если больше одного изображения */}
@@ -94,7 +116,7 @@ const ProductImageGallery = ({ mainImage, images = [] }: ProductImageGalleryProp
                         : 'border-transparent hover:border-gray-600'
                     }`}
                     style={{
-                      backgroundImage: `url('${image}')`
+                      backgroundImage: `url('${getImageUrl(image)}')`
                     }}
                     onClick={() => handleThumbnailClick(index)}
                   />

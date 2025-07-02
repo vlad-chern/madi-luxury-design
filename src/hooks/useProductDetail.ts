@@ -36,6 +36,50 @@ export const useProductDetail = (productSlug: string | undefined) => {
     };
   }, [productSlug]);
 
+  const processProductImages = (product: Product) => {
+    if (!product.images || product.images.length === 0) {
+      console.log('No images found for product:', product.name);
+      return {
+        ...product,
+        images: ['/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png'] // fallback image
+      };
+    }
+
+    // Обрабатываем каждое изображение
+    const processedImages = product.images.map((imagePath: string) => {
+      console.log('Processing image path:', imagePath);
+      
+      // Если это уже полный URL, возвращаем как есть
+      if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
+      }
+      
+      // Если это путь к lovable-uploads, возвращаем как есть
+      if (imagePath.startsWith('/lovable-uploads/') || imagePath.startsWith('lovable-uploads/')) {
+        return imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+      }
+      
+      // Если это путь в Supabase Storage, получаем публичный URL
+      if (imagePath && !imagePath.startsWith('blob:')) {
+        const { data: urlData } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(imagePath);
+        
+        console.log('Generated public URL for', imagePath, ':', urlData.publicUrl);
+        return urlData.publicUrl;
+      }
+      
+      return imagePath;
+    }).filter(Boolean); // Убираем пустые значения
+
+    console.log('Processed images for product:', product.name, processedImages);
+    
+    return {
+      ...product,
+      images: processedImages.length > 0 ? processedImages : ['/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png']
+    };
+  };
+
   const fetchProduct = async () => {
     if (!productSlug) {
       setError('Product slug not found');
@@ -53,7 +97,8 @@ export const useProductDetail = (productSlug: string | undefined) => {
         .select(`
           *,
           categories (
-            name
+            name,
+            slug
           )
         `)
         .eq('slug', productSlug)
@@ -65,22 +110,12 @@ export const useProductDetail = (productSlug: string | undefined) => {
         throw error;
       }
       
-      console.log('Fetched product:', data);
+      console.log('Fetched product raw data:', data);
 
       if (data) {
-        // Получаем публичные URL для каждого пути изображения
-        const imageUrls = (data.images || []).map((imagePath: string) => {
-          const { data: urlData } = supabase.storage
-            .from('product-images')
-            .getPublicUrl(imagePath);
-          return urlData.publicUrl;
-        });
-        
-        // Фильтруем на случай, если какой-то URL не сгенерировался
-        const validImageUrls = imageUrls.filter((url): url is string => !!url);
-        console.log('Product images URLs:', validImageUrls);
-        
-        setProduct({ ...data, images: validImageUrls });
+        const processedProduct = processProductImages(data);
+        console.log('Final processed product:', processedProduct);
+        setProduct(processedProduct);
       }
     } catch (error) {
       console.error('Error fetching product:', error);
