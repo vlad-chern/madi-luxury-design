@@ -49,19 +49,47 @@ export const compressImage = (file: File, maxWidth: number = 800, maxHeight: num
 };
 
 export const uploadImageToSupabase = async (file: File, folder: string = 'products'): Promise<string> => {
+  const { supabase } = await import('@/integrations/supabase/client');
+  
+  console.log('Starting image upload to Supabase...', file.name);
+  
   // Compress the image before uploading
   const compressedFile = await compressImage(file);
   
-  // Generate a unique filename with folder structure
-  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
-  const fullPath = `content/${folder}/${fileName}`;
+  // Generate a unique filename
+  const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+  const filePath = `${folder}/${fileName}`;
   
-  // For now, we'll return a placeholder URL since Supabase storage isn't set up
-  // When Supabase storage is configured, this would upload to the bucket
-  // const { data, error } = await supabase.storage
-  //   .from('madiluxe')
-  //   .upload(fullPath, compressedFile);
+  console.log('Uploading file to path:', filePath);
   
-  // Return a placeholder URL with the new structure
-  return `/content/${folder}/${fileName}`;
+  try {
+    // Upload file to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('product-images')
+      .upload(filePath, compressedFile, {
+        cacheControl: '3600',
+        upsert: false
+      });
+    
+    if (error) {
+      console.error('Upload error:', error);
+      throw new Error(`Upload failed: ${error.message}`);
+    }
+    
+    console.log('File uploaded successfully:', data);
+    
+    // Get the public URL
+    const { data: urlData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(filePath);
+    
+    console.log('Public URL generated:', urlData.publicUrl);
+    
+    // Return the file path (not the full URL) to store in database
+    return filePath;
+  } catch (error) {
+    console.error('Error uploading to Supabase:', error);
+    throw error;
+  }
 };

@@ -71,6 +71,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   const [specificationsList, setSpecificationsList] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
   const { toast } = useToast();
 
   const translations = {
@@ -254,9 +255,18 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       const productsWithCategories = (productsData || []).map(product => {
         const category = categoriesData?.find(cat => cat.id === product.category_id);
         
-        // Получаем публичные URL для изображений товара
+        // Process image URLs - if they're storage paths, get public URLs
         const imageUrls = (product.images || []).map((path: string) => {
-          // Просто получаем публичный URL для каждого изображения
+          if (path.startsWith('http')) {
+            return path; // Already a full URL
+          }
+          if (path.startsWith('blob:')) {
+            return path; // Blob URL
+          }
+          if (path.startsWith('/')) {
+            return path; // Relative URL
+          }
+          // Storage path - get public URL
           const { data: urlData } = supabase.storage
             .from('product-images')
             .getPublicUrl(path);
@@ -268,7 +278,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
           price_type: (product.price_type as 'from' | 'fixed') || 'from',
           description: product.description || '',
           category_id: product.category_id || '',
-          images: imageUrls, // Используем публичные URL
+          images: imageUrls,
           videos: product.videos || [],
           includes: product.includes || [],
           specifications: (product.specifications as Record<string, any>) || {},
@@ -527,6 +537,13 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     if (imagePath.startsWith('blob:')) {
       return imagePath;
     }
+    // For storage paths, get public URL
+    if (imagePath.includes('/')) {
+      const { data: urlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(imagePath);
+      return urlData.publicUrl;
+    }
     return `https://images.unsplash.com/${imagePath}`;
   };
 
@@ -548,29 +565,53 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     if (validFiles.length === 0) return;
 
     setIsUploading(true);
+    setUploadProgress({});
     
     try {
-      const imageUrls: string[] = [];
+      const uploadedPaths: string[] = [];
       
-      for (const file of validFiles) {
-        // Сжимаем и создаем URL для каждого файла
-        const compressedFile = await compressImage(file);
-        const imageUrl = URL.createObjectURL(compressedFile);
-        imageUrls.push(imageUrl);
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
+        const progressKey = `upload-${i}`;
+        
+        setUploadProgress(prev => ({ ...prev, [progressKey]: 0 }));
+        
+        try {
+          console.log(`Uploading file ${i + 1}/${validFiles.length}:`, file.name);
+          
+          // Upload to Supabase Storage
+          const filePath = await uploadImageToSupabase(file, 'products');
+          uploadedPaths.push(filePath);
+          
+          setUploadProgress(prev => ({ ...prev, [progressKey]: 100 }));
+          
+          console.log(`File ${i + 1} uploaded successfully:`, filePath);
+        } catch (error) {
+          console.error(`Error uploading file ${i + 1}:`, error);
+          setUploadProgress(prev => ({ ...prev, [progressKey]: -1 })); // Error state
+          
+          toast({
+            title: t.error,
+            description: `Ошибка загрузки ${file.name}: ${error.message}`,
+            variant: "destructive",
+          });
+        }
       }
       
-      // Добавляем все изображения к форме
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, ...imageUrls]
-      }));
+      if (uploadedPaths.length > 0) {
+        // Add uploaded images to form (store paths, not URLs)
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, ...uploadedPaths]
+        }));
 
-      toast({
-        title: 'Изображения добавлены',
-        description: `${validFiles.length} изображений успешно добавлено`,
-      });
+        toast({
+          title: 'Изображения загружены',
+          description: `${uploadedPaths.length} изображений успешно загружено`,
+        });
+      }
     } catch (error) {
-      console.error('Error uploading images:', error);
+      console.error('Error in upload process:', error);
       toast({
         title: t.error,
         description: t.imageUploadError,
@@ -578,6 +619,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       });
     } finally {
       setIsUploading(false);
+      setUploadProgress({});
       // Reset the input
       event.target.value = '';
     }
@@ -605,27 +647,47 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     if (validFiles.length === 0) return;
 
     setIsUploading(true);
+    setUploadProgress({});
     
     try {
-      const imageUrls: string[] = [];
+      const uploadedPaths: string[] = [];
       
-      for (const file of validFiles) {
-        const compressedFile = await compressImage(file);
-        const imageUrl = URL.createObjectURL(compressedFile);
-        imageUrls.push(imageUrl);
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
+        const progressKey = `drop-${i}`;
+        
+        setUploadProgress(prev => ({ ...prev, [progressKey]: 0 }));
+        
+        try {
+          const filePath = await uploadImageToSupabase(file, 'products');
+          uploadedPaths.push(filePath);
+          
+          setUploadProgress(prev => ({ ...prev, [progressKey]: 100 }));
+        } catch (error) {
+          console.error(`Error uploading dropped file ${i + 1}:`, error);
+          setUploadProgress(prev => ({ ...prev, [progressKey]: -1 }));
+          
+          toast({
+            title: t.error,
+            description: `Ошибка загрузки ${file.name}: ${error.message}`,
+            variant: "destructive",
+          });
+        }
       }
       
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, ...imageUrls]
-      }));
+      if (uploadedPaths.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, ...uploadedPaths]
+        }));
 
-      toast({
-        title: 'Изображения добавлены',
-        description: `${validFiles.length} изображений успешно добавлено`,
-      });
+        toast({
+          title: 'Изображения загружены',
+          description: `${uploadedPaths.length} изображений успешно загружено`,
+        });
+      }
     } catch (error) {
-      console.error('Error uploading images:', error);
+      console.error('Error in drop upload:', error);
       toast({
         title: t.error,
         description: t.imageUploadError,
@@ -633,6 +695,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
       });
     } finally {
       setIsUploading(false);
+      setUploadProgress({});
     }
   };
 
@@ -677,6 +740,80 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     
     return slots;
   };
+
+  const renderUploadArea = () => (
+    <div className="space-y-4">
+      {/* File Upload Area */}
+      <div 
+        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+        <p className="text-sm text-gray-600 mb-2">{t.dragDropImage}</p>
+        
+        {/* Upload Progress */}
+        {isUploading && (
+          <div className="mb-4">
+            <div className="text-sm text-blue-600 mb-2">Загрузка изображений...</div>
+            {Object.entries(uploadProgress).map(([key, progress]) => (
+              <div key={key} className="mb-1">
+                <div className="bg-gray-200 rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      progress === -1 ? 'bg-red-500' : 'bg-blue-500'
+                    }`}
+                    style={{ width: `${Math.max(0, progress)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImageUpload}
+          disabled={isUploading}
+          className="hidden"
+          id="image-upload"
+        />
+        <label htmlFor="image-upload">
+          <Button 
+            type="button" 
+            variant="outline" 
+            disabled={isUploading}
+            className="cursor-pointer"
+            asChild
+          >
+            <span>
+              {isUploading ? 'Загрузка...' : 'Выбрать изображения'}
+            </span>
+          </Button>
+        </label>
+      </div>
+
+      {/* Manual URL Input */}
+      <div className="flex gap-2">
+        <Input
+          placeholder={t.imageUrl}
+          value={newImageUrl}
+          onChange={(e) => setNewImageUrl(e.target.value)}
+          disabled={isUploading}
+        />
+        <Button type="button" onClick={addImage} disabled={isUploading}>
+          {t.addImage}
+        </Button>
+      </div>
+
+      {/* Image Slots Grid */}
+      <div className="grid grid-cols-5 gap-3">
+        {renderImageSlots(formData.images)}
+      </div>
+    </div>
+  );
 
   if (isLoading) {
     return (
@@ -801,56 +938,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
                 <div>
                   <Label>{t.images}</Label>
-                  <div className="space-y-4">
-                    {/* File Upload Area */}
-                    <div 
-                      className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
-                      onDragOver={handleDragOver}
-                      onDrop={handleDrop}
-                    >
-                      <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                      <p className="text-sm text-gray-600 mb-2">{t.dragDropImage}</p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageUpload}
-                        disabled={isUploading}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <label htmlFor="image-upload">
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          disabled={isUploading}
-                          className="cursor-pointer"
-                          asChild
-                        >
-                          <span>
-                            {isUploading ? t.uploadingImage : 'Выбрать изображения'}
-                          </span>
-                        </Button>
-                      </label>
-                    </div>
-
-                    {/* Manual URL Input */}
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder={t.imageUrl}
-                        value={newImageUrl}
-                        onChange={(e) => setNewImageUrl(e.target.value)}
-                      />
-                      <Button type="button" onClick={addImage}>
-                        {t.addImage}
-                      </Button>
-                    </div>
-
-                    {/* Image Slots Grid */}
-                    <div className="grid grid-cols-5 gap-3">
-                      {renderImageSlots(formData.images)}
-                    </div>
-                  </div>
+                  {renderUploadArea()}
                 </div>
 
                 <div>
