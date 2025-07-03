@@ -17,10 +17,10 @@ export const useCategories = () => {
         setIsLoading(true);
         setError(null);
         
-        // Используем более быстрый запрос с ограничением полей
+        // Select all required fields to match Category type
         const { data, error } = await supabase
           .from('categories')
-          .select('id, name, slug, description, image_url, created_at')
+          .select('id, name, slug, description, image_url, name_en, description_en, created_at, updated_at')
           .order('created_at', { ascending: true });
         
         if (error) {
@@ -93,7 +93,7 @@ export const useCategories = () => {
     try {
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name, slug, description, image_url, created_at')
+        .select('id, name, slug, description, image_url, name_en, description_en, created_at, updated_at')
         .order('created_at', { ascending: true });
       
       if (error) throw error;
