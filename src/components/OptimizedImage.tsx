@@ -51,15 +51,14 @@ const OptimizedImage = ({
   }, [src, maxWidth, maxHeight, quality]);
 
   return (
-    <div className={`relative flex items-center justify-center ${className}`} style={style}>
+    <div className={`relative flex items-center justify-center aspect-square ${className}`} style={style}>
       {isLoading && (
         <div className="absolute inset-0 bg-gray-800 animate-pulse rounded-lg" />
       )}
       <img
         src={optimizedSrc}
         alt={alt}
-        className={`${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
-        style={style}
+        className={`w-full h-full object-cover ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
         onLoad={() => setIsLoading(false)}
         onError={() => {
           setHasError(true);
