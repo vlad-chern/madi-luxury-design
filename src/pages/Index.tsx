@@ -472,7 +472,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <Footer />
+      <Footer language={language} />
       <WhatsAppWidget />
       <CookieConsent />
     </div>

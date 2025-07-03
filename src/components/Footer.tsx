@@ -1,7 +1,55 @@
+
 import { Phone, Mail, MapPin, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const Footer = () => {
+interface FooterProps {
+  language?: 'ES' | 'EN';
+}
+
+const Footer = ({ language = 'ES' }: FooterProps) => {
+  const translations = {
+    ES: {
+      navigation: 'Navegación',
+      collections: 'Colecciones',
+      projects: 'Proyectos',
+      process: 'Nuestro Proceso',
+      contact: 'Contacto',
+      services: 'Servicios',
+      customKitchens: 'Cocinas a medida',
+      dressings: 'Vestidores',
+      wardrobes: 'Armarios',
+      integralFurniture: 'Mobiliario integral',
+      contactTitle: 'Contacto',
+      privacyPolicy: 'Política de Privacidad',
+      termsOfService: 'Términos de Servicio',
+      configureCookies: 'Configurar Cookies',
+      rightsReserved: 'Todos los derechos reservados.',
+      charityText: 'MADI Muebles apoya a la organización benéfica ucraniana',
+      charityText2: ', que fomenta el desarrollo y la iniciativa en niños y jóvenes. Creemos en un futuro mejor para las nuevas generaciones.'
+    },
+    EN: {
+      navigation: 'Navigation',
+      collections: 'Collections',
+      projects: 'Projects',
+      process: 'Our Process',
+      contact: 'Contact',
+      services: 'Services',
+      customKitchens: 'Custom kitchens',
+      dressings: 'Dressing rooms',
+      wardrobes: 'Wardrobes',
+      integralFurniture: 'Integral furniture',
+      contactTitle: 'Contact',
+      privacyPolicy: 'Privacy Policy',
+      termsOfService: 'Terms of Service',
+      configureCookies: 'Configure Cookies',
+      rightsReserved: 'All rights reserved.',
+      charityText: 'MADI Furniture supports the Ukrainian charitable organization',
+      charityText2: ', which promotes development and initiative in children and youth. We believe in a better future for new generations.'
+    }
+  };
+
+  const t = translations[language];
+
   return (
     <footer className="py-16 border-t border-gray-800">
       <div className="container mx-auto px-6">
@@ -15,30 +63,32 @@ const Footer = () => {
               />
             </div>
             <p className="text-gray-400 leading-relaxed">
-              Mobiliario de autor diseñado para contar su historia. 
-              Artesanía española con visión contemporánea.
+              {language === 'ES' 
+                ? 'Mobiliario de autor diseñado para contar su historia. Artesanía española con visión contemporánea.'
+                : 'Author furniture designed to tell your story. Spanish craftsmanship with contemporary vision.'
+              }
             </p>
           </div>
           <div>
-            <h4 className="font-bold mb-4 text-[rgb(180,165,142)]">Navegación</h4>
+            <h4 className="font-bold mb-4 text-[rgb(180,165,142)]">{t.navigation}</h4>
             <div className="space-y-2">
-              <a href="/#colecciones" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Colecciones</a>
-              <a href="/#proyectos" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Proyectos</a>
-              <a href="/#proceso" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Nuestro Proceso</a>
-              <a href="/#contacto" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Contacto</a>
+              <a href="/#colecciones" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">{t.collections}</a>
+              <a href="/#proyectos" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">{t.projects}</a>
+              <a href="/#proceso" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">{t.process}</a>
+              <a href="/#contacto" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">{t.contact}</a>
             </div>
           </div>
           <div>
-            <h4 className="font-bold mb-4 text-[rgb(180,165,142)]">Servicios</h4>
+            <h4 className="font-bold mb-4 text-[rgb(180,165,142)]">{t.services}</h4>
             <div className="space-y-2">
-              <Link to="/category/cocinas" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Cocinas a medida</Link>
-              <Link to="/category/vestidores" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Vestidores</Link>
-              <Link to="/category/armarios" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Armarios</Link>
-              <a href="/#contacto" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">Mobiliario integral</a>
+              <Link to="/category/cocinas" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">{t.customKitchens}</Link>
+              <Link to="/category/vestidores" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">{t.dressings}</Link>
+              <Link to="/category/armarios" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">{t.wardrobes}</Link>
+              <a href="/#contacto" className="block text-gray-400 hover:text-[rgb(180,165,142)] transition-colors">{t.integralFurniture}</a>
             </div>
           </div>
           <div>
-            <h4 className="font-bold mb-4 text-[rgb(180,165,142)]">Contacto</h4>
+            <h4 className="font-bold mb-4 text-[rgb(180,165,142)]">{t.contactTitle}</h4>
             <div className="space-y-2 text-gray-400">
               <a 
                 href="https://maps.app.goo.gl/6beX8T3kfirNZwky5"
@@ -78,7 +128,7 @@ const Footer = () => {
         
         <div className="mt-8 pt-6 border-t border-gray-900">
           <p className="text-xs text-gray-500 text-center leading-relaxed">
-            MADI Muebles apoya a la organización benéfica ucraniana{' '}
+            {t.charityText}{' '}
             <a 
               href="https://florexa.site/" 
               target="_blank" 
@@ -87,19 +137,19 @@ const Footer = () => {
             >
               «Liga de Niños Activos» (ГО «Ліга активних дітей»)
             </a>
-            , que fomenta el desarrollo y la iniciativa en niños y jóvenes. Creemos en un futuro mejor para las nuevas generaciones.
+            {t.charityText2}
           </p>
         </div>
         
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-            <p>&copy; 2024 MADI Muebles. Todos los derechos reservados.</p>
+            <p>&copy; 2024 MADI Muebles. {t.rightsReserved}</p>
             <div className="flex space-x-6">
               <Link to="/privacy-policy" className="hover:text-[rgb(180,165,142)] transition-colors">
-                Política de Privacidad
+                {t.privacyPolicy}
               </Link>
               <Link to="/terms-of-service" className="hover:text-[rgb(180,165,142)] transition-colors">
-                Términos de Servicio
+                {t.termsOfService}
               </Link>
               <button 
                 onClick={() => {
@@ -108,7 +158,7 @@ const Footer = () => {
                 }}
                 className="hover:text-[rgb(180,165,142)] transition-colors"
               >
-                Configurar Cookies
+                {t.configureCookies}
               </button>
             </div>
           </div>
