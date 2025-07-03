@@ -9,13 +9,33 @@ const DynamicCollections = () => {
   const navigate = useNavigate();
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
-  const handleCategoryClick = useCallback((category: string) => {
-    navigate(`/category/${category}`);
-  }, [navigate]);
+  // Combine all callbacks into one to avoid hook ordering issues
+  const handlers = {
+    handleCategoryClick: useCallback((category: string) => {
+      navigate(`/category/${category}`);
+    }, [navigate]),
 
-  const handleImageError = useCallback((categoryId: string) => {
-    setImageErrors(prev => new Set(prev).add(categoryId));
-  }, []);
+    handleImageError: useCallback((categoryId: string) => {
+      setImageErrors(prev => new Set(prev).add(categoryId));
+    }, []),
+
+    getImageUrl: useCallback((category: any) => {
+      if (imageErrors.has(category.id)) {
+        return '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+      }
+      
+      if (category.image_url) return category.image_url;
+      
+      // Fallback images basadas en el slug
+      const fallbackImages: { [key: string]: string } = {
+        'cocinas': '/lovable-uploads/3473e16d-3e78-4595-83ba-3de762170ac5.png',
+        'vestidores': '/lovable-uploads/6077d6cb-0b90-4c79-bc56-1688ceb20f0a.png',
+        'armarios': '/lovable-uploads/c0bfff03-02b0-4ff8-8777-ae7ad8a62484.png'
+      };
+      
+      return fallbackImages[category.slug] || '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+    }, [imageErrors])
+  };
 
   if (isLoading) {
     return (
@@ -71,23 +91,6 @@ const DynamicCollections = () => {
     );
   }
 
-  const getImageUrl = useCallback((category: any) => {
-    if (imageErrors.has(category.id)) {
-      return '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
-    }
-    
-    if (category.image_url) return category.image_url;
-    
-    // Fallback images basadas en el slug
-    const fallbackImages: { [key: string]: string } = {
-      'cocinas': '/lovable-uploads/3473e16d-3e78-4595-83ba-3de762170ac5.png',
-      'vestidores': '/lovable-uploads/6077d6cb-0b90-4c79-bc56-1688ceb20f0a.png',
-      'armarios': '/lovable-uploads/c0bfff03-02b0-4ff8-8777-ae7ad8a62484.png'
-    };
-    
-    return fallbackImages[category.slug] || '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
-  }, [imageErrors]);
-
   return (
     <div className="container mx-auto px-6">
       <div className="text-center mb-20">
@@ -101,7 +104,7 @@ const DynamicCollections = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {categories.map((category, index) => {
-          const imageUrl = getImageUrl(category);
+          const imageUrl = handlers.getImageUrl(category);
           
           return (
             <div key={category.id} className="group">
@@ -111,14 +114,14 @@ const DynamicCollections = () => {
                   style={{
                     backgroundImage: `url('${imageUrl}')`
                   }}
-                  onClick={() => handleCategoryClick(category.slug)}
+                  onClick={() => handlers.handleCategoryClick(category.slug)}
                 >
                   {/* Preload image for better performance */}
                   <img
                     src={imageUrl}
                     alt=""
                     className="sr-only"
-                    onError={() => handleImageError(category.id)}
+                    onError={() => handlers.handleImageError(category.id)}
                     loading="lazy"
                   />
                   
@@ -146,7 +149,7 @@ const DynamicCollections = () => {
                       className="bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] group-hover:scale-105 transition-all duration-300 shadow-lg"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleCategoryClick(category.slug);
+                        handlers.handleCategoryClick(category.slug);
                       }}
                     >
                       Ver Más

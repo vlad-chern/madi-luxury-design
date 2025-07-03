@@ -10,6 +10,7 @@ interface OptimizedImageProps {
   maxWidth?: number;
   maxHeight?: number;
   quality?: number;
+  forceSquare?: boolean; // Add option to force square aspect ratio
 }
 
 const OptimizedImage = ({ 
@@ -19,7 +20,8 @@ const OptimizedImage = ({
   style = {},
   maxWidth = 600,
   maxHeight = 450,
-  quality = 0.6
+  quality = 0.6,
+  forceSquare = false
 }: OptimizedImageProps) => {
   const [optimizedSrc, setOptimizedSrc] = useState<string>(src);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,15 +52,19 @@ const OptimizedImage = ({
     optimizeImage();
   }, [src, maxWidth, maxHeight, quality]);
 
+  const containerClasses = forceSquare 
+    ? `relative flex items-center justify-center aspect-square ${className}`
+    : `relative flex items-center justify-center ${className}`;
+
   return (
-    <div className={`relative flex items-center justify-center aspect-square ${className}`} style={style}>
+    <div className={containerClasses} style={style}>
       {isLoading && (
-        <div className="absolute inset-0 bg-gray-800 animate-pulse rounded-lg" />
+        <div className={`absolute inset-0 bg-gray-800 animate-pulse ${forceSquare ? 'rounded-lg' : ''}`} />
       )}
       <img
         src={optimizedSrc}
         alt={alt}
-        className={`w-full h-full object-cover ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+        className={`${forceSquare ? 'w-full h-full object-cover' : 'w-auto h-auto max-w-full max-h-full object-contain'} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
         onLoad={() => setIsLoading(false)}
         onError={() => {
           setHasError(true);
@@ -66,7 +72,7 @@ const OptimizedImage = ({
         }}
       />
       {hasError && (
-        <div className="absolute inset-0 bg-gray-700 flex items-center justify-center rounded-lg">
+        <div className={`absolute inset-0 bg-gray-700 flex items-center justify-center ${forceSquare ? 'rounded-lg' : ''}`}>
           <span className="text-gray-400 text-sm">Изображение недоступно</span>
         </div>
       )}
