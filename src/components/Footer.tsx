@@ -1,4 +1,3 @@
-
 import { Phone, Mail, MapPin, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -76,6 +75,22 @@ const Footer = () => {
             </div>
           </div>
         </div>
+        
+        <div className="mt-8 pt-6 border-t border-gray-900">
+          <p className="text-xs text-gray-500 text-center leading-relaxed">
+            MADI Muebles apoya a la organización benéfica ucraniana{' '}
+            <a 
+              href="https://florexa.site/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-gray-300 transition-colors underline decoration-dotted"
+            >
+              «Liga de Niños Activos» (ГО «Ліга активних дітей»)
+            </a>
+            , que fomenta el desarrollo y la iniciativa en niños y jóvenes. Creemos en un futuro mejor para las nuevas generaciones.
+          </p>
+        </div>
+        
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <p>&copy; 2024 MADI Muebles. Todos los derechos reservados.</p>
