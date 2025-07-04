@@ -162,7 +162,7 @@ const Index = () => {
         type="website"
       />
       
-      <nav className="fixed top-0 w-full z-50 bg-[rgb(14,14,14)]/90 backdrop-blur-sm border-b border-gray-800">
+      <nav className="fixed top-0 w-full z-50 bg-[rgb(14,14,14)] backdrop-blur-sm border-b border-gray-800">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center">
             <OptimizedImage 
@@ -256,16 +256,12 @@ const Index = () => {
       </nav>
 
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 w-full h-full">
-          <OptimizedImage
-            src="/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png"
-            alt="MADI Hero Background"
-            className="w-full h-full"
-            style={{ objectFit: 'cover' }}
-            maxWidth={1200}
-            maxHeight={800}
-            quality={0.5}
-          />
+        <div 
+          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png')`
+          }}
+        >
           <div className="absolute inset-0 bg-black/70"></div>
         </div>
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
