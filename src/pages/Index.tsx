@@ -18,11 +18,12 @@ const Index = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
+  // Переводы для разных языков
   const translations = {
     ES: {
       nav: {
         collections: 'Colecciones',
-        projects: 'Proyectos', 
+        projects: 'Proyectos',
         process: 'Nuestro Proceso',
         contact: 'Contacto',
         startConsultation: 'Iniciar Consulta'
@@ -109,6 +110,7 @@ const Index = () => {
 
   const t = translations[language];
 
+  // Переводы для разных языков
   const testimonials = [
     {
       text: language === 'ES' 
@@ -162,19 +164,21 @@ const Index = () => {
         type="website"
       />
       
+      {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[rgb(14,14,14)]/90 backdrop-blur-sm border-b border-gray-800">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center">
             <OptimizedImage 
               src="/lovable-uploads/2ff321c4-11f7-489a-860b-fadf6b38b375.png" 
               alt="MADI Logo" 
-              className="h-6 sm:h-8"
+              className="h-6 sm:h-8 w-auto"
               maxWidth={200}
               maxHeight={80}
               quality={0.8}
             />
           </div>
           
+          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             <button 
               onClick={() => navigate('/colecciones')}
@@ -196,6 +200,7 @@ const Index = () => {
             </button>
           </div>
 
+          {/* Mobile menu button */}
           <div className="lg:hidden flex items-center space-x-2">
             <button 
               onClick={toggleLanguage}
@@ -213,11 +218,13 @@ const Index = () => {
             </Button>
           </div>
 
+          {/* Desktop CTA */}
           <Button className="hidden lg:block bg-[rgb(180,165,142)] text-[rgb(14,14,14)] hover:bg-[rgb(160,145,122)] border border-[rgb(180,165,142)] text-sm xl:text-base px-4 xl:px-6 py-2">
             {t.nav.startConsultation}
           </Button>
         </div>
 
+        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-[rgb(14,14,14)] border-t border-gray-800">
             <div className="container mx-auto px-4 py-4 space-y-3">
@@ -255,13 +262,13 @@ const Index = () => {
         )}
       </nav>
 
+      {/* Hero Section - Fixed background image structure */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
           <OptimizedImage
             src="/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png"
             alt="MADI Hero Background"
-            className="w-full h-full"
-            style={{ objectFit: 'cover' }}
+            className="w-full h-full object-cover"
             maxWidth={1200}
             maxHeight={800}
             quality={0.5}
@@ -286,6 +293,7 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Social Proof Bar */}
       <section className="py-8 sm:py-12 border-y border-gray-800">
         <div className="container mx-auto px-4">
           <div className="text-center">
@@ -301,18 +309,18 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Philosophy Section - Fixed alignment */}
       <section className="py-12 sm:py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
             <OptimizedImage 
               src="/lovable-uploads/75fee044-f881-4fda-91c4-f03dbec16e0c.png"
               alt="MADI Philosophy"
-              className="rounded-lg"
+              className="aspect-square bg-cover bg-center rounded-lg"
               style={{ filter: 'grayscale(100%)' }}
               maxWidth={600}
               maxHeight={600}
               quality={0.6}
-              forceSquare={true}
             />
             <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left px-2">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight">
@@ -333,10 +341,12 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Collections Section */}
       <section className="py-12 sm:py-16 lg:py-24 bg-[rgb(18,18,18)]">
         <DynamicCollections />
       </section>
 
+      {/* Process Section */}
       <section id="proceso" className="py-12 sm:py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 sm:mb-12 lg:mb-16 px-2">
@@ -356,6 +366,7 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Testimonials */}
       <section className="py-12 sm:py-16 lg:py-24 bg-[rgb(18,18,18)]">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 sm:mb-12 lg:mb-16 px-2">
@@ -406,6 +417,7 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Contact Section */}
       <section id="contacto" className="py-12 sm:py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8 sm:gap-12 lg:gap-16">
@@ -459,6 +471,7 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Footer */}
       <Footer language={language} />
       <WhatsAppWidget />
       <CookieConsent />

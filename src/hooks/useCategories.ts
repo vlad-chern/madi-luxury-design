@@ -10,55 +10,9 @@ export const useCategories = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchCategories = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        // Select all required fields to match Category type
-        const { data, error } = await supabase
-          .from('categories')
-          .select('id, name, slug, description, image_url, name_en, description_en, created_at, updated_at')
-          .order('created_at', { ascending: true });
-        
-        if (error) {
-          console.error('Error fetching categories:', error);
-          throw error;
-        }
-        
-        if (isMounted) {
-          console.log('Categories loaded:', data?.length || 0);
-          setCategories(data || []);
-        }
-        
-      } catch (error: any) {
-        console.error('Error fetching categories:', error);
-        const errorMessage = error.message || 'Error al cargar las categorías';
-        
-        if (isMounted) {
-          setError(errorMessage);
-          
-          // Показываем toast только если это критическая ошибка
-          if (error.message?.includes('connection') || error.message?.includes('network')) {
-            toast({
-              title: "Error de conexión",
-              description: "No se pudo conectar con el servidor. Reintentando...",
-              variant: "destructive",
-            });
-          }
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
     fetchCategories();
 
-    // Подписка на изменения в таблице categories с debounce
+    // Подписка на изменения в таблице categories
     const channel = supabase
       .channel('categories-changes')
       .on(
@@ -70,39 +24,44 @@ export const useCategories = () => {
         },
         () => {
           console.log('Categories updated, refetching...');
-          // Небольшая задержка чтобы избежать множественных обновлений
-          setTimeout(() => {
-            if (isMounted) {
-              fetchCategories();
-            }
-          }, 500);
+          fetchCategories();
         }
       )
       .subscribe();
 
     return () => {
-      isMounted = false;
       supabase.removeChannel(channel);
     };
-  }, [toast]);
+  }, []);
 
-  const refetch = async () => {
-    setIsLoading(true);
-    setError(null);
-    
+  const fetchCategories = async () => {
     try {
+      setIsLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name, slug, description, image_url, name_en, description_en, created_at, updated_at')
+        .select('*')
         .order('created_at', { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching categories:', error);
+        throw error;
+      }
       
+      console.log('Categories loaded:', data?.length || 0);
       setCategories(data || []);
+      
     } catch (error: any) {
+      console.error('Error fetching categories:', error);
       const errorMessage = error.message || 'Error al cargar las categorías';
       setError(errorMessage);
-      console.error('Error refetching categories:', error);
+      
+      toast({
+        title: "Error de carga",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -112,6 +71,6 @@ export const useCategories = () => {
     categories,
     isLoading,
     error,
-    refetch
+    refetch: fetchCategories
   };
 };
