@@ -257,14 +257,11 @@ const Index = () => {
 
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
-          <OptimizedImage
+          <img
             src="/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png"
             alt="MADI Hero Background"
-            className="w-full h-full"
-            style={{ objectFit: 'cover' }}
-            maxWidth={1200}
-            maxHeight={800}
-            quality={0.5}
+            className="w-full h-full object-cover"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
           <div className="absolute inset-0 bg-black/70"></div>
         </div>
