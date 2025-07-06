@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, X, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { compressImage, uploadImageToSupabase } from '@/utils/imageCompression';
@@ -72,6 +72,8 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
+  const [slugError, setSlugError] = useState('');
+  const [slugSuggestions, setSlugSuggestions] = useState<string[]>([]);
   const { toast } = useToast();
 
   const translations = {
@@ -322,8 +324,102 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
     }
   };
 
+  const generateSlug = (name: string) => {
+    if (!name.trim()) return '';
+    
+    return name
+      .toLowerCase()
+      .trim()
+      // Replace spaces with hyphens
+      .replace(/\s+/g, '-')
+      // Remove special characters but keep letters, numbers, hyphens
+      .replace(/[^a-z0-9\u00C0-\u017F\u0400-\u04FF-]/gi, '')
+      // Replace multiple hyphens with single hyphen
+      .replace(/-+/g, '-')
+      // Remove leading/trailing hyphens
+      .replace(/^-+|-+$/g, '');
+  };
+
+  const validateSlug = (slug: string) => {
+    setSlugError('');
+    setSlugSuggestions([]);
+
+    if (!slug.trim()) {
+      setSlugError('El slug es requerido');
+      return false;
+    }
+
+    // Check for invalid characters
+    const invalidChars = slug.match(/[^a-z0-9-]/g);
+    if (invalidChars) {
+      const uniqueInvalidChars = [...new Set(invalidChars)];
+      setSlugError(`Caracteres no válidos encontrados: ${uniqueInvalidChars.join(', ')}`);
+      
+      // Generate suggestions
+      const cleanSlug = generateSlug(slug);
+      const suggestions = [
+        cleanSlug,
+        cleanSlug.replace(/-/g, ''),
+        cleanSlug.replace(/-/g, '_').toLowerCase()
+      ].filter(s => s && s !== slug);
+      
+      setSlugSuggestions([...new Set(suggestions)]);
+      return false;
+    }
+
+    // Check for consecutive hyphens
+    if (slug.includes('--')) {
+      setSlugError('No se permiten guiones consecutivos');
+      setSlugSuggestions([slug.replace(/-+/g, '-')]);
+      return false;
+    }
+
+    // Check for leading/trailing hyphens
+    if (slug.startsWith('-') || slug.endsWith('-')) {
+      setSlugError('El slug no puede empezar o terminar con guión');
+      setSlugSuggestions([slug.replace(/^-+|-+$/g, '')]);
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleNameChange = (name: string) => {
+    const newSlug = generateSlug(name);
+    setFormData(prev => ({
+      ...prev,
+      name,
+      slug: newSlug
+    }));
+    
+    // Clear any previous errors when auto-generating
+    setSlugError('');
+    setSlugSuggestions([]);
+  };
+
+  const handleSlugChange = (slug: string) => {
+    setFormData(prev => ({ ...prev, slug }));
+    validateSlug(slug);
+  };
+
+  const applySuggestion = (suggestion: string) => {
+    setFormData(prev => ({ ...prev, slug: suggestion }));
+    setSlugError('');
+    setSlugSuggestions([]);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate slug before submitting
+    if (!validateSlug(formData.slug)) {
+      toast({
+        title: t.error,
+        description: 'Por favor corrige el slug antes de continuar',
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       const includes = includesList.split('\n').filter(item => item.trim() !== '');
@@ -488,63 +584,6 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
   const openAddDialog = () => {
     resetForm();
     setIsDialogOpen(true);
-  };
-
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-  };
-
-  const handleNameChange = (name: string) => {
-    setFormData(prev => ({
-      ...prev,
-      name,
-      slug: generateSlug(name)
-    }));
-  };
-
-  const addImage = () => {
-    if (newImageUrl.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, newImageUrl.trim()]
-      }));
-      setNewImageUrl('');
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
-  };
-
-  const getImageUrl = (imagePath: string) => {
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    if (imagePath.startsWith('/lovable-uploads/')) {
-      return imagePath;
-    }
-    if (imagePath.startsWith('lovable-uploads/')) {
-      return `/${imagePath}`;
-    }
-    if (imagePath.startsWith('blob:')) {
-      return imagePath;
-    }
-    // For storage paths, get public URL
-    if (imagePath.includes('/')) {
-      const { data: urlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(imagePath);
-      return urlData.publicUrl;
-    }
-    return `https://images.unsplash.com/${imagePath}`;
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -860,6 +899,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                       value={formData.name}
                       onChange={(e) => handleNameChange(e.target.value)}
                       required
+                      className="bg-white text-black border-gray-300"
                     />
                   </div>
                   <div>
@@ -867,9 +907,39 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                     <Input
                       id="slug"
                       value={formData.slug}
-                      onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                      onChange={(e) => handleSlugChange(e.target.value)}
                       required
+                      className={`bg-white text-black border-gray-300 ${
+                        slugError ? 'border-red-500' : ''
+                      }`}
                     />
+                    {slugError && (
+                      <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                        <div className="flex items-center gap-2 text-red-700 text-sm">
+                          <AlertCircle className="w-4 h-4" />
+                          {slugError}
+                        </div>
+                        {slugSuggestions.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-sm text-red-600 mb-1">Sugerencias:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {slugSuggestions.map((suggestion, index) => (
+                                <Button
+                                  key={index}
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => applySuggestion(suggestion)}
+                                  className="text-xs"
+                                >
+                                  {suggestion}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -880,6 +950,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                     value={formData.description}
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     required
+                    className="bg-white text-black border-gray-300"
                   />
                 </div>
 
@@ -887,10 +958,10 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                   <div>
                     <Label htmlFor="price_type">{t.priceType}</Label>
                     <Select value={formData.price_type} onValueChange={(value: 'from' | 'fixed') => setFormData(prev => ({ ...prev, price_type: value }))}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white text-black border-gray-300">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white">
                         <SelectItem value="from">{t.priceFromType}</SelectItem>
                         <SelectItem value="fixed">{t.fixedPriceType}</SelectItem>
                       </SelectContent>
@@ -905,6 +976,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                       value={formData.price_from}
                       onChange={(e) => setFormData(prev => ({ ...prev, price_from: e.target.value }))}
                       disabled={formData.price_type !== 'from'}
+                      className="bg-white text-black border-gray-300"
                     />
                   </div>
                   <div>
@@ -916,6 +988,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                       value={formData.price_fixed}
                       onChange={(e) => setFormData(prev => ({ ...prev, price_fixed: e.target.value }))}
                       disabled={formData.price_type !== 'fixed'}
+                      className="bg-white text-black border-gray-300"
                     />
                   </div>
                 </div>
@@ -923,10 +996,10 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                 <div>
                   <Label htmlFor="category">{t.category}</Label>
                   <Select value={formData.category_id} onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white text-black border-gray-300">
                       <SelectValue placeholder={t.selectCategory} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       {categories.map(category => (
                         <SelectItem key={category.id} value={category.id}>
                           {category.name}
@@ -949,6 +1022,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                     onChange={(e) => setIncludesList(e.target.value)}
                     placeholder={t.includesPlaceholder}
                     rows={5}
+                    className="bg-white text-black border-gray-300"
                   />
                 </div>
 
@@ -960,6 +1034,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                     onChange={(e) => setSpecificationsList(e.target.value)}
                     placeholder={t.specificationsPlaceholder}
                     rows={5}
+                    className="bg-white text-black border-gray-300"
                   />
                 </div>
 
@@ -974,7 +1049,7 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={!!slugError}>
                   {editingProduct ? t.update : t.add}
                 </Button>
               </form>
