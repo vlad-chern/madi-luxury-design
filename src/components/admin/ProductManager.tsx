@@ -222,6 +222,46 @@ const ProductManager: React.FC<ProductManagerProps> = ({ language }) => {
 
   const t = translations[language];
 
+  // Helper function to get image URL
+  const getImageUrl = (imagePath: string) => {
+    if (!imagePath) return '/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png';
+    
+    if (imagePath.startsWith('http')) {
+      return imagePath; // Already a full URL
+    }
+    if (imagePath.startsWith('blob:')) {
+      return imagePath; // Blob URL
+    }
+    if (imagePath.startsWith('/')) {
+      return imagePath; // Relative URL
+    }
+    
+    // Storage path - get public URL
+    const { data: urlData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(imagePath);
+    return urlData.publicUrl;
+  };
+
+  // Helper function to remove image
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Helper function to add image from URL
+  const addImage = () => {
+    if (newImageUrl.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, newImageUrl.trim()]
+      }));
+      setNewImageUrl('');
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchCategories();
