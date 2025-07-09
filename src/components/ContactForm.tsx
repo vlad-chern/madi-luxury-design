@@ -240,7 +240,9 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
           placeholder={t.name}
           value={formData.name}
           onChange={handleInputChange}
-          className={errors.name ? 'ring-2 ring-red-500' : ''}
+          className={`bg-[rgb(32,32,32)] border-0 text-white placeholder:text-gray-400 focus:ring-0 ${
+            errors.name ? 'ring-2 ring-red-500' : ''
+          }`}
         />
         {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
       </div>
@@ -252,7 +254,9 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
           placeholder={t.email}
           value={formData.email}
           onChange={handleInputChange}
-          className={errors.email ? 'ring-2 ring-red-500' : ''}
+          className={`bg-[rgb(32,32,32)] border-0 text-white placeholder:text-gray-400 focus:ring-0 ${
+            errors.email ? 'ring-2 ring-red-500' : ''
+          }`}
         />
         {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
       </div>
@@ -264,7 +268,9 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
           placeholder={t.phone}
           value={formData.phone}
           onChange={handleInputChange}
-          className={errors.phone ? 'ring-2 ring-red-500' : ''}
+          className={`bg-[rgb(32,32,32)] border-0 text-white placeholder:text-gray-400 focus:ring-0 ${
+            errors.phone ? 'ring-2 ring-red-500' : ''
+          }`}
         />
         {errors.phone && <p className="text-red-400 text-sm mt-1">{errors.phone}</p>}
       </div>
