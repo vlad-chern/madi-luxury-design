@@ -28,7 +28,7 @@ const Index = () => {
         startConsultation: 'Iniciar Consulta'
       },
       hero: {
-        title: 'Mobiliario de Autor.',
+        title: 'Meubles à Medida.',
         subtitle: 'Diseñado para su historia.',
         description: 'Creamos piezas exclusivas y a medida que transforman espacios. Hecho a mano con pasión en nuestro taller de Madrid.',
         cta: 'Descubra las Posibilidades'
@@ -155,8 +155,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-[rgb(14,14,14)] text-white overflow-x-hidden">
       <SEOHead 
-        title="MADI - Mobiliario de Autor Exclusivo | Cocinas, Vestidores y Armarios de Lujo en Madrid"
-        description="MADI crea mobiliario de autor exclusivo y a medida en Madrid. Especialistas en cocinas de lujo, vestidores personalizados y armarios de diseño. Calidad artesanal premium."
+        title="MADI - Meubles à Medida Exclusivo | Cocinas, Vestidores y Armarios de Lujo en Madrid"
+        description="MADI crea meubles à medida exclusivo y a medida en Madrid. Especialistas en cocinas de lujo, vestidores personalizados y armarios de diseño. Calidad artesanal premium."
         keywords="mobiliario de lujo Madrid, cocinas a medida, vestidores personalizados, armarios de diseño, muebles exclusivos, carpintería artesanal, diseño interior luxury"
         url="https://madiluxe.com"
         type="website"

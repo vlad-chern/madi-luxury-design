@@ -36,8 +36,10 @@ const AnalyticsIntegration = ({ language, onUpdate }: AnalyticsIntegrationProps)
       containerId: 'Container ID (GTM)',
       activate: 'Activar Analytics',
       save: 'Guardar',
-      measurementIdDesc: 'ID de medición de Google Analytics 4',
-      containerIdDesc: 'ID del contenedor de Google Tag Manager',
+      measurementIdDesc: 'ID de medición de Google Analytics 4 (G-XXXXXXXXXX)',
+      containerIdDesc: 'ID del contenedor de Google Tag Manager (GTM-XXXXXXX)',
+      apiSecretDesc: 'Clave API secreta para Measurement Protocol',
+      ecommerceNote: 'Los eventos Ecommerce y form_submit se envían automáticamente con dededuplicación',
       saved: 'Configuración guardada exitosamente',
       error: 'Error al guardar configuración'
     },
@@ -47,8 +49,10 @@ const AnalyticsIntegration = ({ language, onUpdate }: AnalyticsIntegrationProps)
       containerId: 'Container ID (GTM)',
       activate: 'Activate Analytics',
       save: 'Save',
-      measurementIdDesc: 'Google Analytics 4 measurement ID',
-      containerIdDesc: 'Google Tag Manager container ID',
+      measurementIdDesc: 'Google Analytics 4 measurement ID (G-XXXXXXXXXX)',
+      containerIdDesc: 'Google Tag Manager container ID (GTM-XXXXXXX)',
+      apiSecretDesc: 'API secret key for Measurement Protocol',
+      ecommerceNote: 'Ecommerce events and form_submit are sent automatically with deduplication',
       saved: 'Configuration saved successfully',
       error: 'Error saving configuration'
     },
@@ -58,8 +62,10 @@ const AnalyticsIntegration = ({ language, onUpdate }: AnalyticsIntegrationProps)
       containerId: 'Container ID (GTM)',
       activate: 'Активировать Аналитику',
       save: 'Сохранить',
-      measurementIdDesc: 'ID измерения Google Analytics 4',
-      containerIdDesc: 'ID контейнера Google Tag Manager',
+      measurementIdDesc: 'ID измерения Google Analytics 4 (G-XXXXXXXXXX)',
+      containerIdDesc: 'ID контейнера Google Tag Manager (GTM-XXXXXXX)',
+      apiSecretDesc: 'Секретный ключ API для Measurement Protocol',
+      ecommerceNote: 'События Ecommerce и form_submit отправляются автоматически с дедупликацией',
       saved: 'Конфигурация успешно сохранена',
       error: 'Ошибка сохранения конфигурации'
     }
@@ -186,6 +192,12 @@ const AnalyticsIntegration = ({ language, onUpdate }: AnalyticsIntegrationProps)
               {t.containerIdDesc}
             </p>
           </div>
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <p className="text-sm text-blue-800">
+            <strong>📊 {t.ecommerceNote}</strong>
+          </p>
         </div>
 
         <Button onClick={handleSave} className="w-full" disabled={isLoading}>

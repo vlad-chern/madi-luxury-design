@@ -7,6 +7,7 @@ import { BrowserRouter } from "react-router-dom";
 import Router from "@/components/Router";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
 import { useFacebookPixel } from "@/hooks/useFacebookPixel";
+import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,6 +21,7 @@ const queryClient = new QueryClient({
 const AppContent = () => {
   useScrollToTop();
   useFacebookPixel(); // Initialize Facebook Pixel tracking
+  useGoogleAnalytics(); // Initialize Google Analytics tracking
   return <Router />;
 };
 

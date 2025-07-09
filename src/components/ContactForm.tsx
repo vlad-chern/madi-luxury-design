@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { useFacebookPixel } from '@/hooks/useFacebookPixel';
+import { useGoogleAnalytics } from '@/hooks/useGoogleAnalytics';
 
 interface ContactFormProps {
   language: 'es' | 'en';
@@ -22,6 +23,7 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const { trackEvent } = useFacebookPixel();
+  const { trackEcommerce, trackFormSubmit } = useGoogleAnalytics();
 
   const translations = {
     es: {
@@ -173,6 +175,38 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
           currency: 'EUR'
         }
       });
+
+      // Track Google Analytics events
+      await trackFormSubmit('contact_form', {
+        product_name: productName || 'General Consultation',
+        has_phone: !!formData.phone
+      });
+
+      if (eventName === 'Purchase') {
+        await trackEcommerce('purchase', {
+          currency: 'EUR',
+          value: 10.00,
+          items: [{
+            item_id: productId || 'general',
+            item_name: productName || 'General Consultation',
+            item_category: 'Custom Furniture',
+            quantity: 1,
+            price: 10.00
+          }]
+        });
+      } else {
+        await trackEcommerce('begin_checkout', {
+          currency: 'EUR',
+          value: eventName === 'Contact' ? 5.00 : 1.00,
+          items: [{
+            item_id: productId || 'consultation',
+            item_name: productName || 'General Consultation',
+            item_category: 'Lead Generation',
+            quantity: 1,
+            price: eventName === 'Contact' ? 5.00 : 1.00
+          }]
+        });
+      }
 
       toast({
         title: "¡Éxito!",

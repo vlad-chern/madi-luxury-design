@@ -14,8 +14,8 @@ interface SEOHeadProps {
 }
 
 const SEOHead = ({ 
-  title = "MADI - Mobiliario de Autor Exclusivo",
-  description = "MADI - Creamos mobiliario de autor exclusivo y a medida. Cocinas, vestidores y armarios de lujo diseñados en Madrid con la más alta calidad artesanal.",
+  title = "MADI - Meubles à Medida Exclusivo",
+  description = "MADI - Creamos meubles à medida exclusivo y a medida. Cocinas, vestidores y armarios de lujo diseñados en Madrid con la más alta calidad artesanal.",
   keywords = "mobiliario de lujo, cocinas a medida, vestidores personalizados, armarios de diseño, muebles exclusivos Madrid, mobiliario artesanal",
   image = "/lovable-uploads/52fb3c8e-ed45-4620-a143-5f46300b53b1.png",
   url = "https://madiluxe.com",

@@ -131,9 +131,9 @@ const CategoriesPage = () => {
   return (
     <div className="min-h-screen bg-[rgb(14,14,14)] text-white overflow-x-hidden">
       <SEOHead 
-        title="MADI - Colecciones de Mobiliario de Autor | Cocinas, Vestidores y Armarios de Lujo"
-        description="Explore las colecciones exclusivas de MADI. Mobiliario de autor personalizado: cocinas de lujo, vestidores únicos y armarios de diseño en Madrid."
-        keywords="colecciones muebles lujo, cocinas personalizadas Madrid, vestidores exclusivos, armarios diseño, mobiliario autor"
+        title="MADI - Colecciones de Meubles à Medida | Cocinas, Vestidores y Armarios de Lujo"
+        description="Explore las colecciones exclusivas de MADI. Meubles à medida personalizado: cocinas de lujo, vestidores únicos y armarios de diseño en Madrid."
+        keywords="colecciones muebles lujo, cocinas personalizadas Madrid, vestidores exclusivos, armarios diseño, meubles à medida"
         url="https://madiluxe.com/colecciones"
         type="website"
       />

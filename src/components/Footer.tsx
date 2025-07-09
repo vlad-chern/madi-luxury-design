@@ -64,7 +64,7 @@ const Footer = ({ language = 'ES' }: FooterProps) => {
             </div>
             <p className="text-gray-400 leading-relaxed">
               {language === 'ES' 
-                ? 'Mobiliario de autor diseñado para contar su historia. Artesanía española con visión contemporánea.'
+                ? 'Meubles à medida diseñado para contar su historia. Artesanía española con visión contemporánea.'
                 : 'Author furniture designed to tell your story. Spanish craftsmanship with contemporary vision.'
               }
             </p>
