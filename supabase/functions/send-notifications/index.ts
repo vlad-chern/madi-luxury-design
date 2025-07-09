@@ -127,7 +127,7 @@ async function sendTelegramNotification(config: any, orderData: any) {
 📄 *Origen:* ${sourcePage}
 💬 *Mensaje:* ${orderData.message || 'Sin mensaje adicional'}
 
-📅 *Fecha:* ${new Date(orderData.timestamp || new Date()).toLocaleString('es-ES')}
+📅 *Fecha:* ${new Date(orderData.timestamp || new Date()).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })}
 `
 
     const telegramUrl = `https://api.telegram.org/bot${bot_token}/sendMessage`
