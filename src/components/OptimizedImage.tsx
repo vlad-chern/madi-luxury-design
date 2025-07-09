@@ -18,9 +18,9 @@ const OptimizedImage = ({
   alt, 
   className = '', 
   style = {},
-  maxWidth = 600,
-  maxHeight = 450,
-  quality = 0.6,
+  maxWidth = 1200,
+  maxHeight = 900,
+  quality = 0.9,
   forceSquare = false
 }: OptimizedImageProps) => {
   const [optimizedSrc, setOptimizedSrc] = useState<string>(src);

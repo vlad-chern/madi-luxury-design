@@ -1,5 +1,5 @@
 
-export const compressImage = (file: File, maxWidth: number = 600, maxHeight: number = 450, quality: number = 0.6): Promise<File> => {
+export const compressImage = (file: File, maxWidth: number = 1200, maxHeight: number = 900, quality: number = 0.85): Promise<File> => {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -63,7 +63,7 @@ export const compressImage = (file: File, maxWidth: number = 600, maxHeight: num
 };
 
 // Новая функция для сжатия изображений по URL
-export const compressImageFromUrl = (imageUrl: string, maxWidth: number = 600, maxHeight: number = 450, quality: number = 0.6): Promise<string> => {
+export const compressImageFromUrl = (imageUrl: string, maxWidth: number = 1200, maxHeight: number = 900, quality: number = 0.85): Promise<string> => {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -123,7 +123,7 @@ export const uploadImageToSupabase = async (file: File, folder: string = 'produc
   console.log('Starting image upload to Supabase...', file.name);
   
   // Compress the image more aggressively before uploading
-  const compressedFile = await compressImage(file, 600, 450, 0.6);
+  const compressedFile = await compressImage(file, 1200, 900, 0.85);
   
   // Generate a unique filename
   const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
