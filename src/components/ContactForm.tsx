@@ -10,9 +10,10 @@ interface ContactFormProps {
   language: 'es' | 'en';
   productId?: string;
   productName?: string;
+  source?: 'main_page' | 'categories' | 'product_detail' | 'about';
 }
 
-const ContactForm = ({ language, productId, productName }: ContactFormProps) => {
+const ContactForm = ({ language, productId, productName, source = 'main_page' }: ContactFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -157,6 +158,28 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
         ]);
 
       if (error) throw error;
+
+      // Prepare notification data
+      const notificationData = {
+        customer_name: formData.name,
+        customer_email: formData.email,
+        customer_phone: formData.phone,
+        product_id: productId,
+        product_name: productName,
+        message: formData.message,
+        source_page: source,
+        timestamp: new Date().toISOString()
+      };
+
+      // Send notifications (Telegram, etc.)
+      try {
+        await supabase.functions.invoke('send-notifications', {
+          body: { orderData: notificationData }
+        });
+      } catch (notificationError) {
+        console.error('Failed to send notifications:', notificationError);
+        // Don't fail the form submission if notifications fail
+      }
 
       // Track Facebook event
       const eventName = productName 

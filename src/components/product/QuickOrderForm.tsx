@@ -30,6 +30,28 @@ const QuickOrderForm = ({ productId, productName }: QuickOrderFormProps) => {
 
         if (error) throw error;
 
+        // Prepare notification data for quick order
+        const notificationData = {
+          customer_name: 'Cliente (pedido rápido)',
+          customer_email: 'quick-order@temp.com',
+          customer_phone: phoneNumber,
+          product_id: productId,
+          product_name: productName,
+          message: `Pedido rápido para producto: ${productName}`,
+          source_page: 'product_detail',
+          timestamp: new Date().toISOString()
+        };
+
+        // Send notifications (Telegram, etc.)
+        try {
+          await supabase.functions.invoke('send-notifications', {
+            body: { orderData: notificationData }
+          });
+        } catch (notificationError) {
+          console.error('Failed to send notifications:', notificationError);
+          // Don't fail the form submission if notifications fail
+        }
+
         toast({
           title: "Consulta enviada",
           description: "Nos pondremos en contacto contigo muy pronto",
@@ -62,7 +84,7 @@ const QuickOrderForm = ({ productId, productName }: QuickOrderFormProps) => {
           placeholder="Tu número de teléfono"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
-          className="bg-transparent border-gray-600 text-white placeholder-gray-400 flex-1"
+          className="bg-[rgb(32,32,32)] border-0 text-white placeholder:text-gray-400 focus:ring-0 flex-1"
         />
         <Button 
           onClick={handleQuickOrder}

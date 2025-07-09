@@ -65,6 +65,7 @@ const ProductContent = ({ product, formatPrice }: ProductContentProps) => {
                     productId={product.id}
                     productName={product.name}
                     language="es"
+                    source="product_detail"
                   />
                 </DialogContent>
               </Dialog>

@@ -41,6 +41,7 @@ const ProductNavigation = ({ onBack, productId, productName, isDialogOpen, setIs
               productId={productId}
               productName={productName}
               language="es"
+              source="product_detail"
             />
           </DialogContent>
         </Dialog>

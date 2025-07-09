@@ -389,7 +389,7 @@ const CategoriesPage = () => {
               </div>
             </div>
             <div className="px-2">
-              <ContactForm language={language === 'ES' ? 'es' : 'en'} />
+              <ContactForm language={language === 'ES' ? 'es' : 'en'} source="categories" />
             </div>
           </div>
         </div>

@@ -64,16 +64,70 @@ async function sendTelegramNotification(config: any, orderData: any) {
       return { success: false, message: 'Telegram configuration incomplete' }
     }
 
+    // Create Supabase client to get product details if needed
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Get product details if product_id is provided
+    let productDetails = null
+    if (orderData.product_id) {
+      const { data } = await supabaseClient
+        .from('products')
+        .select('name, price_from, price_fixed, price_type, categories(name)')
+        .eq('id', orderData.product_id)
+        .single()
+      
+      if (data) {
+        productDetails = data
+      }
+    }
+
+    // Determine source page
+    let sourcePage = 'Página principal'
+    if (orderData.source_page === 'product_detail') {
+      sourcePage = 'Página de producto'
+    } else if (orderData.source_page === 'categories') {
+      sourcePage = 'Página de categorías'
+    } else if (orderData.source_page === 'about') {
+      sourcePage = 'Página acerca de'
+    }
+
+    // Build product info
+    let productInfo = 'Consulta general'
+    if (productDetails) {
+      productInfo = productDetails.name
+      if (productDetails.categories?.name) {
+        productInfo += ` (${productDetails.categories.name})`
+      }
+      
+      // Add price info if available
+      let priceInfo = ''
+      if (productDetails.price_type === 'fixed' && productDetails.price_fixed) {
+        priceInfo = `€${productDetails.price_fixed}`
+      } else if (productDetails.price_type === 'from' && productDetails.price_from) {
+        priceInfo = `desde €${productDetails.price_from}`
+      }
+      if (priceInfo) {
+        productInfo += ` - ${priceInfo}`
+      }
+    } else if (orderData.product_name) {
+      productInfo = orderData.product_name
+    }
+
     const message = `
-🔔 *Nueva Consulta - Madiluxe*
+🔔 *Nueva Consulta - MADI Luxury*
 
 👤 *Cliente:* ${orderData.customer_name}
 📧 *Email:* ${orderData.customer_email}
 📱 *Teléfono:* ${orderData.customer_phone || 'No proporcionado'}
-🏠 *Producto:* ${orderData.product_name || 'Consulta general'}
+
+🏠 *Producto/Servicio:* ${productInfo}
+📄 *Origen:* ${sourcePage}
 💬 *Mensaje:* ${orderData.message || 'Sin mensaje adicional'}
 
-📅 *Fecha:* ${new Date().toLocaleString('es-ES')}
+📅 *Fecha:* ${new Date(orderData.timestamp || new Date()).toLocaleString('es-ES')}
 `
 
     const telegramUrl = `https://api.telegram.org/bot${bot_token}/sendMessage`
