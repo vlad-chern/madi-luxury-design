@@ -113,7 +113,7 @@ const ProductFeedIntegration = ({ language, onUpdate }: ProductFeedIntegrationPr
 
   const generateFeed = async () => {
     try {
-      const { data: response, error } = await supabase.functions.invoke('generate-product-feed');
+      const { data: response, error } = await supabase.functions.invoke('product-feed-xml');
       
       if (error) throw error;
       
@@ -121,9 +121,10 @@ const ProductFeedIntegration = ({ language, onUpdate }: ProductFeedIntegrationPr
         title: t.feedGenerated,
       });
       
+      // Обновляем URL на правильный для XML фида
       setConfig({
         ...config,
-        feed_url: response?.feed_url || config.feed_url
+        feed_url: 'https://goshfdcvsbslvmfvgixb.supabase.co/functions/v1/product-feed-xml'
       });
       
     } catch (error) {
@@ -203,7 +204,7 @@ const ProductFeedIntegration = ({ language, onUpdate }: ProductFeedIntegrationPr
             <div className="flex gap-2">
               <Input
                 id="feed-url"
-                placeholder="https://madiluxe.com/feeds/products.xml"
+                placeholder="https://madi.florexa.site/feeds/products.xml"
                 value={config.feed_url || ''}
                 onChange={(e) => 
                   setConfig({ ...config, feed_url: e.target.value })

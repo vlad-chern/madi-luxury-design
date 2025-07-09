@@ -1,1 +1,4 @@
 project_id = "goshfdcvsbslvmfvgixb"
+
+[functions.product-feed-xml]
+verify_jwt = false

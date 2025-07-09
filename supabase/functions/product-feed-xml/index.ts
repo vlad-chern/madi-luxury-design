@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -39,27 +38,6 @@ serve(async (req) => {
 
     if (error) throw error
 
-    // Генерируем Facebook Catalog JSON
-    const facebookCatalog = products?.map(product => ({
-      id: product.id,
-      title: product.name,
-      description: product.description || '',
-      availability: 'in stock',
-      condition: 'new',
-      price: product.price_type === 'fixed' && product.price_fixed 
-        ? `${product.price_fixed} EUR`
-        : product.price_from 
-        ? `${product.price_from} EUR`
-        : '0 EUR',
-      link: `https://madi.florexa.site/product/${product.slug}`,
-      image_link: product.images && product.images.length > 0 
-        ? product.images[0]
-        : 'https://madi.florexa.site/placeholder.jpg',
-      brand: 'MADI',
-      product_type: product.categories?.name || 'Mobiliario',
-      google_product_category: 'Home & Garden > Furniture'
-    })) || []
-
     // Генерируем Google Merchant XML
     const googleMerchantXML = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
@@ -89,30 +67,28 @@ serve(async (req) => {
   </channel>
 </rss>`
 
-    // Сохраняем фиды в storage (если есть bucket) или возвращаем в ответе
-    const response = {
-      facebook_catalog: facebookCatalog,
-      google_merchant_xml: googleMerchantXML,
-      feed_url: 'https://madi.florexa.site/feeds/products.xml',
-      products_count: products?.length || 0,
-      generated_at: new Date().toISOString()
-    }
-
-    console.log(`Generated product feeds for ${products?.length || 0} products`)
+    console.log(`Generated XML feed for ${products?.length || 0} products`)
 
     return new Response(
-      JSON.stringify(response),
+      googleMerchantXML,
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/xml',
+          'Content-Disposition': 'inline; filename="products.xml"'
+        },
         status: 200 
       }
     )
   } catch (error) {
-    console.error('Error generating product feed:', error)
+    console.error('Error generating XML feed:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      `<?xml version="1.0" encoding="UTF-8"?>
+<error>
+  <message>${error.message}</message>
+</error>`,
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/xml' },
         status: 400 
       }
     )
