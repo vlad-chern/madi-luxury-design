@@ -14,6 +14,7 @@ import AdminManager from '@/components/admin/AdminManager';
 import StorageMonitor from '@/components/admin/StorageMonitor';
 import AdminPresence from '@/components/admin/AdminPresence';
 import SEOManager from '@/components/admin/SEOManager';
+import ImageOptimizer from '@/components/admin/ImageOptimizer';
 import { supabase } from '@/integrations/supabase/client';
 
 const AdminPanel = () => {
@@ -36,6 +37,7 @@ const AdminPanel = () => {
       seo: 'SEO',
       storage: 'Storage',
       presence: 'Presencia',
+      images: 'Imágenes',
       checking: 'Verificando autorización...'
     },
     en: {
@@ -50,6 +52,7 @@ const AdminPanel = () => {
       seo: 'SEO',
       storage: 'Storage',
       presence: 'Presence',
+      images: 'Images',
       checking: 'Checking authorization...'
     },
     ru: {
@@ -64,6 +67,7 @@ const AdminPanel = () => {
       seo: 'SEO',
       storage: 'Хранилище',
       presence: 'Присутствие',
+      images: 'Изображения',
       checking: 'Проверка авторизации...'
     }
   };
@@ -145,6 +149,7 @@ const AdminPanel = () => {
     { value: 'customers', label: t.customers },
     { value: 'integrations', label: t.integrations },
     { value: 'seo', label: t.seo },
+    { value: 'images', label: t.images },
     ...(canAccessAdminManagement() ? [{ value: 'administrators', label: t.administrators }] : [])
   ];
 
@@ -216,7 +221,7 @@ const AdminPanel = () => {
             <Tabs defaultValue="categories" className="space-y-4 md:space-y-6">
               {/* Desktop Navigation */}
               <div className="hidden lg:block">
-                <TabsList className="grid w-full grid-cols-6 lg:grid-cols-7 text-sm">
+                <TabsList className="grid w-full grid-cols-7 lg:grid-cols-8 text-sm">
                   {tabItems.map((item) => (
                     <TabsTrigger key={item.value} value={item.value} className="px-2 py-1.5">
                       {item.label}
@@ -247,6 +252,10 @@ const AdminPanel = () => {
 
               <TabsContent value="seo">
                 <SEOManager language={language} />
+              </TabsContent>
+
+              <TabsContent value="images">
+                <ImageOptimizer language={language} />
               </TabsContent>
 
               {canAccessAdminManagement() && (
