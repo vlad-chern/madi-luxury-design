@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
+import { useFacebookPixel } from '@/hooks/useFacebookPixel';
 
 interface ContactFormProps {
   language: 'es' | 'en';
@@ -20,6 +21,7 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
+  const { trackEvent } = useFacebookPixel();
 
   const translations = {
     es: {
@@ -153,6 +155,24 @@ const ContactForm = ({ language, productId, productName }: ContactFormProps) => 
         ]);
 
       if (error) throw error;
+
+      // Track Facebook event
+      const eventName = productName 
+        ? (formData.phone ? 'Purchase' : 'Contact')
+        : 'Lead';
+      
+      trackEvent(eventName, {
+        user_data: {
+          em: [formData.email],
+          ph: formData.phone ? [formData.phone.replace(/\D/g, '')] : undefined
+        },
+        custom_data: {
+          content_name: productName || 'General Consultation',
+          content_category: eventName === 'Purchase' ? 'Purchase' : 'Lead Generation',
+          value: eventName === 'Purchase' ? 10.00 : 1.00,
+          currency: 'EUR'
+        }
+      });
 
       toast({
         title: "¡Éxito!",

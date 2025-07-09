@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import Router from "@/components/Router";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
+import { useFacebookPixel } from "@/hooks/useFacebookPixel";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,6 +19,7 @@ const queryClient = new QueryClient({
 
 const AppContent = () => {
   useScrollToTop();
+  useFacebookPixel(); // Initialize Facebook Pixel tracking
   return <Router />;
 };
 

@@ -109,24 +109,33 @@ async function sendFacebookEvent(config: any, orderData: any) {
       return { success: false, message: 'Facebook configuration incomplete' }
     }
 
+    // Generate event ID for deduplication
+    const eventId = `${orderData.customer_email}_${Date.now()}`
+    
+    let eventName = 'Lead'
+    if (orderData.product_name && orderData.product_name !== 'General Consultation') {
+      eventName = orderData.customer_phone ? 'Purchase' : 'Contact'
+    }
+    
     const eventData = {
       data: [{
-        event_name: 'Lead',
+        event_name: eventName,
         event_time: Math.floor(Date.now() / 1000),
+        event_id: eventId,
         user_data: {
           em: [orderData.customer_email],
           ph: orderData.customer_phone ? [orderData.customer_phone.replace(/\D/g, '')] : undefined
         },
         custom_data: {
           content_name: orderData.product_name || 'General Consultation',
-          content_category: 'Lead Generation',
-          value: 1.00,
+          content_category: eventName === 'Purchase' ? 'Purchase' : 'Lead Generation',
+          value: eventName === 'Purchase' ? 10.00 : 1.00,
           currency: 'EUR'
         }
       }]
     }
 
-    const facebookUrl = `https://graph.facebook.com/v18.0/${pixel_id}/events?access_token=${access_token}`
+    const facebookUrl = `https://graph.facebook.com/v22.0/${pixel_id}/events?access_token=${access_token}`
     
     const response = await fetch(facebookUrl, {
       method: 'POST',

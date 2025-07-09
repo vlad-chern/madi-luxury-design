@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { session_token, query, action, data, id } = await req.json()
+    const { session_token, query, action, data, id, filters } = await req.json()
 
     if (!session_token) {
       return new Response(
@@ -61,10 +61,19 @@ serve(async (req) => {
 
     switch (action) {
       case 'select':
-        const { data: selectData, error: selectError } = await supabaseClient
+        let selectQuery = supabaseClient
           .from(query)
           .select('*')
           .order('created_at', { ascending: false })
+        
+        // Handle filters
+        if (filters) {
+          Object.entries(filters).forEach(([key, value]) => {
+            selectQuery = selectQuery.eq(key, value)
+          })
+        }
+        
+        const { data: selectData, error: selectError } = await selectQuery
         
         if (selectError) throw selectError
         result = selectData
@@ -122,6 +131,42 @@ serve(async (req) => {
             // Insert new
             const { data: insertData, error: insertError } = await supabaseClient
               .from('seo_settings')
+              .insert(data)
+              .select()
+            
+            if (insertError) throw insertError
+            result = insertData
+          }
+        } else if (query === 'integrations' && data.name) {
+          // Специальная логика для upsert based on name для integrations
+          const { data: existingData, error: checkError } = await supabaseClient
+            .from('integrations')
+            .select('id')
+            .eq('name', data.name)
+            .maybeSingle()
+
+          if (checkError && checkError.code !== 'PGRST116') {
+            throw checkError
+          }
+
+          if (existingData) {
+            // Update existing
+            const { data: updateData, error: updateError } = await supabaseClient
+              .from('integrations')
+              .update({
+                config: data.config,
+                is_active: data.is_active,
+                updated_at: new Date().toISOString()
+              })
+              .eq('name', data.name)
+              .select()
+            
+            if (updateError) throw updateError
+            result = updateData
+          } else {
+            // Insert new
+            const { data: insertData, error: insertError } = await supabaseClient
+              .from('integrations')
               .insert(data)
               .select()
             
