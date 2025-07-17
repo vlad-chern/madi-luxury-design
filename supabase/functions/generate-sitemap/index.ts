@@ -146,7 +146,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true,
         message: 'Sitemap generated successfully',
-        urls_count: (categories?.length || 0) + (products?.length || 0) + 2
+        urls_count: (categories?.length || 0) + (products?.length || 0) + 2,
+        sitemap_xml: sitemapXml
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

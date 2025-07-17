@@ -44,57 +44,63 @@ const SEOManager = ({ language }: SEOManagerProps) => {
       robotsTitle: 'Robots.txt',
       robotsDesc: 'Controla cómo los motores de búsqueda rastrean tu sitio',
       sitemapTitle: 'Mapa del Sitio',
-      sitemapDesc: 'Gestiona la generación del sitemap.xml',
+      sitemapDesc: 'Gestiona la generación del sitemap.xml para descargar',
       autoUpdate: 'Actualización Automática',
-      generateSitemap: 'Generar Sitemap',
-      downloadSitemap: 'Descargar Sitemap',
+      generateSitemap: 'Generar y Descargar Sitemap',
+      downloadSitemap: 'Descargar Sitemap Actual',
       save: 'Guardar',
       saving: 'Guardando...',
       generating: 'Generando...',
       loading: 'Cargando...',
       success: 'Configuración guardada correctamente',
-      sitemapGenerated: 'Sitemap generado correctamente',
+      sitemapGenerated: 'Sitemap generado y descargado',
       error: 'Error',
       active: 'Activo',
-      inactive: 'Inactivo'
+      inactive: 'Inactivo',
+      sitemapInstruction: 'Después de generar, sube el archivo sitemap.xml a la carpeta raíz de tu sitio web',
+      downloadRobots: 'Descargar robots.txt'
     },
     en: {
       title: 'SEO Settings',
       robotsTitle: 'Robots.txt',
       robotsDesc: 'Control how search engines crawl your site',
       sitemapTitle: 'Sitemap',
-      sitemapDesc: 'Manage sitemap.xml generation',
+      sitemapDesc: 'Manage sitemap.xml generation for download',
       autoUpdate: 'Auto Update',
-      generateSitemap: 'Generate Sitemap',
-      downloadSitemap: 'Download Sitemap',
+      generateSitemap: 'Generate and Download Sitemap',
+      downloadSitemap: 'Download Current Sitemap',
       save: 'Save',
       saving: 'Saving...',
       generating: 'Generating...',
       loading: 'Loading...',
       success: 'Settings saved successfully',
-      sitemapGenerated: 'Sitemap generated successfully',
+      sitemapGenerated: 'Sitemap generated and downloaded',
       error: 'Error',
       active: 'Active',
-      inactive: 'Inactive'
+      inactive: 'Inactive',
+      sitemapInstruction: 'After generating, upload the sitemap.xml file to the root folder of your website',
+      downloadRobots: 'Download robots.txt'
     },
     ru: {
       title: 'Настройки SEO',
       robotsTitle: 'Robots.txt',
       robotsDesc: 'Управляйте тем, как поисковые системы сканируют ваш сайт',
       sitemapTitle: 'Карта сайта',
-      sitemapDesc: 'Управление генерацией sitemap.xml',
+      sitemapDesc: 'Управление генерацией sitemap.xml для скачивания',
       autoUpdate: 'Автообновление',
-      generateSitemap: 'Генерировать карту сайта',
-      downloadSitemap: 'Скачать карту сайта',
+      generateSitemap: 'Генерировать и скачать карту сайта',
+      downloadSitemap: 'Скачать текущую карту сайта',
       save: 'Сохранить',
       saving: 'Сохранение...',
       generating: 'Генерация...',
       loading: 'Загрузка...',
       success: 'Настройки сохранены успешно',
-      sitemapGenerated: 'Карта сайта сгенерирована успешно',
+      sitemapGenerated: 'Карта сайта сгенерирована и скачана',
       error: 'Ошибка',
       active: 'Активно',
-      inactive: 'Неактивно'
+      inactive: 'Неактивно',
+      sitemapInstruction: 'После генерации загрузите файл sitemap.xml в корневую папку вашего сайта',
+      downloadRobots: 'Скачать robots.txt'
     }
   };
 
@@ -205,9 +211,21 @@ const SEOManager = ({ language }: SEOManagerProps) => {
         throw new Error(data?.error || 'Failed to generate sitemap');
       }
 
+      // Создаем и скачиваем sitemap.xml файл
+      const sitemapContent = data.sitemap_xml;
+      const blob = new Blob([sitemapContent], { type: 'application/xml' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sitemap.xml';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
       toast({
         title: t.sitemapGenerated,
-        description: 'Sitemap.xml has been generated successfully',
+        description: 'Sitemap.xml скачан. Загрузите его в корневую папку сайта на хостинге.',
       });
     } catch (error) {
       console.error('Error generating sitemap:', error);
@@ -222,7 +240,24 @@ const SEOManager = ({ language }: SEOManagerProps) => {
   };
 
   const downloadSitemap = () => {
-    window.open('https://madi.florexa.site/sitemap.xml', '_blank');
+    const link = document.createElement('a');
+    link.href = '/sitemap.xml';
+    link.download = 'sitemap.xml';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadRobots = () => {
+    const blob = new Blob([robotsTxt], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'robots.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
   if (isLoading) {
@@ -254,9 +289,26 @@ const SEOManager = ({ language }: SEOManagerProps) => {
             <Textarea
               value={robotsTxt}
               onChange={(e) => setRobotsTxt(e.target.value)}
-              placeholder="User-agent: *&#10;Disallow: /admin&#10;Allow: /&#10;&#10;Sitemap: https://madiluxe.com/sitemap.xml"
+              placeholder="User-agent: *&#10;Disallow: /admin&#10;Allow: /&#10;&#10;Sitemap: https://madi.florexa.site/sitemap.xml"
               className="min-h-[200px] font-mono text-sm"
             />
+            
+            <div className="flex gap-3">
+              <Button
+                onClick={downloadRobots}
+                variant="outline"
+                size="sm"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {t.downloadRobots}
+              </Button>
+            </div>
+            
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-sm text-amber-800">
+                <strong>Важно:</strong> После генерации и загрузки sitemap.xml на хостинг, также загрузите обновленный robots.txt в корневую папку сайта.
+              </p>
+            </div>
           </div>
 
           {/* Sitemap Section */}
@@ -289,6 +341,12 @@ const SEOManager = ({ language }: SEOManagerProps) => {
                 />
                 <span className="text-sm font-medium">{t.autoUpdate}</span>
               </div>
+            </div>
+
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Инструкция:</strong> {t.sitemapInstruction}
+              </p>
             </div>
 
             <div className="flex gap-3">

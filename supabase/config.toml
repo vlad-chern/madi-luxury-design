@@ -2,6 +2,3 @@ project_id = "goshfdcvsbslvmfvgixb"
 
 [functions.product-feed-xml]
 verify_jwt = false
-
-[functions.sitemap-xml]
-verify_jwt = false
