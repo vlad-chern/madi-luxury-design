@@ -222,7 +222,7 @@ const SEOManager = ({ language }: SEOManagerProps) => {
   };
 
   const downloadSitemap = () => {
-    window.open('/sitemap.xml', '_blank');
+    window.open('https://madi.florexa.site/sitemap.xml', '_blank');
   };
 
   if (isLoading) {
